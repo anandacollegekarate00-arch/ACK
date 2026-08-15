@@ -1,0 +1,427 @@
+/* 🎨 Karate App - Design System: Spacing & Layout
+   iOS-inspired spacing with 8px base unit
+   ========================================== */
+
+:root {
+  /* ========================================
+     Base Unit (8px system)
+     ========================================== */
+  --space-unit: 0.5rem; /* 8px */
+
+  /* ========================================
+     Spacing Scale
+     ========================================== */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0\.5: 0.125rem; /* 2px */
+  --space-1: 0.25rem; /* 4px */
+  --space-1\.5: 0.375rem; /* 6px */
+  --space-2: 0.5rem; /* 8px */
+  --space-2\.5: 0.625rem; /* 10px */
+  --space-3: 0.75rem; /* 12px */
+  --space-3\.5: 0.875rem; /* 14px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-7: 1.75rem; /* 28px */
+  --space-8: 2rem; /* 32px */
+  --space-9: 2.25rem; /* 36px */
+  --space-10: 2.5rem; /* 40px */
+  --space-11: 2.75rem; /* 44px */
+  --space-12: 3rem; /* 48px */
+  --space-14: 3.5rem; /* 56px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+  --space-28: 7rem; /* 112px */
+  --space-32: 8rem; /* 128px */
+  --space-36: 9rem; /* 144px */
+  --space-40: 10rem; /* 160px */
+  --space-44: 11rem; /* 176px */
+  --space-48: 12rem; /* 192px */
+  --space-52: 13rem; /* 208px */
+  --space-56: 14rem; /* 224px */
+  --space-60: 15rem; /* 240px */
+  --space-64: 16rem; /* 256px */
+  --space-72: 18rem; /* 288px */
+  --space-80: 20rem; /* 320px */
+  --space-96: 24rem; /* 384px */
+
+  /* ========================================
+     Semantic Spacing (Named)
+     ========================================== */
+  --space-section: var(--space-16); /* Between sections */
+  --space-section-sm: var(--space-12); /* Small sections */
+  --space-section-lg: var(--space-24); /* Large sections */
+
+  --space-card: var(--space-6); /* Card padding */
+  --space-card-sm: var(--space-4); /* Compact cards */
+  --space-card-lg: var(--space-8); /* Spacious cards */
+
+  --space-inline: var(--space-2); /* Inline elements */
+  --space-stack: var(--space-4); /* Vertical stacking */
+
+  /* ========================================
+     Border Radius (Smooth, iOS-like)
+     ========================================== */
+  --radius-none: 0;
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-2xl: 1.25rem; /* 20px */
+  --radius-3xl: 1.5rem; /* 24px */
+  --radius-4xl: 2rem; /* 32px */
+  --radius-full: 9999px; /* Pill shape */
+
+  /* Semantic Radius */
+  --radius-button: var(--radius-xl);
+  --radius-card: var(--radius-2xl);
+  --radius-modal: var(--radius-3xl);
+  --radius-input: var(--radius-lg);
+  --radius-badge: var(--radius-full);
+
+  /* ========================================
+     Container Widths
+     ========================================== */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+
+  /* ========================================
+     Layout Gaps (Flexbox/Grid)
+     ========================================== */
+  --gap-xs: var(--space-2); /* 8px */
+  --gap-sm: var(--space-3); /* 12px */
+  --gap-md: var(--space-4); /* 16px */
+  --gap-lg: var(--space-6); /* 24px */
+  --gap-xl: var(--space-8); /* 32px */
+  --gap-2xl: var(--space-12); /* 48px */
+
+  /* ========================================
+     Safe Areas (Mobile notches, home indicator)
+     ========================================== */
+  --safe-top: env(safe-area-inset-top);
+  --safe-right: env(safe-area-inset-right);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+
+  /* ========================================
+     Z-Index Scale (Layering)
+     ========================================== */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-fixed: 1200;
+  --z-modal-backdrop: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-tooltip: 1600;
+  --z-toast: 1700;
+  --z-max: 9999;
+}
+
+/* ========================================
+   Layout Utilities
+   ========================================== */
+
+/* Container */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: var(--container-sm);
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: var(--container-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: var(--container-lg);
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: var(--container-xl);
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: var(--container-2xl);
+  }
+}
+
+/* ========================================
+   Stack Layout (Vertical spacing)
+   ========================================== */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.stack-xs > * + * {
+  margin-top: var(--space-2);
+}
+.stack-sm > * + * {
+  margin-top: var(--space-3);
+}
+.stack-md > * + * {
+  margin-top: var(--space-4);
+}
+.stack-lg > * + * {
+  margin-top: var(--space-6);
+}
+.stack-xl > * + * {
+  margin-top: var(--space-8);
+}
+.stack-2xl > * + * {
+  margin-top: var(--space-12);
+}
+
+/* ========================================
+   Inline Layout (Horizontal spacing)
+   ========================================== */
+.inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.inline-xs {
+  gap: var(--space-2);
+}
+.inline-sm {
+  gap: var(--space-3);
+}
+.inline-md {
+  gap: var(--space-4);
+}
+.inline-lg {
+  gap: var(--space-6);
+}
+.inline-xl {
+  gap: var(--space-8);
+}
+
+/* ========================================
+   Grid Layout
+   ========================================== */
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.grid-cols-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.grid-cols-12 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+/* Auto-fit grid (responsive cards) */
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--gap-lg);
+}
+
+.grid-auto-fill {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--gap-lg);
+}
+
+/* ========================================
+   Safe Area Support
+   ========================================== */
+.safe-top {
+  padding-top: var(--safe-top);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-bottom);
+}
+
+.safe-left {
+  padding-left: var(--safe-left);
+}
+
+.safe-right {
+  padding-right: var(--safe-right);
+}
+
+.safe-area {
+  padding-top: var(--safe-top);
+  padding-right: var(--safe-right);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+}
+
+/* ========================================
+   Aspect Ratios
+   ========================================== */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-portrait {
+  aspect-ratio: 3 / 4;
+}
+
+.aspect-landscape {
+  aspect-ratio: 4 / 3;
+}
+
+/* ========================================
+   Centering
+   ========================================== */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-x {
+  display: flex;
+  justify-content: center;
+}
+
+.center-y {
+  display: flex;
+  align-items: center;
+}
+
+/* ========================================
+   Scrolling
+   ========================================== */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+.scroll-hidden {
+  overflow: hidden;
+}
+
+.scroll-auto {
+  overflow: auto;
+}
+
+.scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.scroll-y {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar but keep functionality */
+.scroll-hidden-bar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.scroll-hidden-bar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Snap scrolling (iOS-like) */
+.snap-x {
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 var(--space-4);
+}
+
+.snap-y {
+  scroll-snap-type: y mandatory;
+  scroll-padding: var(--space-4) 0;
+}
+
+.snap-start {
+  scroll-snap-align: start;
+}
+
+.snap-center {
+  scroll-snap-align: center;
+}
+
+.snap-end {
+  scroll-snap-align: end;
+}
+
+/* ========================================
+   Breakpoints (Media Query Helpers)
+   ========================================== */
+:root {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* Mobile-first responsive visibility */
+.sm\:hidden {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .sm\:block {
+    display: block;
+  }
+  .sm\:hidden {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:block {
+    display: block;
+  }
+  .md\:hidden {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:block {
+    display: block;
+  }
+  .lg\:hidden {
+    display: none;
+  }
+}

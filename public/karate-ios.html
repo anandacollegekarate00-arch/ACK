@@ -1,0 +1,1521 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0EA5E9" />
+<title>ACK — Ananda College Karate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script crossorigin src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;scroll-behavior:smooth;overscroll-behavior-y:contain}
+body{font-family:'Inter',sans-serif;background:#F0F9FF;color:#0F172A;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:0;height:0}
+input,button,textarea,select{font-family:inherit;touch-action:manipulation}
+button:active{opacity:.9;transform:scale(.98)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.fade-up{animation:fadeUp .35s cubic-bezier(.22,1,.36,1) both}
+.fade-in{animation:fadeIn .25s ease both}
+.slide-up{animation:slideUp .4s cubic-bezier(.22,1,.36,1) both}
+.scale-in{animation:scaleIn .25s cubic-bezier(.22,1,.36,1) both}
+.shimmer{animation:pulse 1.5s ease infinite}
+:root{
+  --ocean:#0EA5E9;--ocean-dark:#2563EB;--ocean-light:#E0F2FE;
+  --amber:#F59E0B;--amber-light:#FEF3C7;
+  --emerald:#10B981;--emerald-light:#D1FAE5;
+  --rose:#F43F5E;--rose-light:#FFE4E6;
+  --violet:#8B5CF6;--violet-light:#EDE9FE;
+  --bg:#F0F9FF;--surface:#FFFFFF;--surface2:#F8FAFC;
+  --border:#E2E8F0;--text:#0F172A;--text2:#475569;--muted:#94A3B8;
+  --grad:linear-gradient(135deg,#0EA5E9 0%,#2563EB 100%);
+  --grad-amber:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);
+  --grad-emerald:linear-gradient(135deg,#10B981 0%,#047857 100%);
+  --grad-rose:linear-gradient(135deg,#F43F5E 0%,#BE123C 100%);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 4px 16px rgba(14,165,233,.12),0 2px 6px rgba(0,0,0,.06);
+  --shadow-lg:0 12px 32px rgba(14,165,233,.18),0 4px 12px rgba(0,0,0,.08);
+  --radius:20px;--radius-sm:12px;--radius-xs:8px;
+}
+.dark-mode{
+  --bg:#0A0E1A;--surface:#0F172A;--surface2:#1E293B;
+  --border:#334155;--text:#F1F5F9;--text2:#CBD5E1;--muted:#64748B;
+  background:#0A0E1A;color:#F1F5F9
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+// ─── Supabase ───────────────────────────────────────────────────────────────
+const { createClient } = window.supabase;
+const sb = createClient(
+  'https://velrrklvyefnpvrkidww.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbHJya2x2eWVmbnB2cmtpZHd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5ODEzNTMsImV4cCI6MjA1MDU1NzM1M30.9kaMvBmqWJPvkYhCpqDjWYSqKFBx6jfHvQ8OGhwwCzY'
+);
+
+// ─── Constants ──────────────────────────────────────────────────────────────
+const BELTS = [
+  'White (10th Kyu)','Gray (9th Kyu)','Orange (8th Kyu)','Yellow (7th Kyu)',
+  'Green (6th Kyu)','Blue (5th Kyu)','Purple (4th Kyu)','Brown (3rd Kyu)',
+  'Brown (2nd Kyu)','Brown (1st Kyu)','Black (1st Dan)'
+];
+const BELT_STYLE = {
+  White:{bg:'#F5F5F0',fg:'#111827',border:'#D1D5DB'},
+  Gray:{bg:'#9CA3AF',fg:'#fff',border:'#6B7280'},
+  Orange:{bg:'#F59E0B',fg:'#fff',border:'#D97706'},
+  Yellow:{bg:'#FDE68A',fg:'#1A1A1A',border:'#D4A800'},
+  Green:{bg:'#10B981',fg:'#fff',border:'#047857'},
+  Blue:{bg:'#0EA5E9',fg:'#fff',border:'#0284C7'},
+  Purple:{bg:'#8B5CF6',fg:'#fff',border:'#6D28D9'},
+  Brown:{bg:'#92400E',fg:'#fff',border:'#78350F'},
+  Black:{bg:'#1E293B',fg:'#F59E0B',border:'#000'},
+};
+const beltStyle = b => { const k=(b||'').split(' ')[0]; return BELT_STYLE[k]||BELT_STYLE.White; };
+const LEVELS=['School','Zonal','Provincial','National','International'];
+const LEVEL_COLOR={School:'#94A3B8',Zonal:'#0EA5E9',Provincial:'#10B981',National:'#F59E0B',International:'#8B5CF6'};
+const PLACE_COLOR={Gold:'#D97706',Silver:'#6B7280',Bronze:'#92400E','Best 8':'#0EA5E9',Participant:'#94A3B8'};
+const PLACEMENTS=['Gold','Silver','Bronze','Best 8','Participant','Did Not Participate'];
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function ymd(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
+function todayISO(){return ymd(new Date())}
+function initials(n=''){return n.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+function displayName(s){return(s&&(s.name||s.full_name))||'Unnamed'}
+function statsFor(sid,att){
+  const r=att.filter(a=>a.student_id===sid),t=r.length;
+  const p=r.filter(x=>x.status==='present').length,ab=r.filter(x=>x.status==='absent').length,la=r.filter(x=>x.status==='late').length;
+  return{total:t,present:p,absent:ab,late:la,rate:t?Math.round(((p+la*.5)/t)*100):0};
+}
+function cls(...a){return a.filter(Boolean).join(' ')}
+
+// ─── Tiny Icon Factory ──────────────────────────────────────────────────────
+function ic(paths){return function Icon({size=20,color='currentColor',style={}}){
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>{paths}</svg>;
+}}
+const IHome=ic(<><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></>);
+const IUsers=ic(<><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5c2.5.5 4.5 2.5 4.5 5.5"/></>);
+const ICal=ic(<><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></>);
+const ITrophy=ic(<><path d="M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M7 5H4a3 3 0 0 0 3 4"/><path d="M17 5h3a3 3 0 0 1-3 4"/><line x1="12" y1="13" x2="12" y2="17"/><path d="M9 17h6l1 4H8l1-4z"/></>);
+const IUser=ic(<><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></>);
+const IChart=ic(<><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></>);
+const IPlus=ic(<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>);
+const ICheck=ic(<polyline points="4 12 10 18 20 6"/>);
+const IX=ic(<><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></>);
+const IEdit=ic(<><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></>);
+const ITrash=ic(<><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M8 6V4h8v2"/></>);
+const ISearch=ic(<><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></>);
+const IBack=ic(<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 6 5 12 11 18"/></>);
+const IMoon=ic(<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>);
+const ISun=ic(<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>);
+const ILogout=ic(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>);
+const IEye=ic(<><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></>);
+const IEyeOff=ic(<><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><line x1="2" y1="2" x2="22" y2="22"/></>);
+const IBell=ic(<><path d="M6 10a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></>);
+const IClock=ic(<><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></>);
+const IAward=ic(<><circle cx="12" cy="8" r="6"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></>);
+const IShield=ic(<path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/>);
+
+// ─── Reusable UI Components ─────────────────────────────────────────────────
+function Avatar({name,size=44,color}){
+  const bg=color||'linear-gradient(135deg,#0EA5E9,#2563EB)';
+  return(
+    <div style={{width:size,height:size,borderRadius:'50%',background:bg,
+      display:'flex',alignItems:'center',justifyContent:'center',
+      color:'#fff',fontWeight:700,fontSize:size*.36,flexShrink:0,
+      fontFamily:'Inter,sans-serif'}}>
+      {initials(name)||'?'}
+    </div>
+  );
+}
+
+function BeltBadge({belt,small}){
+  const s=beltStyle(belt);
+  return(
+    <span style={{background:s.bg,color:s.fg,border:`1px solid ${s.border}`,
+      borderRadius:20,fontWeight:700,padding:small?'2px 8px':'3px 10px',
+      fontSize:small?10:11,display:'inline-flex',alignItems:'center',whiteSpace:'nowrap'}}>
+      {belt}
+    </span>
+  );
+}
+
+function Card({children,style={},className='',onClick}){
+  return(
+    <div onClick={onClick} style={{background:'var(--surface)',borderRadius:'var(--radius)',
+      boxShadow:'var(--shadow)',border:'1px solid var(--border)',overflow:'hidden',...style}}
+      className={className}>
+      {children}
+    </div>
+  );
+}
+
+function GlassCard({children,style={}}){
+  return(
+    <div style={{background:'rgba(255,255,255,0.7)',backdropFilter:'blur(20px)',
+      WebkitBackdropFilter:'blur(20px)',borderRadius:'var(--radius)',
+      border:'1px solid rgba(255,255,255,0.6)',boxShadow:'var(--shadow)',...style}}>
+      {children}
+    </div>
+  );
+}
+
+function Btn({children,onClick,type='button',variant='primary',size='md',disabled,style={}}){
+  const base={borderRadius:14,fontWeight:600,border:'none',cursor:'pointer',
+    display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,
+    transition:'all .2s',fontFamily:'Inter,sans-serif',...style};
+  const sz=size==='sm'?{padding:'8px 16px',fontSize:13}:size==='lg'?{padding:'16px 28px',fontSize:16}:{padding:'12px 22px',fontSize:14};
+  const v={
+    primary:{background:'var(--grad)',color:'#fff',boxShadow:'0 4px 14px rgba(14,165,233,.4)'},
+    secondary:{background:'transparent',color:'var(--ocean)',border:'2px solid var(--ocean)'},
+    ghost:{background:'transparent',color:'var(--text2)'},
+    danger:{background:'var(--grad-rose)',color:'#fff',boxShadow:'0 4px 14px rgba(244,63,94,.3)'},
+    success:{background:'var(--grad-emerald)',color:'#fff'},
+    amber:{background:'var(--grad-amber)',color:'#fff'},
+  }[variant]||{};
+  return(
+    <button type={type} onClick={onClick} disabled={disabled}
+      style={{...base,...sz,...v,opacity:disabled?.4:1}}>
+      {children}
+    </button>
+  );
+}
+
+function Input({label,type='text',value,onChange,placeholder,required,error,autoFocus}){
+  return(
+    <div style={{marginBottom:16}}>
+      {label&&<label style={{display:'block',fontSize:13,fontWeight:600,color:'var(--text2)',marginBottom:6}}>{label}</label>}
+      <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+        required={required} autoFocus={autoFocus}
+        style={{width:'100%',padding:'12px 16px',borderRadius:12,
+          border:`2px solid ${error?'var(--rose)':'var(--border)'}`,
+          background:'var(--surface2)',color:'var(--text)',fontSize:15,outline:'none',
+          transition:'border .2s'}}
+        onFocus={e=>e.target.style.borderColor='var(--ocean)'}
+        onBlur={e=>e.target.style.borderColor=error?'var(--rose)':'var(--border)'} />
+      {error&&<p style={{color:'var(--rose)',fontSize:12,marginTop:4}}>{error}</p>}
+    </div>
+  );
+}
+
+function Select({label,value,onChange,children}){
+  return(
+    <div style={{marginBottom:16}}>
+      {label&&<label style={{display:'block',fontSize:13,fontWeight:600,color:'var(--text2)',marginBottom:6}}>{label}</label>}
+      <select value={value} onChange={onChange}
+        style={{width:'100%',padding:'12px 16px',borderRadius:12,border:'2px solid var(--border)',
+          background:'var(--surface2)',color:'var(--text)',fontSize:15,outline:'none'}}>
+        {children}
+      </select>
+    </div>
+  );
+}
+
+function Modal({title,onClose,children,wide}){
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:100,display:'flex',alignItems:'flex-end',
+      justifyContent:'center',background:'rgba(0,0,0,.5)',backdropFilter:'blur(4px)'}}>
+      <div className="slide-up" style={{background:'var(--surface)',width:'100%',
+        maxWidth:wide?640:480,borderRadius:'24px 24px 0 0',maxHeight:'92vh',
+        overflowY:'auto',boxShadow:'0 -8px 40px rgba(0,0,0,.2)'}}>
+        <div style={{position:'sticky',top:0,background:'var(--surface)',
+          borderBottom:'1px solid var(--border)',padding:'16px 20px',
+          display:'flex',alignItems:'center',gap:12,borderRadius:'24px 24px 0 0',zIndex:1}}>
+          <button onClick={onClose} style={{background:'var(--surface2)',border:'none',
+            borderRadius:20,padding:'8px 14px',cursor:'pointer',
+            display:'flex',alignItems:'center',gap:6,color:'var(--ocean)',fontWeight:600,fontSize:13}}>
+            <IBack size={16} color="var(--ocean)" /> Back
+          </button>
+          <h3 style={{flex:1,textAlign:'center',fontFamily:'Poppins,sans-serif',
+            fontWeight:700,fontSize:16,color:'var(--text)',paddingRight:60}}>{title}</h3>
+        </div>
+        <div style={{padding:20}}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function Confirm({title,msg,onOk,onCancel,okLabel='Delete',danger=true}){
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',
+      justifyContent:'center',padding:20,background:'rgba(0,0,0,.5)',backdropFilter:'blur(4px)'}}>
+      <div className="scale-in" style={{background:'var(--surface)',borderRadius:24,
+        padding:24,maxWidth:360,width:'100%',boxShadow:'var(--shadow-lg)'}}>
+        <h3 style={{fontFamily:'Poppins,sans-serif',fontWeight:700,marginBottom:8,color:'var(--text)'}}>{title}</h3>
+        <p style={{color:'var(--text2)',fontSize:14,marginBottom:24}}>{msg}</p>
+        <div style={{display:'flex',gap:12}}>
+          <button onClick={onCancel} style={{flex:1,padding:'12px',borderRadius:12,
+            border:'2px solid var(--border)',background:'transparent',
+            color:'var(--text)',fontWeight:600,cursor:'pointer'}}>Cancel</button>
+          <button onClick={onOk} style={{flex:1,padding:'12px',borderRadius:12,
+            border:'none',background:danger?'var(--grad-rose)':'var(--grad)',
+            color:'#fff',fontWeight:600,cursor:'pointer'}}>{okLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Toast({msg,type}){
+  const col={success:'#10B981',error:'#F43F5E',info:'#0EA5E9'}[type]||'#0EA5E9';
+  return(
+    <div className="fade-in" style={{position:'fixed',bottom:100,left:'50%',
+      transform:'translateX(-50%)',background:col,color:'#fff',
+      padding:'12px 20px',borderRadius:20,fontWeight:600,fontSize:14,
+      zIndex:999,boxShadow:'0 8px 24px rgba(0,0,0,.2)',whiteSpace:'nowrap'}}>
+      {msg}
+    </div>
+  );
+}
+
+function Spinner(){
+  return(
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:40}}>
+      <div style={{width:36,height:36,borderRadius:'50%',border:'3px solid var(--border)',
+        borderTopColor:'var(--ocean)',animation:'spin 0.8s linear infinite'}}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+
+function Empty({icon,title,subtitle}){
+  return(
+    <div style={{textAlign:'center',padding:'48px 20px'}}>
+      <div style={{fontSize:48,marginBottom:12}}>{icon}</div>
+      <p style={{fontWeight:700,fontSize:16,color:'var(--text)',marginBottom:6}}>{title}</p>
+      <p style={{color:'var(--muted)',fontSize:14}}>{subtitle}</p>
+    </div>
+  );
+}
+
+function StatCard({icon,label,value,color,gradient}){
+  return(
+    <Card style={{padding:20}}>
+      <div style={{width:44,height:44,borderRadius:14,
+        background:gradient||`${color}20`,
+        display:'flex',alignItems:'center',justifyContent:'center',marginBottom:12}}>
+        {icon}
+      </div>
+      <p style={{fontFamily:'Poppins,sans-serif',fontWeight:800,fontSize:26,
+        color:'var(--text)',lineHeight:1}}>{value}</p>
+      <p style={{fontSize:12,color:'var(--muted)',marginTop:4}}>{label}</p>
+    </Card>
+  );
+}
+
+// ─── Bottom Nav ─────────────────────────────────────────────────────────────
+const NAV=[
+  {id:'dashboard',label:'Home',Icon:IHome},
+  {id:'students',label:'Students',Icon:IUsers},
+  {id:'attendance',label:'Attendance',Icon:ICal},
+  {id:'achievements',label:'Trophies',Icon:ITrophy},
+  {id:'analytics',label:'Analytics',Icon:IChart},
+  {id:'profile',label:'Profile',Icon:IUser},
+];
+function BottomNav({tab,setTab}){
+  return(
+    <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:50,
+      background:'rgba(255,255,255,0.85)',backdropFilter:'blur(20px)',
+      WebkitBackdropFilter:'blur(20px)',borderTop:'1px solid var(--border)',
+      display:'flex',padding:'8px 0',paddingBottom:'max(8px,env(safe-area-inset-bottom))',
+      boxShadow:'0 -4px 20px rgba(0,0,0,.08)'}}>
+      {NAV.map(({id,label,Icon})=>{
+        const active=tab===id;
+        return(
+          <button key={id} onClick={()=>setTab(id)} style={{flex:1,border:'none',
+            background:'transparent',cursor:'pointer',display:'flex',flexDirection:'column',
+            alignItems:'center',gap:4,padding:'4px 0'}}>
+            <div style={{width:40,height:32,borderRadius:12,
+              background:active?'var(--grad)':'transparent',
+              display:'flex',alignItems:'center',justifyContent:'center',
+              transition:'all .2s',boxShadow:active?'0 4px 12px rgba(14,165,233,.4)':'none'}}>
+              <Icon size={18} color={active?'#fff':'var(--muted)'} />
+            </div>
+            <span style={{fontSize:10,fontWeight:active?700:500,
+              color:active?'var(--ocean)':'var(--muted)'}}>{label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Screen Header ───────────────────────────────────────────────────────────
+function Header({title,subtitle,right,onBack}){
+  return(
+    <div style={{position:'sticky',top:0,zIndex:40,
+      background:'rgba(255,255,255,0.85)',backdropFilter:'blur(20px)',
+      WebkitBackdropFilter:'blur(20px)',borderBottom:'1px solid var(--border)',
+      padding:'14px 20px',display:'flex',alignItems:'center',gap:12}}>
+      {onBack&&(
+        <button onClick={onBack} style={{background:'var(--surface2)',border:'none',
+          borderRadius:10,padding:'8px',cursor:'pointer',display:'flex'}}>
+          <IBack size={18} color="var(--ocean)" />
+        </button>
+      )}
+      <div style={{flex:1}}>
+        <p style={{fontFamily:'Poppins,sans-serif',fontWeight:800,fontSize:20,
+          color:'var(--text)',lineHeight:1.2}}>{title}</p>
+        {subtitle&&<p style={{fontSize:12,color:'var(--muted)',marginTop:2}}>{subtitle}</p>}
+      </div>
+      {right}
+    </div>
+  );
+}
+
+// ─── FAB ─────────────────────────────────────────────────────────────────────
+function FAB({onClick}){
+  return(
+    <button onClick={onClick} style={{position:'fixed',bottom:90,right:20,
+      width:56,height:56,borderRadius:'50%',background:'var(--grad)',
+      border:'none',cursor:'pointer',display:'flex',alignItems:'center',
+      justifyContent:'center',boxShadow:'0 8px 24px rgba(14,165,233,.5)',zIndex:45,
+      transition:'transform .2s'}}
+      onMouseEnter={e=>e.currentTarget.style.transform='scale(1.1)'}
+      onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}>
+      <IPlus size={24} color="#fff" />
+    </button>
+  );
+}
+
+// ─── Login Screen ────────────────────────────────────────────────────────────
+function LoginScreen({onLogin}){
+  const [email,setEmail]=React.useState('');
+  const [pw,setPw]=React.useState('');
+  const [showPw,setShowPw]=React.useState(false);
+  const [loading,setLoading]=React.useState(false);
+  const [err,setErr]=React.useState('');
+
+  async function handleSubmit(e){
+    e.preventDefault();
+    setLoading(true);setErr('');
+    const {data,error}=await sb.auth.signInWithPassword({email,password:pw});
+    setLoading(false);
+    if(error){setErr(error.message);return;}
+    onLogin(data.user);
+  }
+
+  return(
+    <div style={{minHeight:'100vh',background:'linear-gradient(160deg,#0EA5E9 0%,#2563EB 40%,#1E3A8A 100%)',
+      display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+      <div className="fade-up" style={{width:'100%',maxWidth:400}}>
+        {/* Logo */}
+        <div style={{textAlign:'center',marginBottom:36}}>
+          <div style={{width:80,height:80,borderRadius:24,background:'rgba(255,255,255,.2)',
+            backdropFilter:'blur(10px)',margin:'0 auto 16px',display:'flex',
+            alignItems:'center',justifyContent:'center',fontSize:40}}>🥋</div>
+          <h1 style={{fontFamily:'Poppins,sans-serif',fontWeight:800,fontSize:28,
+            color:'#fff',letterSpacing:'-0.5px'}}>Ananda College</h1>
+          <p style={{color:'rgba(255,255,255,.7)',fontSize:15,marginTop:4}}>Karate Management System</p>
+        </div>
+        {/* Card */}
+        <div style={{background:'rgba(255,255,255,.95)',backdropFilter:'blur(20px)',
+          borderRadius:28,padding:32,boxShadow:'0 24px 60px rgba(0,0,0,.3)'}}>
+          <h2 style={{fontFamily:'Poppins,sans-serif',fontWeight:700,fontSize:22,
+            marginBottom:8,color:'#0F172A'}}>Welcome back</h2>
+          <p style={{color:'#64748B',fontSize:14,marginBottom:24}}>Sign in to manage your dojo</p>
+          {err&&(
+            <div style={{background:'#FFE4E6',border:'1px solid #FECDD3',borderRadius:12,
+              padding:'10px 14px',marginBottom:16,color:'#BE123C',fontSize:13}}>
+              {err}
+            </div>
+          )}
+          <form onSubmit={handleSubmit}>
+            <div style={{marginBottom:16}}>
+              <label style={{display:'block',fontSize:13,fontWeight:600,color:'#475569',marginBottom:6}}>Email</label>
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required
+                placeholder="coach@example.com" autoComplete="email"
+                style={{width:'100%',padding:'13px 16px',borderRadius:12,
+                  border:'2px solid #E2E8F0',fontSize:15,outline:'none',
+                  background:'#F8FAFC',color:'#0F172A'}}
+                onFocus={e=>e.target.style.borderColor='#0EA5E9'}
+                onBlur={e=>e.target.style.borderColor='#E2E8F0'} />
+            </div>
+            <div style={{marginBottom:24,position:'relative'}}>
+              <label style={{display:'block',fontSize:13,fontWeight:600,color:'#475569',marginBottom:6}}>Password</label>
+              <input type={showPw?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} required
+                placeholder="••••••••" autoComplete="current-password"
+                style={{width:'100%',padding:'13px 48px 13px 16px',borderRadius:12,
+                  border:'2px solid #E2E8F0',fontSize:15,outline:'none',
+                  background:'#F8FAFC',color:'#0F172A'}}
+                onFocus={e=>e.target.style.borderColor='#0EA5E9'}
+                onBlur={e=>e.target.style.borderColor='#E2E8F0'} />
+              <button type="button" onClick={()=>setShowPw(!showPw)}
+                style={{position:'absolute',right:14,top:38,background:'none',border:'none',cursor:'pointer',color:'#94A3B8'}}>
+                {showPw?<IEyeOff size={18}/>:<IEye size={18}/>}
+              </button>
+            </div>
+            <button type="submit" disabled={loading}
+              style={{width:'100%',padding:'15px',borderRadius:14,border:'none',
+                background:'linear-gradient(135deg,#0EA5E9,#2563EB)',color:'#fff',
+                fontSize:16,fontWeight:700,cursor:'pointer',
+                boxShadow:'0 8px 20px rgba(14,165,233,.4)',
+                opacity:loading?.7:1,transition:'all .2s'}}>
+              {loading?'Signing in…':'Sign In'}
+            </button>
+          </form>
+          <p style={{textAlign:'center',marginTop:16,fontSize:12,color:'#94A3B8'}}>
+            Ananda College Karate Club © {new Date().getFullYear()}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard Screen ────────────────────────────────────────────────────────
+function DashboardScreen({students,attendance,achievements,user}){
+  const totalStudents=students.length;
+  const today=todayISO();
+  const todayAtt=attendance.filter(a=>a.date===today);
+  const presentToday=todayAtt.filter(a=>a.status==='present'||a.status==='late').length;
+  const totalAch=achievements.length;
+  const avgRate=students.length
+    ? Math.round(students.reduce((s,st)=>s+statsFor(st.id,attendance).rate,0)/students.length)
+    : 0;
+
+  const recent=students.slice().sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||'')).slice(0,5);
+  const topStudents=students.map(s=>({...s,rate:statsFor(s.id,attendance).rate}))
+    .sort((a,b)=>b.rate-a.rate).slice(0,3);
+
+  const name=user?.email?.split('@')[0]||'Coach';
+
+  return(
+    <div style={{paddingBottom:100}}>
+      <Header title={`Hello, ${name} 👋`} subtitle="Here's your dojo at a glance"
+        right={<div style={{width:40,height:40,borderRadius:12,background:'var(--grad)',
+          display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <IBell size={18} color="#fff"/></div>} />
+      <div style={{padding:'20px 16px 0'}}>
+        {/* Hero card */}
+        <div className="fade-up" style={{background:'var(--grad)',borderRadius:24,padding:24,
+          marginBottom:20,position:'relative',overflow:'hidden',
+          boxShadow:'0 12px 32px rgba(14,165,233,.35)'}}>
+          <div style={{position:'absolute',top:-20,right:-20,width:120,height:120,
+            borderRadius:'50%',background:'rgba(255,255,255,.1)'}}/>
+          <div style={{position:'absolute',bottom:-30,right:40,width:80,height:80,
+            borderRadius:'50%',background:'rgba(255,255,255,.07)'}}/>
+          <p style={{color:'rgba(255,255,255,.8)',fontSize:13,fontWeight:600,marginBottom:4}}>ANANDA COLLEGE KARATE</p>
+          <p style={{fontFamily:'Poppins,sans-serif',fontWeight:800,fontSize:28,
+            color:'#fff',lineHeight:1.1}}>Ready to train?</p>
+          <p style={{color:'rgba(255,255,255,.7)',fontSize:14,marginTop:6}}>
+            {presentToday} students marked today
+          </p>
+          <div style={{marginTop:16,background:'rgba(255,255,255,.2)',borderRadius:12,
+            padding:'10px 14px',display:'inline-flex',gap:4,alignItems:'center'}}>
+            <IShield size={14} color="#fff"/>
+            <span style={{color:'#fff',fontSize:13,fontWeight:600}}>
+              {avgRate}% avg attendance
+            </span>
+          </div>
+        </div>
+
+        {/* Stats grid */}
+        <div className="fade-up" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:20}}>
+          <StatCard icon={<IUsers size={22} color="#0EA5E9"/>} label="Total Students"
+            value={totalStudents} color="#0EA5E9" />
+          <StatCard icon={<ICheck size={22} color="#10B981"/>} label="Present Today"
+            value={presentToday} color="#10B981" />
+          <StatCard icon={<ITrophy size={22} color="#F59E0B"/>} label="Achievements"
+            value={totalAch} color="#F59E0B" />
+          <StatCard icon={<IChart size={22} color="#8B5CF6"/>} label="Avg Attendance"
+            value={`${avgRate}%`} color="#8B5CF6" />
+        </div>
+
+        {/* Top performers */}
+        {topStudents.length>0&&(
+          <Card className="fade-up" style={{marginBottom:20}}>
+            <div style={{padding:'16px 20px 12px',borderBottom:'1px solid var(--border)'}}>
+              <p style={{fontFamily:'Poppins,sans-serif',fontWeight:700,fontSize:16,color:'var(--text)'}}>
+                🏆 Top Performers
+              </p>
+            </div>
+            {topStudents.map((s,i)=>(
+              <div key={s.id} style={{display:'flex',alignItems:'center',gap:14,
+                padding:'12px 20px',borderBottom:i<topStudents.length-1?'1px solid var(--border)':'none'}}>
+                <div style={{width:28,height:28,borderRadius:'50%',
+                  background:['var(--grad-amber)','#6B728020','#92400E20'][i],
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontWeight:700,fontSize:13,color:['#D97706','#6B7280','#92400E'][i]}}>
+                  {i+1}
+                </div>
+                <Avatar name={displayName(s)} size={38}/>
+                <div style={{flex:1}}>
+                  <p style={{fontWeight:600,fontSize:14,color:'var(--text)'}}>{displayName(s)}</p>
+                  <BeltBadge belt={s.belt} small/>
+                </div>
+                <div style={{background:'var(--emerald-light)',borderRadius:10,
+                  padding:'4px 10px',color:'var(--emerald)',fontWeight:700,fontSize:13}}>
+                  {s.rate}%
+                </div>
+              </div>
+            ))}
+          </Card>
+        )}
+
+        {/* Recent students */}
+        {recent.length>0&&(
+          <Card className="fade-up">
+            <div style={{padding:'16px 20px 12px',borderBottom:'1px solid var(--border)'}}>
+              <p style={{fontFamily:'Poppins,sans-serif',fontWeight:700,fontSize:16,color:'var(--text)'}}>
+                🆕 Recently Added
+              </p>
+            </div>
+            {recent.map((s,i)=>(
+              <div key={s.id} style={{display:'flex',alignItems:'center',gap:14,
+                padding:'12px 20px',borderBottom:i<recent.length-1?'1px solid var(--border)':'none'}}>
+                <Avatar name={displayName(s)} size={40}/>
+                <div style={{flex:1}}>
+                  <p style={{fontWeight:600,fontSize:14,color:'var(--text)'}}>{displayName(s)}</p>
+                  <p style={{color:'var(--muted)',fontSize:12}}>{s.admission_id||'—'}</p>
+                </div>
+                <BeltBadge belt={s.belt} small/>
+              </div>
+            ))}
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Students Screen ─────────────────────────────────────────────────────────
+function StudentForm({student,onSave,onClose,loading}){
+  const [form,setForm]=React.useState({
+    name:student?.name||'',
+    full_name:student?.full_name||'',
+    belt:student?.belt||'White (10th Kyu)',
+    date_of_birth:student?.date_of_birth||'',
+    contact_number:student?.contact_number||'',
+    parent_contact:student?.parent_contact||'',
+    address:student?.address||'',
+    school_year:student?.school_year||'',
+    admission_id:student?.admission_id||'',
+    notes:student?.notes||'',
+  });
+  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+  return(
+    <form onSubmit={e=>{e.preventDefault();onSave(form);}}>
+      <Input label="Name (Display)" value={form.name} onChange={e=>set('name',e.target.value)} required placeholder="Short name" />
+      <Input label="Full Name" value={form.full_name} onChange={e=>set('full_name',e.target.value)} placeholder="Legal full name" />
+      <Select label="Belt Rank" value={form.belt} onChange={e=>set('belt',e.target.value)}>
+        {BELTS.map(b=><option key={b}>{b}</option>)}
+      </Select>
+      <Input label="Admission ID" value={form.admission_id} onChange={e=>set('admission_id',e.target.value)} placeholder="ACK-2025-001" />
+      <Input label="Date of Birth" type="date" value={form.date_of_birth} onChange={e=>set('date_of_birth',e.target.value)} />
+      <Input label="Contact Number" type="tel" value={form.contact_number} onChange={e=>set('contact_number',e.target.value)} placeholder="+94 77 000 0000" />
+      <Input label="Parent Contact" type="tel" value={form.parent_contact} onChange={e=>set('parent_contact',e.target.value)} placeholder="+94 77 000 0001" />
+      <Input label="School Year / Grade" value={form.school_year} onChange={e=>set('school_year',e.target.value)} placeholder="Grade 10" />
+      <Input label="Address" value={form.address} onChange={e=>set('address',e.target.value)} placeholder="Optional" />
+      <div style={{marginBottom:16}}>
+        <label style={{display:'block',fontSize:13,fontWeight:600,color:'var(--text2)',marginBottom:6}}>Notes</label>
+        <textarea value={form.notes} onChange={e=>set('notes',e.target.value)}
+          rows={3} placeholder="Any additional notes…"
+          style={{width:'100%',padding:'12px 16px',borderRadius:12,border:'2px solid var(--border)',
+            background:'var(--surface2)',color:'var(--text)',fontSize:14,outline:'none',resize:'vertical'}}/>
+      </div>
+      <Btn type="submit" disabled={loading||!form.name} style={{width:'100%'}}>
+        {loading?'Saving…':student?'Update Student':'Add Student'}
+      </Btn>
+    </form>
+  );
+}
+
+function StudentsScreen({students,attendance,onAdd,onEdit,onDelete}){
+  const [search,setSearch]=React.useState('');
+  const [belt,setBelt]=React.useState('All');
+  const [showForm,setShowForm]=React.useState(false);
+  const [editing,setEditing]=React.useState(null);
+  const [confirm,setConfirm]=React.useState(null);
+  const [saving,setSaving]=React.useState(false);
+
+  const filtered=students.filter(s=>{
+    const n=displayName(s).toLowerCase();
+    const q=search.toLowerCase();
+    return(q===''||n.includes(q)||s.admission_id?.toLowerCase().includes(q))
+      &&(belt==='All'||s.belt===belt);
+  });
+
+  async function handleSave(form){
+    setSaving(true);
+    if(editing){await onEdit(editing.id,form);}else{await onAdd(form);}
+    setSaving(false);setShowForm(false);setEditing(null);
+  }
+
+  const beltColors=['#0EA5E9','#10B981','#8B5CF6','#F59E0B','#F43F5E','#94A3B8'];
+
+  return(
+    <div style={{paddingBottom:100}}>
+      <Header title="Students" subtitle={`${students.length} members`}
+        right={<button onClick={()=>{setEditing(null);setShowForm(true);}}
+          style={{background:'var(--grad)',border:'none',borderRadius:12,padding:'8px 14px',
+            color:'#fff',fontWeight:600,fontSize:13,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+          <IPlus size={16} color="#fff"/>Add
+        </button>} />
+
+      <div style={{padding:'16px 16px 0'}}>
+        {/* Search */}
+        <div style={{position:'relative',marginBottom:12}}>
+          <ISearch size={16} color="var(--muted)" style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)'}}/>
+          <input value={search} onChange={e=>setSearch(e.target.value)}
+            placeholder="Search by name or ID…"
+            style={{width:'100%',padding:'12px 16px 12px 42px',borderRadius:14,
+              border:'2px solid var(--border)',background:'var(--surface)',
+              fontSize:14,outline:'none',color:'var(--text)'}}
+            onFocus={e=>e.target.style.borderColor='var(--ocean)'}
+            onBlur={e=>e.target.style.borderColor='var(--border)'} />
+        </div>
+        {/* Belt filter */}
+        <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:12,marginBottom:4}}>
+          {['All',...BELTS].map((b,i)=>{
+            const active=belt===b;
+            const s=b==='All'?null:beltStyle(b);
+            return(
+              <button key={b} onClick={()=>setBelt(b)}
+                style={{flexShrink:0,padding:'6px 14px',borderRadius:20,border:'none',cursor:'pointer',
+                  fontSize:12,fontWeight:600,transition:'all .2s',
+                  background:active?(s?s.bg:'var(--grad)'):'var(--surface)',
+                  color:active?(s?s.fg:'#fff'):'var(--text2)',
+                  boxShadow:active?'0 3px 10px rgba(0,0,0,.15)':'none'}}>
+                {b==='All'?'All':b.split(' ')[0]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{padding:'4px 16px'}}>
+        {filtered.length===0&&<Empty icon="🥋" title="No students found" subtitle="Try adjusting your search or filters"/>}
+        {filtered.map((s,i)=>{
+          const st=statsFor(s.id,attendance);
+          return(
+            <div key={s.id} className="fade-up" style={{animationDelay:`${i*.04}s`}}>
+              <Card style={{marginBottom:12,padding:0,overflow:'hidden'}}>
+                <div style={{display:'flex',alignItems:'center',gap:14,padding:'14px 16px'}}>
+                  <Avatar name={displayName(s)} size={48} color={`hsl(${(s.id||'').charCodeAt(0)*47%360},60%,55%)`}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontWeight:700,fontSize:15,color:'var(--text)',marginBottom:2}}>{displayName(s)}</p>
+                    <p style={{fontSize:12,color:'var(--muted)',marginBottom:6}}>{s.admission_id||'No ID'} · {s.school_year||'—'}</p>
+                    <BeltBadge belt={s.belt} small/>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontFamily:'Poppins,sans-serif',fontWeight:800,fontSize:18,
+                      color:st.rate>=80?'#10B981':st.rate>=60?'#F59E0B':'#F43F5E'}}>
+                      {st.rate}%
+                    </div>
+                    <div style={{fontSize:11,color:'var(--muted)'}}>attendance</div>
+                  </div>
+                </div>
+                <div style={{display:'flex',borderTop:'1px solid var(--border)'}}>
+                  <button onClick={()=>{setEditing(s);setShowForm(true);}}
+                    style={{flex:1,padding:'10px',border:'none',background:'transparent',
+                      cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
+                      gap:6,fontSize:13,fontWeight:600,color:'var(--ocean)'}}>
+                    <IEdit size={14} color="var(--ocean)"/>Edit
+                  </button>
+                  <div style={{width:1,background:'var(--border)'}}/>
+                  <button onClick={()=>setConfirm(s)}
+                    style={{flex:1,padding:'10px',border:'none',background:'transparent',
+                      cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
+                      gap:6,fontSize:13,fontWeight:600,color:'#F43F5E'}}>
+                    <ITrash size={14} color="#F43F5E"/>Delete
+                  </button>
+                </div>
+              </Card>
+            </div>
+          );
+        })}
+      </div>
+
+      {showForm&&(
+        <Modal title={editing?'Edit Student':'New Student'} onClose={()=>{setShowForm(false);setEditing(null);}}>
+          <StudentForm student={editing} onSave={handleSave} onClose={()=>{setShowForm(false);setEditing(null);}} loading={saving}/>
+        </Modal>
+      )}
+      {confirm&&(
+        <Confirm title="Delete Student?" msg={`Remove ${displayName(confirm)} from the roster? This cannot be undone.`}
+          onOk={async()=>{await onDelete(confirm.id);setConfirm(null);}} onCancel={()=>setConfirm(null)} />
+      )}
+    </div>
+  );
+}
+
+// ─── Attendance Screen ───────────────────────────────────────────────────────
+const STATUS_CFG={
+  present:{label:'Present',bg:'#D1FAE5',fg:'#065F46',icon:'✓'},
+  late:{label:'Late',bg:'#FEF3C7',fg:'#92400E',icon:'⏰'},
+  absent:{label:'Absent',bg:'#FFE4E6',fg:'#9F1239',icon:'✗'},
+};
+
+function AttendanceScreen({students,attendance,onMark}){
+  const [date,setDate]=React.useState(todayISO());
+  const [saving,setSaving]=React.useState({});
+  const [search,setSearch]=React.useState('');
+
+  const dayRecs=attendance.filter(a=>a.date===date);
+  const getStatus=sid=>dayRecs.find(a=>a.student_id===sid)?.status||null;
+
+  const filtered=students.filter(s=>
+    search===''||displayName(s).toLowerCase().includes(search.toLowerCase()));
+
+  async function mark(sid,status){
+    setSaving(p=>({...p,[sid]:true}));
+    await onMark(sid,date,status);
+    setSaving(p=>({...p,[sid]:false}));
+  }
+
+  const summary={
+    present:dayRecs.filter(a=>a.status==='present').length,
+    late:dayRecs.filter(a=>a.status==='late').length,
+    absent:dayRecs.filter(a=>a.status==='absent').length,
+  };
+
+  return(
+    <div style={{paddingBottom:100}}>
+      <Header title="Attendance" subtitle="Mark daily attendance" />
+      <div style={{padding:'16px 16px 0'}}>
+        {/* Date picker */}
+        <Card style={{padding:16,marginBottom:16}}>
+          <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+            <ICal size={18} color="var(--ocean)"/>
+            <input type="date" value={date} onChange={e=>setDate(e.target.value)}
+              style={{border:'2px solid var(--border)',borderRadius:12,padding:'8px 14px',
+                fontSize:14,background:'var(--surface2)',color:'var(--text)',outline:'none',flex:1}}
+              onFocus={e=>e.target.style.borderColor='var(--ocean)'}
+              onBlur={e=>e.target.style.borderColor='var(--border)'} />
+            <button onClick={()=>setDate(todayISO())}
+              style={{padding:'8px 16px',borderRadius:12,background:'var(--ocean-light)',
+                border:'none',color:'var(--ocean)',fontWeight:600,fontSize:13,cursor:'pointer'}}>
+              Today
+            </button>
+          </div>
+          {/* Summary pills */}
+          <div style={{display:'flex',gap:8,marginTop:12}}>
+            {Object.entries(summary).map(([k,v])=>{
+              const c=STATUS_CFG[k];
+              return(
+                <div key={k} style={{flex:1,background:c.bg,borderRadius:12,
+                  padding:'8px 10px',textAlign:'center'}}>
+                  <p style={{fontWeight:800,fontSize:18,color:c.fg}}>{v}</p>
+                  <p style={{fontSize:11,color:c.fg,opacity:.8}}>{c.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Search */}
+        <div style={{position:'relative',marginBottom:12}}>
+          <ISearch size={16} color="var(--muted)" style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)'}}/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Filter students…"
+            style={{width:'100%',padding:'10px 16px 10px 42px',borderRadius:12,
+              border:'2px solid var(--border)',background:'var(--surface)',
+              fontSize:14,outline:'none',color:'var(--text)'}}
+            onFocus={e=>e.target.style.borderColor='var(--ocean)'}
+            onBlur={e=>e.target.style.borderColor='var(--border)'} />
+        </div>
+
+        {/* Student list */}
+        {filtered.length===0&&<Empty icon="🔍" title="No students" subtitle="Add students first"/>}
+        {filtered.map((s,i)=>{
+          const status=getStatus(s.id);
+          const isSaving=saving[s.id];
+          return(
+            <Card key={s.id} className="fade-up" style={{marginBottom:10,padding:'12px 14px',
+              animationDelay:`${i*.03}s`}}>
+              <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:10}}>
+                <Avatar name={displayName(s)} size={40}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{fontWeight:600,fontSize:14,color:'var(--text)'}}>{displayName(s)}</p>
+                  <p style={{fontSize:11,color:'var(--muted)'}}>{s.belt?.split(' ')[0]} Belt</p>
+                </div>
+                {status&&(
+                  <div style={{background:STATUS_CFG[status].bg,borderRadius:10,
+                    padding:'4px 10px',color:STATUS_CFG[status].fg,fontSize:12,fontWeight:700}}>
+                    {STATUS_CFG[status].label}
+                  </div>
+                )}
+              </div>
+              <div style={{display:'flex',gap:8}}>
+                {['present','late','absent'].map(st=>{
+                  const c=STATUS_CFG[st];
+                  const active=status===st;
+                  return(
+                    <button key={st} onClick={()=>mark(s.id,st)} disabled={isSaving}
+                      style={{flex:1,padding:'9px 6px',borderRadius:10,border:'none',cursor:'pointer',
+                        fontSize:12,fontWeight:700,transition:'all .15s',
+                        background:active?c.bg:'var(--surface2)',
+                        color:active?c.fg:'var(--muted)',
+                        boxShadow:active?`0 3px 8px ${c.bg}`:'none',
+                        transform:active?'scale(1.03)':'scale(1)'}}>
+                      {c.icon} {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Achievements Screen ─────────────────────────────────────────────────────
+function AchievementForm({ach,students,onSave,onClose,loading}){
+  const [form,setForm]=React.useState({
+    student_id:ach?.student_id||students[0]?.id||'',
+    title:ach?.title||'',
+    tournament:ach?.tournament||'',
+    event_type:ach?.event_type||'Kata',
+    level:ach?.level||'School',
+    placement:ach?.placement||'Gold',
+    date:ach?.date||todayISO(),
+    notes:ach?.notes||'',
+  });
+  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+  return(
+    <form onSubmit={e=>{e.preventDefault();onSave(form);}}>
+      <Select label="Student" value={form.student_id} onChange={e=>set('student_id',e.target.value)}>
+        {students.map(s=><option key={s.id} value={s.id}>{displayName(s)}</option>)}
+      </Select>
+      <Input label="Achievement Title" value={form.title} onChange={e=>set('title',e.target.value)} required placeholder="e.g. Gold Medal – Kata" />
+      <Input label="Tournament / Event" value={form.tournament} onChange={e=>set('tournament',e.target.value)} placeholder="e.g. National Schools 2025" />
+      <Select label="Event Type" value={form.event_type} onChange={e=>set('event_type',e.target.value)}>
+        {['Kata','Kumite','Team Kata','Team Kumite','Other'].map(t=><option key={t}>{t}</option>)}
+      </Select>
+      <Select label="Competition Level" value={form.level} onChange={e=>set('level',e.target.value)}>
+        {LEVELS.map(l=><option key={l}>{l}</option>)}
+      </Select>
+      <Select label="Placement" value={form.placement} onChange={e=>set('placement',e.target.value)}>
+        {PLACEMENTS.map(p=><option key={p}>{p}</option>)}
+      </Select>
+      <Input label="Date" type="date" value={form.date} onChange={e=>set('date',e.target.value)} />
+      <div style={{marginBottom:16}}>
+        <label style={{display:'block',fontSize:13,fontWeight:600,color:'var(--text2)',marginBottom:6}}>Notes</label>
+        <textarea value={form.notes} onChange={e=>set('notes',e.target.value)}
+          rows={2} placeholder="Optional notes…"
+          style={{width:'100%',padding:'12px 16px',borderRadius:12,border:'2px solid var(--border)',
+            background:'var(--surface2)',color:'var(--text)',fontSize:14,outline:'none',resize:'vertical'}}/>
+      </div>
+      <Btn type="submit" disabled={loading||!form.title} style={{width:'100%'}}>
+        {loading?'Saving…':ach?'Update Achievement':'Add Achievement'}
+      </Btn>
+    </form>
+  );
+}
+
+function AchievementsScreen({achievements,students,onAdd,onEdit,onDelete}){
+  const [showForm,setShowForm]=React.useState(false);
+  const [editing,setEditing]=React.useState(null);
+  const [confirm,setConfirm]=React.useState(null);
+  const [search,setSearch]=React.useState('');
+  const [level,setLevel]=React.useState('All');
+  const [saving,setSaving]=React.useState(false);
+
+  const filtered=achievements.filter(a=>{
+    const st=students.find(s=>s.id===a.student_id);
+    const n=(displayName(st)+' '+a.title+' '+(a.tournament||'')).toLowerCase();
+    return(search===''||n.includes(search.toLowerCase()))
+      &&(level==='All'||a.level===level);
+  }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  async function handleSave(form){
+    setSaving(true);
+    if(editing){await onEdit(editing.id,form);}else{await onAdd(form);}
+    setSaving(false);setShowForm(false);setEditing(null);
+  }
+
+  const placementMedal={Gold:'🥇',Silver:'🥈',Bronze:'🥉','Best 8':'🏅',Participant:'🎖️','Did Not Participate':'—'};
+
+  return(
+    <div style={{paddingBottom:100}}>
+      <Header title="Achievements" subtitle={`${achievements.length} records`}
+        right={<button onClick={()=>{setEditing(null);setShowForm(true);}}
+          style={{background:'var(--grad-amber)',border:'none',borderRadius:12,padding:'8px 14px',
+            color:'#fff',fontWeight:600,fontSize:13,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+          <IPlus size={16} color="#fff"/>Add
+        </button>} />
+
+      <div style={{padding:'16px 16px 0'}}>
+        <div style={{position:'relative',marginBottom:12}}>
+          <ISearch size={16} color="var(--muted)" style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)'}}/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search achievements…"
+            style={{width:'100%',padding:'10px 16px 10px 42px',borderRadius:12,
+              border:'2px solid var(--border)',background:'var(--surface)',
+              fontSize:14,outline:'none',color:'var(--text)'}}
+            onFocus={e=>e.target.style.borderColor='var(--ocean)'}
+            onBlur={e=>e.target.style.borderColor='var(--border)'} />
+        </div>
+        {/* Level filter */}
+        <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:12}}>
+          {['All',...LEVELS].map(l=>{
+            const active=level===l;
+            const col=LEVEL_COLOR[l]||'var(--ocean)';
+            return(
+              <button key={l} onClick={()=>setLevel(l)}
+                style={{flexShrink:0,padding:'6px 14px',borderRadius:20,border:'none',cursor:'pointer',
+                  fontSize:12,fontWeight:600,transition:'all .2s',
+                  background:active?col:'var(--surface)',color:active?'#fff':'var(--text2)',
+                  boxShadow:active?`0 3px 10px ${col}40`:'none'}}>
+                {l}
+              </button>
+            );
+          })}
+        </div>
+
+        {filtered.length===0&&<Empty icon="🏆" title="No achievements yet" subtitle="Add the first one!"/>}
+        {filtered.map((a,i)=>{
+          const st=students.find(s=>s.id===a.student_id);
+          const pc=PLACE_COLOR[a.placement]||'#94A3B8';
+          const lc=LEVEL_COLOR[a.level]||'#94A3B8';
+          return(
+            <Card key={a.id} className="fade-up" style={{marginBottom:12,padding:0,
+              animationDelay:`${i*.04}s`}}>
+              <div style={{display:'flex',gap:14,padding:'14px 16px',alignItems:'flex-start'}}>
+                <div style={{width:50,height:50,borderRadius:16,
+                  background:`${pc}20`,display:'flex',alignItems:'center',
+                  justifyContent:'center',fontSize:24,flexShrink:0}}>
+                  {placementMedal[a.placement]||'🎖️'}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{fontWeight:700,fontSize:15,color:'var(--text)',marginBottom:2}}>{a.title}</p>
+                  {a.tournament&&<p style={{fontSize:12,color:'var(--muted)',marginBottom:6}}>{a.tournament}</p>}
+                  <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
+                    <span style={{background:`${lc}20`,color:lc,borderRadius:8,
+                      padding:'2px 8px',fontSize:11,fontWeight:700}}>{a.level}</span>
+                    <span style={{background:`${pc}20`,color:pc,borderRadius:8,
+                      padding:'2px 8px',fontSize:11,fontWeight:700}}>{a.placement}</span>
+                    {a.event_type&&<span style={{background:'var(--surface2)',borderRadius:8,
+                      padding:'2px 8px',fontSize:11,color:'var(--text2)'}}>{a.event_type}</span>}
+                  </div>
+                  {st&&(
+                    <div style={{display:'flex',alignItems:'center',gap:6}}>
+                      <Avatar name={displayName(st)} size={20}/>
+                      <span style={{fontSize:12,color:'var(--muted)'}}>{displayName(st)}</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{textAlign:'right',flexShrink:0}}>
+                  <p style={{fontSize:11,color:'var(--muted)',marginBottom:8}}>
+                    {a.date?new Date(a.date+'T00:00:00').toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}):'—'}
+                  </p>
+                  <div style={{display:'flex',gap:6}}>
+                    <button onClick={()=>{setEditing(a);setShowForm(true);}}
+                      style={{background:'var(--ocean-light)',border:'none',borderRadius:8,
+                        padding:'6px',cursor:'pointer',display:'flex'}}>
+                      <IEdit size={14} color="var(--ocean)"/>
+                    </button>
+                    <button onClick={()=>setConfirm(a)}
+                      style={{background:'#FFE4E6',border:'none',borderRadius:8,
+                        padding:'6px',cursor:'pointer',display:'flex'}}>
+                      <ITrash size={14} color="#F43F5E"/>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {showForm&&(
+        <Modal title={editing?'Edit Achievement':'New Achievement'} onClose={()=>{setShowForm(false);setEditing(null);}}>
+          <AchievementForm ach={editing} students={students} onSave={handleSave} loading={saving}/>
+        </Modal>
+      )}
+      {confirm&&(
+        <Confirm title="Delete Achievement?" msg={`Remove "${confirm.title}"? This cannot be undone.`}
+          onOk={async()=>{await onDelete(confirm.id);setConfirm(null);}} onCancel={()=>setConfirm(null)}/>
+      )}
+    </div>
+  );
+}
+
+// ─── Analytics Screen ────────────────────────────────────────────────────────
+function SimpleBarChart({data,max=100}){
+  if(!data||data.length===0) return null;
+  return(
+    <div style={{display:'flex',alignItems:'flex-end',gap:6,height:120,padding:'0 4px'}}>
+      {data.map((d,i)=>{
+        const h=max>0?Math.max(4,(d.rate/max)*100):4;
+        const col=d.rate>=80?'#10B981':d.rate>=60?'#0EA5E9':'#F59E0B';
+        return(
+          <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+            <span style={{fontSize:9,color:'var(--muted)',fontWeight:600}}>{d.rate}%</span>
+            <div style={{width:'100%',height:`${h}%`,background:col,borderRadius:'6px 6px 0 0',
+              minHeight:4,transition:'height .4s ease'}}/>
+            <span style={{fontSize:9,color:'var(--muted)',textAlign:'center',
+              transform:'rotate(-35deg)',transformOrigin:'top center',marginTop:2}}>{d.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function AnalyticsScreen({students,attendance,achievements}){
+  const [granularity,setGranularity]=React.useState('monthly');
+
+  function getSeries(){
+    const now=new Date();
+    if(granularity==='weekly'){
+      const days=[];
+      for(let i=6;i>=0;i--){
+        const d=new Date(now);d.setDate(d.getDate()-i);
+        const iso=ymd(d);
+        const recs=attendance.filter(a=>a.date===iso);
+        const p=recs.filter(r=>r.status==='present').length;
+        const la=recs.filter(r=>r.status==='late').length;
+        days.push({label:d.toLocaleDateString('en-US',{weekday:'short'}),
+          rate:recs.length?Math.round(((p+la*.5)/recs.length)*100):0});
+      }
+      return days;
+    }
+    if(granularity==='yearly'){
+      const byY={};
+      attendance.forEach(r=>{const y=r.date.slice(0,4);byY[y]=byY[y]||{p:0,t:0};byY[y].t++;if(r.status==='present')byY[y].p++;});
+      return Object.entries(byY).sort((a,b)=>a[0].localeCompare(b[0])).slice(-5)
+        .map(([y,v])=>({label:y,rate:v.t?Math.round((v.p/v.t)*100):0}));
+    }
+    const byM={};
+    attendance.forEach(r=>{const m=r.date.slice(0,7);byM[m]=byM[m]||{p:0,la:0,t:0};byM[m].t++;
+      if(r.status==='present')byM[m].p++;if(r.status==='late')byM[m].la++;});
+    return Object.entries(byM).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6)
+      .map(([m,v])=>({label:m.slice(5),rate:v.t?Math.round(((v.p+v.la*.5)/v.t)*100):0}));
+  }
+
+  const series=getSeries();
+  const allBreakdown={
+    present:attendance.filter(a=>a.status==='present').length,
+    late:attendance.filter(a=>a.status==='late').length,
+    absent:attendance.filter(a=>a.status==='absent').length,
+    total:attendance.length,
+  };
+  allBreakdown.rate=allBreakdown.total
+    ?Math.round(((allBreakdown.present+allBreakdown.late*.5)/allBreakdown.total)*100):0;
+
+  const beltDist={};
+  students.forEach(s=>{const k=(s.belt||'White').split(' ')[0];beltDist[k]=(beltDist[k]||0)+1;});
+  const beltData=Object.entries(beltDist).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  const levelDist={};
+  achievements.forEach(a=>{levelDist[a.level]=(levelDist[a.level]||0)+1;});
+
+  return(
+    <div style={{paddingBottom:100}}>
+      <Header title="Analytics" subtitle="Club performance overview"/>
+      <div style={{padding:'16px 16px 0'}}>
+
+        {/* Overview cards */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
+          {[
+            {label:'Overall',value:`${allBreakdown.rate}%`,color:'#0EA5E9'},
+            {label:'Sessions',value:new Set(attendance.map(a=>a.date)).size,color:'#8B5CF6'},
+            {label:'Medals',value:achievements.filter(a=>['Gold','Silver','Bronze'].includes(a.placement)).length,color:'#F59E0B'},
+          ].map(x=>(
+            <Card key={x.label} style={{padding:'14px 10px',textAlign:'center'}}>
+              <p style={{fontFamily:'Poppins,sans-serif',fontWeight:800,fontSize:22,color:x.color}}>{x.value}</p>
+              <p style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{x.label}</p>
+            </Card>
+          ))}
+        </div>
+
+        {/* Attendance trend */}
+        <Card className="fade-up" style={{marginBottom:16,padding:0,overflow:'hidden'}}>
+          <div style={{padding:'16px 20px 12px',borderBottom:'1px solid var(--border)',
+            display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <p style={{fontFamily:'Poppins,sans-serif',fontWeight:700,fontSize:15,color:'var(--text)'}}>
+              📈 Attendance Trend
+            </p>
+            <div style={{display:'flex',gap:6}}>
+              {['weekly','monthly','yearly'].map(g=>(
+                <button key={g} onClick={()=>setGranularity(g)}
+                  style={{padding:'4px 10px',borderRadius:10,border:'none',cursor:'pointer',fontSize:11,
+                    fontWeight:600,background:granularity===g?'var(--ocean)':'var(--surface2)',
+                    color:granularity===g?'#fff':'var(--text2)'}}>
+                  {g[0].toUpperCase()+g.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{padding:'16px 16px 28px'}}>
+            <SimpleBarChart data={series}/>
+          </div>
+        </Card>
+
+        {/* Attendance breakdown */}
+        <Card className="fade-up" style={{marginBottom:16,padding:16}}>
+          <p style={{fontFamily:'Poppins,sans-serif',fontWeight:700,fontSize:15,color:'var(--text)',marginBottom:14}}>
+            📊 All-Time Breakdown
+          </p>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {[
+              {label:'Present',value:allBreakdown.present,color:'#10B981',bg:'#D1FAE5'},
+              {label:'Late',value:allBreakdown.late,color:'#F59E0B',bg:'#FEF3C7'},
+              {label:'Absent',value:allBreakdown.absent,color:'#F43F5E',bg:'#FFE4E6'},
+            ].map(x=>{
+              const pct=allBreakdown.total?Math.round((x.value/allBreakdown.total)*100):0;
+              return(
+                <div key={x.label}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                    <span style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{x.label}</span>
+                    <span style={{fontSize:13,fontWeight:700,color:x.color}}>{x.value} ({pct}%)</span>
+                  </div>
+                  <div style={{height:8,borderRadius:10,background:'var(--surface2)',overflow:'hidden'}}>
+                    <div style={{height:'100%',width:`${pct}%`,background:x.color,borderRadius:10,
+                      transition:'width .6s ease'}}/>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Belt distribution */}
+        {beltData.length>0&&(
+          <Card className="fade-up" style={{marginBottom:16,padding:16}}>
+            <p style={{fontFamily:'Poppins,sans-serif',fontWeight:700,fontSize:15,color:'var(--text)',marginBottom:14}}>
+              🥋 Belt Distribution
+            </p>
+            {beltData.map(([b,count])=>{
+              const s=beltStyle(b+' Kyu');
+              const pct=students.length?Math.round((count/students.length)*100):0;
+              return(
+                <div key={b} style={{marginBottom:10}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                    <span style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{b}</span>
+                    <span style={{fontSize:13,fontWeight:700,color:s.fg==='#fff'?s.bg:s.fg}}>{count}</span>
+                  </div>
+                  <div style={{height:8,borderRadius:10,background:'var(--surface2)',overflow:'hidden'}}>
+                    <div style={{height:'100%',width:`${pct}%`,background:s.bg,borderRadius:10}}/>
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+        )}
+
+        {/* Achievement levels */}
+        {Object.keys(levelDist).length>0&&(
+          <Card className="fade-up" style={{padding:16}}>
+            <p style={{fontFamily:'Poppins,sans-serif',fontWeight:700,fontSize:15,color:'var(--text)',marginBottom:14}}>
+              🏅 Achievement Levels
+            </p>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              {Object.entries(levelDist).map(([l,c])=>(
+                <div key={l} style={{background:`${LEVEL_COLOR[l]||'#94A3B8'}20`,
+                  borderRadius:12,padding:'10px 16px',textAlign:'center',flex:1,minWidth:80}}>
+                  <p style={{fontWeight:800,fontSize:20,color:LEVEL_COLOR[l]||'#94A3B8'}}>{c}</p>
+                  <p style={{fontSize:11,color:'var(--muted)'}}>{l}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Profile Screen ──────────────────────────────────────────────────────────
+function ProfileScreen({user,students,attendance,achievements,darkMode,setDarkMode,onLogout}){
+  const [confirm,setConfirm]=React.useState(false);
+  const [changePw,setChangePw]=React.useState(false);
+  const [pw,setPw]=React.useState('');
+  const [pwMsg,setPwMsg]=React.useState('');
+  const [saving,setSaving]=React.useState(false);
+
+  const email=user?.email||'';
+  const name=email.split('@')[0];
+  const totalSessions=new Set(attendance.map(a=>a.date)).size;
+  const avgRate=students.length
+    ?Math.round(students.reduce((s,st)=>s+statsFor(st.id,attendance).rate,0)/students.length):0;
+
+  async function handleChangePw(e){
+    e.preventDefault();setSaving(true);setPwMsg('');
+    const {error}=await sb.auth.updateUser({password:pw});
+    setSaving(false);
+    if(error){setPwMsg(error.message);}else{setPwMsg('Password updated!');setPw('');setChangePw(false);}
+  }
+
+  const menuGroups=[
+    {title:'Club Stats',items:[
+      {icon:'👥',label:'Total Students',value:students.length},
+      {icon:'📅',label:'Training Sessions',value:totalSessions},
+      {icon:'📈',label:'Avg Attendance',value:`${avgRate}%`},
+      {icon:'🏆',label:'Achievements',value:achievements.length},
+    ]},
+    {title:'App Settings',items:[
+      {icon:darkMode?'☀️':'🌙',label:darkMode?'Light Mode':'Dark Mode',
+        action:()=>setDarkMode(!darkMode),toggle:true,toggled:darkMode},
+    ]},
+    {title:'Account',items:[
+      {icon:'🔑',label:'Change Password',action:()=>setChangePw(!changePw)},
+      {icon:'🚪',label:'Sign Out',action:()=>setConfirm(true),danger:true},
+    ]},
+  ];
+
+  return(
+    <div style={{paddingBottom:100}}>
+      <Header title="Profile"/>
+      <div style={{padding:'20px 16px 0'}}>
+
+        {/* Profile hero */}
+        <div className="fade-up" style={{background:'var(--grad)',borderRadius:24,padding:24,
+          marginBottom:20,display:'flex',alignItems:'center',gap:16,
+          boxShadow:'0 12px 32px rgba(14,165,233,.3)'}}>
+          <div style={{width:68,height:68,borderRadius:20,background:'rgba(255,255,255,.25)',
+            display:'flex',alignItems:'center',justifyContent:'center',
+            fontWeight:800,fontSize:26,color:'#fff',flexShrink:0}}>
+            {initials(name)||'👤'}
+          </div>
+          <div>
+            <p style={{fontFamily:'Poppins,sans-serif',fontWeight:800,fontSize:20,
+              color:'#fff',textTransform:'capitalize'}}>{name}</p>
+            <p style={{color:'rgba(255,255,255,.75)',fontSize:13}}>{email}</p>
+            <div style={{marginTop:8,background:'rgba(255,255,255,.2)',borderRadius:10,
+              padding:'4px 12px',display:'inline-flex',alignItems:'center',gap:6}}>
+              <IShield size={12} color="#fff"/>
+              <span style={{fontSize:12,color:'#fff',fontWeight:600}}>Head Coach</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Change password form */}
+        {changePw&&(
+          <Card className="fade-up" style={{marginBottom:16,padding:20}}>
+            <p style={{fontWeight:700,fontSize:15,color:'var(--text)',marginBottom:14}}>🔑 Change Password</p>
+            <form onSubmit={handleChangePw}>
+              <Input label="New Password" type="password" value={pw} onChange={e=>setPw(e.target.value)}
+                required placeholder="Min 6 characters"/>
+              {pwMsg&&<p style={{fontSize:13,marginBottom:12,color:pwMsg.includes('!')?'#10B981':'#F43F5E'}}>{pwMsg}</p>}
+              <div style={{display:'flex',gap:10}}>
+                <Btn type="button" variant="ghost" onClick={()=>setChangePw(false)} style={{flex:1}}>Cancel</Btn>
+                <Btn type="submit" disabled={saving||pw.length<6} style={{flex:1}}>
+                  {saving?'Saving…':'Update'}
+                </Btn>
+              </div>
+            </form>
+          </Card>
+        )}
+
+        {menuGroups.map(group=>(
+          <div key={group.title} className="fade-up" style={{marginBottom:16}}>
+            <p style={{fontSize:12,fontWeight:700,color:'var(--muted)',
+              textTransform:'uppercase',letterSpacing:'.06em',marginBottom:8,paddingLeft:4}}>
+              {group.title}
+            </p>
+            <Card style={{padding:0,overflow:'hidden'}}>
+              {group.items.map((item,i)=>(
+                <div key={item.label}>
+                  <div onClick={item.action} style={{display:'flex',alignItems:'center',gap:14,
+                    padding:'14px 18px',cursor:item.action?'pointer':'default',
+                    transition:'background .15s'}}
+                    onMouseEnter={e=>{if(item.action)e.currentTarget.style.background='var(--surface2)'}}
+                    onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                    <span style={{fontSize:20}}>{item.icon}</span>
+                    <span style={{flex:1,fontSize:15,fontWeight:500,
+                      color:item.danger?'#F43F5E':'var(--text)'}}>{item.label}</span>
+                    {item.value!==undefined&&(
+                      <span style={{fontFamily:'Poppins,sans-serif',fontWeight:700,
+                        fontSize:15,color:'var(--ocean)'}}>{item.value}</span>
+                    )}
+                    {item.toggle&&(
+                      <div onClick={e=>{e.stopPropagation();item.action();}}
+                        style={{width:44,height:26,borderRadius:13,position:'relative',
+                          background:item.toggled?'var(--ocean)':'var(--border)',
+                          transition:'background .25s',cursor:'pointer',flexShrink:0}}>
+                        <div style={{position:'absolute',top:3,
+                          left:item.toggled?20:3,width:20,height:20,borderRadius:'50%',
+                          background:'#fff',boxShadow:'0 2px 4px rgba(0,0,0,.2)',
+                          transition:'left .25s'}}/>
+                      </div>
+                    )}
+                  </div>
+                  {i<group.items.length-1&&<div style={{height:1,background:'var(--border)',marginLeft:52}}/>}
+                </div>
+              ))}
+            </Card>
+          </div>
+        ))}
+
+        <p style={{textAlign:'center',fontSize:12,color:'var(--muted)',paddingBottom:16}}>
+          ACK iOS v2.0 • Ananda College Karate {new Date().getFullYear()}
+        </p>
+      </div>
+
+      {confirm&&(
+        <Confirm title="Sign Out?" msg="You'll need to sign back in to access the app."
+          onOk={()=>{setConfirm(false);onLogout();}} onCancel={()=>setConfirm(false)}
+          okLabel="Sign Out" danger/>
+      )}
+    </div>
+  );
+}
+
+// ─── Root App ────────────────────────────────────────────────────────────────
+function App(){
+  const [user,setUser]=React.useState(null);
+  const [loading,setLoading]=React.useState(true);
+  const [tab,setTab]=React.useState('dashboard');
+  const [students,setStudents]=React.useState([]);
+  const [attendance,setAttendance]=React.useState([]);
+  const [achievements,setAchievements]=React.useState([]);
+  const [dataLoading,setDataLoading]=React.useState(false);
+  const [toast,setToast]=React.useState(null);
+  const [darkMode,setDarkMode]=React.useState(false);
+
+  function showToast(msg,type='success'){
+    setToast({msg,type});
+    setTimeout(()=>setToast(null),2800);
+  }
+
+  // Auth init
+  React.useEffect(()=>{
+    sb.auth.getSession().then(({data:{session}})=>{
+      setUser(session?.user||null);
+      setLoading(false);
+    });
+    const{data:{subscription}}=sb.auth.onAuthStateChange((_,session)=>{
+      setUser(session?.user||null);
+    });
+    return()=>subscription.unsubscribe();
+  },[]);
+
+  // Load data when logged in
+  React.useEffect(()=>{
+    if(!user)return;
+    loadData();
+  },[user]);
+
+  // Dark mode
+  React.useEffect(()=>{
+    document.body.className=darkMode?'dark-mode':'';
+    document.querySelector(':root').style.setProperty('--bg',darkMode?'#0A0E1A':'#F0F9FF');
+  },[darkMode]);
+
+  async function loadData(){
+    setDataLoading(true);
+    const[stR,atR,acR]=await Promise.all([
+      sb.from('students').select('*').order('created_at',{ascending:false}),
+      sb.from('attendance').select('*'),
+      sb.from('achievements').select('*').order('date',{ascending:false}),
+    ]);
+    if(stR.data)setStudents(stR.data);
+    if(atR.data)setAttendance(atR.data);
+    if(acR.data)setAchievements(acR.data);
+    setDataLoading(false);
+  }
+
+  // ── Student CRUD ────────────────────────────────────────────────────────
+  async function addStudent(form){
+    const{data,error}=await sb.from('students').insert([{...form}]).select().single();
+    if(error){showToast(error.message,'error');return;}
+    setStudents(p=>[data,...p]);showToast('Student added!');
+  }
+  async function editStudent(id,form){
+    const{data,error}=await sb.from('students').update(form).eq('id',id).select().single();
+    if(error){showToast(error.message,'error');return;}
+    setStudents(p=>p.map(s=>s.id===id?data:s));showToast('Student updated!');
+  }
+  async function deleteStudent(id){
+    const{error}=await sb.from('students').delete().eq('id',id);
+    if(error){showToast(error.message,'error');return;}
+    setStudents(p=>p.filter(s=>s.id!==id));showToast('Student deleted.','info');
+  }
+
+  // ── Attendance ──────────────────────────────────────────────────────────
+  async function markAttendance(studentId,date,status){
+    const existing=attendance.find(a=>a.student_id===studentId&&a.date===date);
+    if(existing){
+      const{data,error}=await sb.from('attendance').update({status}).eq('id',existing.id).select().single();
+      if(error){showToast(error.message,'error');return;}
+      setAttendance(p=>p.map(a=>a.id===existing.id?data:a));
+    }else{
+      const{data,error}=await sb.from('attendance').insert([{student_id:studentId,date,status}]).select().single();
+      if(error){showToast(error.message,'error');return;}
+      setAttendance(p=>[...p,data]);
+    }
+    showToast('Saved!');
+  }
+
+  // ── Achievements CRUD ───────────────────────────────────────────────────
+  async function addAchievement(form){
+    const{data,error}=await sb.from('achievements').insert([{...form}]).select().single();
+    if(error){showToast(error.message,'error');return;}
+    setAchievements(p=>[data,...p]);showToast('Achievement added!');
+  }
+  async function editAchievement(id,form){
+    const{data,error}=await sb.from('achievements').update(form).eq('id',id).select().single();
+    if(error){showToast(error.message,'error');return;}
+    setAchievements(p=>p.map(a=>a.id===id?data:a));showToast('Achievement updated!');
+  }
+  async function deleteAchievement(id){
+    const{error}=await sb.from('achievements').delete().eq('id',id);
+    if(error){showToast(error.message,'error');return;}
+    setAchievements(p=>p.filter(a=>a.id!==id));showToast('Achievement deleted.','info');
+  }
+
+  async function handleLogout(){
+    await sb.auth.signOut();setUser(null);setStudents([]);setAttendance([]);setAchievements([]);
+  }
+
+  if(loading) return(
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',
+      background:'linear-gradient(160deg,#0EA5E9,#2563EB)'}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{fontSize:48,marginBottom:16}}>🥋</div>
+        <div style={{width:40,height:40,borderRadius:'50%',border:'3px solid rgba(255,255,255,.3)',
+          borderTopColor:'#fff',animation:'spin 0.8s linear infinite',margin:'0 auto'}}/>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    </div>
+  );
+
+  if(!user) return <LoginScreen onLogin={u=>setUser(u)}/>;
+
+  const screens={
+    dashboard:<DashboardScreen students={students} attendance={attendance} achievements={achievements} user={user}/>,
+    students:<StudentsScreen students={students} attendance={attendance} onAdd={addStudent} onEdit={editStudent} onDelete={deleteStudent}/>,
+    attendance:<AttendanceScreen students={students} attendance={attendance} onMark={markAttendance}/>,
+    achievements:<AchievementsScreen achievements={achievements} students={students} onAdd={addAchievement} onEdit={editAchievement} onDelete={deleteAchievement}/>,
+    analytics:<AnalyticsScreen students={students} attendance={attendance} achievements={achievements}/>,
+    profile:<ProfileScreen user={user} students={students} attendance={attendance} achievements={achievements} darkMode={darkMode} setDarkMode={setDarkMode} onLogout={handleLogout}/>,
+  };
+
+  return(
+    <div style={{maxWidth:600,margin:'0 auto',minHeight:'100vh',position:'relative',
+      background:'var(--bg)'}}>
+      {dataLoading&&(
+        <div style={{position:'fixed',top:0,left:0,right:0,height:3,zIndex:999,
+          background:'linear-gradient(90deg,#0EA5E9,#8B5CF6)',
+          animation:'progress 1.5s ease infinite',maxWidth:600,margin:'0 auto'}}>
+          <style>{`@keyframes progress{0%{transform:scaleX(0);transform-origin:left}50%{transform:scaleX(0.7);transform-origin:left}100%{transform:scaleX(1);transform-origin:left}}`}</style>
+        </div>
+      )}
+      <div key={tab} className="fade-in" style={{minHeight:'calc(100vh - 80px)'}}>
+        {screens[tab]}
+      </div>
+      <BottomNav tab={tab} setTab={setTab}/>
+      {toast&&<Toast msg={toast.msg} type={toast.type}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
+
+

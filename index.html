@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B1F3A" />
+    <meta name="description" content="Ananda College Karate — student management, attendance, and tournament tracking." />
+    <title>Ananda College Karate</title>
+    <link rel="icon" type="image/png" href="/pwa-192.png" />
+    <link rel="apple-touch-icon" href="/pwa-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      window.__ackErrors = [];
+      function ackDescribeError(reason) {
+        if (!reason) return 'unknown error';
+        if (reason.stack) return reason.stack;
+        if (typeof reason === 'object') {
+          var parts = [];
+          if (reason.message) parts.push('message: ' + reason.message);
+          if (reason.details) parts.push('details: ' + reason.details);
+          if (reason.hint) parts.push('hint: ' + reason.hint);
+          if (reason.code) parts.push('code: ' + reason.code);
+          if (parts.length) return parts.join('\n');
+          try {
+            return JSON.stringify(reason, null, 2);
+          } catch (e) {
+            return String(reason);
+          }
+        }
+        return String(reason);
+      }
+      function ackShowError(msg) {
+        window.__ackErrors.push(String(msg));
+        var el = document.getElementById('ack-error-banner');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'ack-error-banner';
+          el.style.cssText =
+            'position:fixed;inset:0;background:#1a0000;color:#fff;padding:16px;' +
+            'font-family:monospace;font-size:12px;overflow:auto;z-index:999999;white-space:pre-wrap;';
+          (document.body || document.documentElement).appendChild(el);
+        }
+        el.textContent = 'Something broke while loading the app:\n\n' + window.__ackErrors.join('\n\n---\n\n');
+      }
+      window.addEventListener('error', function (e) {
+        ackShowError((e.error && e.error.stack) || e.message || String(e));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        ackShowError('Unhandled promise rejection: ' + ackDescribeError(e.reason));
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

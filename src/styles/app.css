@@ -1,0 +1,143 @@
+/* App-wide custom styles (Tailwind utilities are generated separately). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+}
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+}
+button:active {
+  opacity: 0.92;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.35);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.55);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107, 114, 128, 0.35) transparent;
+}
+@media (max-width: 639px) {
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.65);
+  outline-offset: 2px;
+}
+@keyframes iosScreenIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ios-screen-in {
+  animation: iosScreenIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ios-screen-in {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Premium background — clean, static, one neutral gradient. The old
+   multi-color radial blobs + drift animation were the main source of the
+   "too many effects" look; this is deliberately quiet. */
+body {
+  background: linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
+}
+
+:root {
+  --ack-bg: transparent;
+  --ack-card: rgba(255, 255, 255, 0.82);
+  --ack-border: rgba(15, 23, 42, 0.08);
+  --ack-heading: #0b1f3a;
+  --ack-muted: #6b7280;
+  --ack-text: #374151;
+  --ack-surface-2: rgba(15, 23, 42, 0.045);
+  --ack-glass-border: rgba(15, 23, 42, 0.06);
+}
+.ack-dark {
+  --ack-bg: transparent;
+  --ack-card: rgba(15, 23, 42, 0.85);
+  --ack-border: rgba(148, 163, 184, 0.16);
+  --ack-heading: #f1f5f9;
+  --ack-muted: #8fa0bf;
+  --ack-text: #d3dcec;
+  --ack-surface-2: rgba(30, 41, 59, 0.55);
+  --ack-glass-border: rgba(148, 163, 184, 0.14);
+  color-scheme: dark;
+}
+body:has(.ack-dark) {
+  background: linear-gradient(180deg, #0b1220 0%, #0e1526 100%);
+}
+body:has(.ack-dark) .ack-grad-text {
+  background: linear-gradient(120deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 0.875rem);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bg-\[var\(--ack-card\)\] {
+  backdrop-filter: blur(26px) saturate(1.7);
+  -webkit-backdrop-filter: blur(26px) saturate(1.7);
+}
+.bg-\[var\(--ack-card\)\]\/75,
+.bg-\[var\(--ack-card\)\]\/95 {
+  backdrop-filter: blur(30px) saturate(1.7);
+  -webkit-backdrop-filter: blur(30px) saturate(1.7);
+}

@@ -1,0 +1,330 @@
+/* Input Component Styles */
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1\.5);
+  width: 100%;
+}
+
+.input-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  letter-spacing: var(--tracking-wide);
+}
+
+.input-required {
+  color: var(--color-error);
+  margin-left: var(--space-1);
+}
+
+/* ========================================
+   Input Wrapper (Container)
+   ========================================== */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-input);
+}
+
+/* ========================================
+   Variants
+   ========================================== */
+
+/* Default */
+.input--default {
+  background: var(--slate-100);
+  border: 2px solid transparent;
+}
+
+.input--default.input--focused {
+  background: white;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--ocean-100);
+}
+
+.input--default.input--error {
+  border-color: var(--color-error);
+  background: var(--rose-50);
+}
+
+.input--default.input--error.input--focused {
+  box-shadow: 0 0 0 4px var(--rose-100);
+}
+
+/* Outlined */
+.input--outlined {
+  background: transparent;
+  border: 2px solid var(--color-border);
+}
+
+.input--outlined.input--focused {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--ocean-100);
+}
+
+.input--outlined.input--error {
+  border-color: var(--color-error);
+}
+
+/* Glass */
+.input--glass {
+  background: var(--glass-white-medium);
+  backdrop-filter: var(--glass-blur-light);
+  border: 1px solid var(--glass-white);
+}
+
+.input--glass.input--focused {
+  background: var(--glass-white-strong);
+  border-color: var(--color-primary);
+}
+
+/* ========================================
+   Sizes
+   ========================================== */
+.input--sm {
+  padding: var(--space-2) var(--space-3);
+  min-height: 36px;
+}
+
+.input--sm .input-field {
+  font-size: var(--text-sm);
+}
+
+.input--md {
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+}
+
+.input--md .input-field {
+  font-size: var(--text-base);
+}
+
+.input--lg {
+  padding: var(--space-4) var(--space-5);
+  min-height: 52px;
+}
+
+.input--lg .input-field {
+  font-size: var(--text-lg);
+}
+
+/* ========================================
+   Input Field (Actual Input)
+   ========================================== */
+.input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-weight: var(--font-normal);
+  width: 100%;
+
+  /* Remove default input styles */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input-field::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.input-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Remove autofill background */
+.input-field:-webkit-autofill,
+.input-field:-webkit-autofill:hover,
+.input-field:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--slate-100) inset;
+  -webkit-text-fill-color: var(--color-text-primary);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Textarea specific */
+.input-field--textarea {
+  resize: vertical;
+  min-height: 100px;
+  padding: var(--space-3);
+  line-height: var(--leading-relaxed);
+  font-family: var(--font-sans);
+}
+
+.input-wrapper--textarea {
+  padding: 0;
+  align-items: stretch;
+}
+
+/* ========================================
+   Icons
+   ========================================== */
+.input-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.input-icon svg {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.input-icon--left {
+  margin-left: var(--space-2);
+}
+
+.input-icon--right {
+  margin-right: var(--space-2);
+}
+
+.input-field--has-left-icon {
+  padding-left: 0;
+}
+
+.input-field--has-right-icon {
+  padding-right: 0;
+}
+
+.input--focused .input-icon {
+  color: var(--color-primary);
+}
+
+/* ========================================
+   States
+   ========================================== */
+
+/* Disabled */
+.input--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Full width */
+.input--full {
+  width: 100%;
+}
+
+/* Error state */
+.input-helper {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: var(--leading-snug);
+}
+
+.input-helper--error {
+  color: var(--color-error);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.input-helper--error::before {
+  content: '⚠';
+  font-size: var(--text-sm);
+}
+
+/* ========================================
+   Input Types Specific Styles
+   ========================================== */
+
+/* Date Input */
+input[type='date'].input-field,
+input[type='time'].input-field {
+  cursor: pointer;
+}
+
+input[type='date'].input-field::-webkit-calendar-picker-indicator,
+input[type='time'].input-field::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: opacity(0.5);
+}
+
+input[type='date'].input-field:hover::-webkit-calendar-picker-indicator,
+input[type='time'].input-field:hover::-webkit-calendar-picker-indicator {
+  filter: opacity(1);
+}
+
+/* Number Input */
+input[type='number'].input-field {
+  -moz-appearance: textfield;
+}
+
+input[type='number'].input-field::-webkit-inner-spin-button,
+input[type='number'].input-field::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Password Toggle Button */
+.input-password-toggle {
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s;
+}
+
+.input-password-toggle:hover {
+  background: var(--slate-200);
+}
+
+/* ========================================
+   Focus Visible (Accessibility)
+   ========================================== */
+.input-field:focus-visible {
+  outline: none;
+}
+
+.input-wrapper:focus-within {
+  /* Handled by focused state above */
+}
+
+/* ========================================
+   Dark Mode Adjustments
+   ========================================== */
+@media (prefers-color-scheme: dark) {
+  .input--default {
+    background: var(--midnight-800);
+  }
+
+  .input--default.input--focused {
+    background: var(--midnight-900);
+  }
+
+  .input--outlined {
+    border-color: var(--midnight-700);
+  }
+
+  .input--glass {
+    background: var(--glass-white-medium);
+    border-color: var(--glass-white);
+  }
+
+  .input-field:-webkit-autofill,
+  .input-field:-webkit-autofill:hover,
+  .input-field:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--midnight-800) inset;
+    -webkit-text-fill-color: var(--color-text-primary);
+  }
+}
+
+/* ========================================
+   Responsive Adjustments
+   ========================================== */
+@media (max-width: 640px) {
+  .input--lg {
+    padding: var(--space-3) var(--space-4);
+    min-height: 48px;
+  }
+}

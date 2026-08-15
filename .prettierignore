@@ -1,0 +1,8 @@
+# Legacy single-file apps and build tooling — keep untouched (huge hand-written
+# HTML/CSS that Prettier would churn without benefit).
+public/
+legacy/
+tools/
+dist/
+build-app.mjs
+smoke-test.mjs

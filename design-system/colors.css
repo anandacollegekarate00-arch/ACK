@@ -1,0 +1,274 @@
+/* 🎨 Karate App - Design System: Colors
+   iOS-inspired but unique color palette
+   ========================================== */
+
+:root {
+  /* ========================================
+     Midnight Series (Dark, Sophisticated)
+     ========================================== */
+  --midnight-950: #0a0e1a;
+  --midnight-900: #0f172a;
+  --midnight-800: #1e293b;
+  --midnight-700: #334155;
+  --midnight-600: #475569;
+  --midnight-500: #64748b;
+
+  /* ========================================
+     Ocean Blue (Primary Brand Color)
+     More vibrant than iOS blue
+     ========================================== */
+  --ocean-900: #075985;
+  --ocean-800: #0c4a6e;
+  --ocean-700: #0369a1;
+  --ocean-600: #0ea5e9;
+  --ocean-500: #0284c7;
+  --ocean-400: #38bdf8;
+  --ocean-300: #7dd3fc;
+  --ocean-200: #bae6fd;
+  --ocean-100: #e0f2fe;
+  --ocean-50: #f0f9ff;
+
+  /* ========================================
+     Amber Gold (Achievement Color)
+     Karate tradition meets modern design
+     ========================================== */
+  --amber-900: #78350f;
+  --amber-800: #92400e;
+  --amber-700: #b45309;
+  --amber-600: #d97706;
+  --amber-500: #f59e0b;
+  --amber-400: #fbbf24;
+  --amber-300: #fcd34d;
+  --amber-200: #fde68a;
+  --amber-100: #fef3c7;
+  --amber-50: #fffbeb;
+
+  /* ========================================
+     Emerald (Success, Attendance)
+     ========================================== */
+  --emerald-900: #064e3b;
+  --emerald-800: #065f46;
+  --emerald-700: #047857;
+  --emerald-600: #059669;
+  --emerald-500: #10b981;
+  --emerald-400: #34d399;
+  --emerald-300: #6ee7b7;
+  --emerald-200: #a7f3d0;
+  --emerald-100: #d1fae5;
+  --emerald-50: #ecfdf5;
+
+  /* ========================================
+     Rose (Errors, Warnings, Absent)
+     ========================================== */
+  --rose-900: #881337;
+  --rose-800: #9f1239;
+  --rose-700: #be123c;
+  --rose-600: #e11d48;
+  --rose-500: #f43f5e;
+  --rose-400: #fb7185;
+  --rose-300: #fda4af;
+  --rose-200: #fecdd3;
+  --rose-100: #ffe4e6;
+  --rose-50: #fff1f2;
+
+  /* ========================================
+     Violet (Secondary Brand, Tournaments)
+     ========================================== */
+  --violet-900: #4c1d95;
+  --violet-800: #5b21b6;
+  --violet-700: #6d28d9;
+  --violet-600: #7c3aed;
+  --violet-500: #8b5cf6;
+  --violet-400: #a78bfa;
+  --violet-300: #c4b5fd;
+  --violet-200: #ddd6fe;
+  --violet-100: #ede9fe;
+  --violet-50: #f5f3ff;
+
+  /* ========================================
+     Slate (Neutrals - Text & UI)
+     ========================================== */
+  --slate-950: #020617;
+  --slate-900: #0f172a;
+  --slate-800: #1e293b;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-500: #64748b;
+  --slate-400: #94a3b8;
+  --slate-300: #cbd5e1;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+  --slate-50: #f8fafc;
+  --slate-white: #ffffff;
+
+  /* ========================================
+     Semantic Colors (Mapped)
+     ========================================== */
+  --color-primary: var(--ocean-600);
+  --color-primary-hover: var(--ocean-700);
+  --color-primary-light: var(--ocean-100);
+
+  --color-secondary: var(--violet-600);
+  --color-secondary-hover: var(--violet-700);
+  --color-secondary-light: var(--violet-100);
+
+  --color-success: var(--emerald-600);
+  --color-success-light: var(--emerald-100);
+
+  --color-error: var(--rose-600);
+  --color-error-light: var(--rose-100);
+
+  --color-warning: var(--amber-600);
+  --color-warning-light: var(--amber-100);
+
+  --color-accent: var(--amber-500);
+  --color-accent-light: var(--amber-100);
+
+  /* ========================================
+     Gradients (Hero & Backgrounds)
+     ========================================== */
+  --gradient-ocean: linear-gradient(135deg, var(--ocean-600) 0%, var(--ocean-700) 100%);
+  --gradient-ocean-soft: linear-gradient(135deg, var(--ocean-500) 0%, var(--ocean-600) 100%);
+  --gradient-ocean-vibrant: linear-gradient(135deg, var(--ocean-400) 0%, var(--ocean-600) 50%, var(--violet-600) 100%);
+
+  --gradient-sunset: linear-gradient(135deg, var(--amber-500) 0%, var(--amber-700) 100%);
+  --gradient-sunset-warm: linear-gradient(135deg, var(--amber-400) 0%, var(--rose-500) 100%);
+
+  --gradient-aurora: linear-gradient(135deg, var(--ocean-500) 0%, var(--violet-600) 50%, var(--rose-500) 100%);
+  --gradient-emerald: linear-gradient(135deg, var(--emerald-500) 0%, var(--emerald-700) 100%);
+
+  /* Mesh Gradients (Background Depth) */
+  --mesh-ocean:
+    radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.2) 0px, transparent 50%);
+
+  --mesh-sunset:
+    radial-gradient(at 20% 30%, rgba(245, 158, 11, 0.2) 0px, transparent 50%),
+    radial-gradient(at 80% 70%, rgba(217, 119, 6, 0.15) 0px, transparent 50%);
+
+  --mesh-neutral:
+    radial-gradient(at 10% 20%, rgba(100, 116, 139, 0.05) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(51, 65, 85, 0.05) 0px, transparent 50%);
+
+  /* ========================================
+     Glass Effects (Glassmorphism)
+     ========================================== */
+  --glass-white: rgba(255, 255, 255, 0.05);
+  --glass-white-medium: rgba(255, 255, 255, 0.1);
+  --glass-white-strong: rgba(255, 255, 255, 0.15);
+
+  --glass-black: rgba(0, 0, 0, 0.05);
+  --glass-black-medium: rgba(0, 0, 0, 0.1);
+  --glass-black-strong: rgba(0, 0, 0, 0.2);
+
+  --glass-blur: blur(20px);
+  --glass-blur-medium: blur(12px);
+  --glass-blur-light: blur(8px);
+
+  /* ========================================
+     Shadows (Elevation System)
+     ========================================== */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* Colored Shadows */
+  --shadow-ocean: 0 10px 25px -5px rgba(14, 165, 233, 0.3), 0 8px 10px -6px rgba(14, 165, 233, 0.2);
+  --shadow-amber: 0 10px 25px -5px rgba(245, 158, 11, 0.3), 0 8px 10px -6px rgba(245, 158, 11, 0.2);
+  --shadow-emerald: 0 10px 25px -5px rgba(16, 185, 129, 0.3), 0 8px 10px -6px rgba(16, 185, 129, 0.2);
+  --shadow-rose: 0 10px 25px -5px rgba(244, 63, 94, 0.3), 0 8px 10px -6px rgba(244, 63, 94, 0.2);
+
+  /* Inner Shadows */
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  --shadow-inner-strong: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   Dark Mode Overrides
+   ========================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: var(--midnight-950);
+    --color-surface: var(--midnight-900);
+    --color-surface-elevated: var(--midnight-800);
+    --color-border: var(--midnight-700);
+
+    --color-text-primary: var(--slate-50);
+    --color-text-secondary: var(--slate-300);
+    --color-text-muted: var(--slate-400);
+
+    /* Adjust glass for dark mode */
+    --glass-white: rgba(255, 255, 255, 0.1);
+    --glass-white-medium: rgba(255, 255, 255, 0.15);
+    --glass-white-strong: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Light Mode (Default) */
+:root {
+  --color-background: var(--slate-50);
+  --color-surface: var(--slate-white);
+  --color-surface-elevated: var(--slate-white);
+  --color-border: var(--slate-200);
+
+  --color-text-primary: var(--slate-900);
+  --color-text-secondary: var(--slate-600);
+  --color-text-muted: var(--slate-400);
+}
+
+/* ========================================
+   Utility Classes
+   ========================================== */
+
+/* Gradient Text */
+.gradient-text-ocean {
+  background: var(--gradient-ocean);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-sunset {
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-aurora {
+  background: var(--gradient-aurora);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass Background */
+.glass {
+  background: var(--glass-white-medium);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-white);
+}
+
+.glass-strong {
+  background: var(--glass-white-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-white-medium);
+}
+
+/* Mesh Background */
+.mesh-bg-ocean {
+  background: var(--mesh-ocean);
+}
+
+.mesh-bg-sunset {
+  background: var(--mesh-sunset);
+}
+
+.mesh-bg-neutral {
+  background: var(--mesh-neutral);
+}
