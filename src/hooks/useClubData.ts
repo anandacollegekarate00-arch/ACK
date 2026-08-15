@@ -555,39 +555,93 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       console.log('Input email:', email);
       console.log('Input permissions:', permissions);
       
-      // Use database function to create staff account properly
-      // This ensures role is set correctly from the start
-      const { data, error } = await supabaseClient.rpc('admin_create_staff_user', {
-        user_email: email.trim(),
-        user_name: name,
-        user_role: role,
-        user_permissions: permissions ? JSON.stringify(permissions) : null
+      // TEMPORARY FIX: Use auth.signUp and force-update the profile role
+      const { data, error } = await supabaseSecondaryClient.auth.signUp({
+        email: email.trim(),
+        password: '000000',
+        options: { 
+          data: { 
+            role: role, 
+            name: name, 
+            must_change_password: true 
+          } 
+        }
       });
 
-      console.log('RPC response - data:', data);
-      console.log('RPC response - error:', error);
+      console.log('SignUp response - data:', data);
+      console.log('SignUp response - error:', error);
 
       if (error) {
-        console.error('Staff account creation error:', error);
+        console.error('Staff signup error:', error);
         throw new Error(error.message || 'Could not create staff account');
       }
 
-      console.log('Staff account created successfully, user_id:', data?.user_id);
-      
-      // Double-check the profile was created with correct role
-      if (data?.user_id) {
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        await supabaseSecondaryClient.auth.signOut();
+        throw new Error('That email is already registered. Use a different email.');
+      }
+
+      const newUserId = data.user?.id;
+      if (newUserId) {
+        console.log('New user ID:', newUserId, '- FORCING role to:', role);
+        
+        // Wait longer for any triggers to complete
+        await new Promise((r) => setTimeout(r, 2000));
+        
+        // FORCE UPDATE the profile with correct role - do this twice to override any trigger
+        for (let i = 0; i < 2; i++) {
+          const { error: updateError } = await supabaseClient
+            .from('profiles')
+            .update({ role: role, name: name })
+            .eq('id', newUserId);
+          
+          if (updateError) {
+            console.error(`Profile update attempt ${i + 1} error:`, updateError);
+          } else {
+            console.log(`Profile update attempt ${i + 1} success`);
+          }
+          
+          await new Promise((r) => setTimeout(r, 500));
+        }
+        
+        // Verify the role is correct
         const { data: profileCheck } = await supabaseClient
           .from('profiles')
           .select('id, role, name')
-          .eq('id', data.user_id)
+          .eq('id', newUserId)
           .single();
         
-        console.log('Profile check after creation:', profileCheck);
+        console.log('Profile after force update:', profileCheck);
+        
+        // If senior player, set permissions
+        if (role === 'senior_player') {
+          const permsToInsert = permissions || {
+            can_mark_attendance: false,
+            can_manage_students: false,
+            can_add_achievements: false,
+            can_register_tournaments: false,
+            can_promote_belts: false,
+          };
+          
+          const { error: permError } = await supabaseClient.from('user_permissions').insert({
+            user_id: newUserId,
+            ...permsToInsert
+          });
+          
+          if (permError) {
+            console.error('Permissions insert error:', permError);
+          } else {
+            console.log('Permissions inserted successfully');
+          }
+        }
       }
-      
+
+      await supabaseSecondaryClient.auth.signOut();
       await Promise.all([refetch('profiles'), refetch('user_permissions')]);
+      
+      console.log('=== ACCOUNT CREATION COMPLETE ===');
     },
-    [refetch, supabaseClient]
+    [refetch, supabaseClient, supabaseSecondaryClient]
   );
 
   const updateUserPermissions = React.useCallback(
