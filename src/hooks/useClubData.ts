@@ -550,67 +550,25 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   
   const createStaffAccount = React.useCallback(
     async ({ email, password, name, role, permissions }) => {
-      console.log('Creating staff account with role:', role);
-      
-      const { data, error} = await supabaseSecondaryClient.auth.signUp({
-        email,
-        password,
-        options: { data: { role, name, must_change_password: true } }
+      // Use database function to create staff account properly
+      // This ensures role is set correctly from the start
+      const { data, error } = await supabaseClient.rpc('admin_create_staff_user', {
+        user_email: email.trim(),
+        user_name: name,
+        user_role: role,
+        user_permissions: permissions ? JSON.stringify(permissions) : null
       });
 
       if (error) {
-        console.error('Staff signup error:', error);
-        throw error;
+        console.error('Staff account creation error:', error);
+        throw new Error(error.message || 'Could not create staff account');
       }
 
-      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        await supabaseSecondaryClient.auth.signOut();
-        throw new Error('That email is already registered. Use a different email.');
-      }
-
-      const newUserId = data.user?.id;
-      if (newUserId) {
-        console.log('New user ID:', newUserId, 'Setting role to:', role);
-        await new Promise((r) => setTimeout(r, 1000)); // Increase wait time to 1 second
-        
-        // Update profile with role - ensure role is set correctly
-        const profileUpdate = await supabaseClient.from('profiles').update({ role, name }).eq('id', newUserId);
-        console.log('Profile update result:', profileUpdate);
-        
-        if (profileUpdate.error) {
-          console.error('Profile update error:', profileUpdate.error);
-          throw profileUpdate.error;
-        }
-
-        // If senior player, set permissions (create row even if all false for read-only mode)
-        if (role === 'senior_player') {
-          const permsToInsert = permissions || {
-            can_mark_attendance: false,
-            can_manage_students: false,
-            can_add_achievements: false,
-            can_register_tournaments: false,
-            can_promote_belts: false,
-          };
-          
-          console.log('Inserting permissions for senior player:', permsToInsert);
-          const permInsert = await supabaseClient.from('user_permissions').insert({
-            user_id: newUserId,
-            ...permsToInsert
-          });
-          
-          if (permInsert.error) {
-            console.error('Permissions insert error:', permInsert.error);
-            throw permInsert.error;
-          }
-        }
-      }
-
-      await supabaseSecondaryClient.auth.signOut();
-      await Promise.all([refetch('profiles'), refetch('user_permissions')]);
+      console.log('Staff account created:', data);
       
-      console.log('Staff account created successfully');
+      await Promise.all([refetch('profiles'), refetch('user_permissions')]);
     },
-    [refetch, supabaseClient, supabaseSecondaryClient]
+    [refetch, supabaseClient]
   );
 
   const updateUserPermissions = React.useCallback(
