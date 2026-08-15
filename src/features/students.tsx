@@ -420,7 +420,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
                   'Guardian Email',
                   'Guardian Address',
                 ],
-                (filterBy === 'Former' ? formerStudents : activeStudents).map((s) => [
+                (filterBy === 'Former members' ? formerStudents : activeStudents).map((s) => [
                   s.admission_id,
                   s.name,
                   s.full_name,

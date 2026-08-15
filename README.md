@@ -10,7 +10,7 @@ coaches and parents.
 - **Data**: Supabase (PostgreSQL + Auth + Realtime)
 - **PWA**: vite-plugin-pwa (installable, offline-capable)
 - **Quality**: Vitest unit tests, ESLint, Prettier, GitHub Actions CI
-- **Deployment**: static build (`dist/`), Netlify-ready (`netlify.toml`)
+- **Deployment**: Firebase Hosting at [anandacollegekarate.web.app](https://anandacollegekarate.web.app)
 
 The Supabase project is baked into `src/lib/supabase.ts` — visitors get the
 club's own project automatically, no setup screen, no per-device config.
@@ -76,15 +76,16 @@ Vite attempt) for reference; the app itself no longer uses them.
 
 ## Deployment
 
-Netlify (free tier):
+Firebase Hosting:
 
+- **Live URL**: [anandacollegekarate.web.app](https://anandacollegekarate.web.app)
 - Build command: `npm ci && npm run build`
 - Publish directory: `dist`
-- `netlify.toml` already configures the SPA redirect, PWA-friendly caching,
-  and immutable asset caching.
+- Auto-deploys via GitHub Actions on push to `main`
 
-The GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint, format
-check, typecheck, tests, and the production build on every push/PR.
+The GitHub Actions workflow (`.github/workflows/firebase-hosting-merge.yml`) 
+runs build and deployment automatically. CI workflow (`.github/workflows/ci.yml`) 
+runs lint, format check, typecheck, and tests on every push/PR.
 
 ## Testing
 
