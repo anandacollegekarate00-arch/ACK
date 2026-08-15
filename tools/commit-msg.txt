@@ -1,0 +1,9 @@
+Restore API role grants (fix 401s on every REST call)
+
+The live DB had lost the anon/authenticated/service_role grants on the
+public tables, so all REST requests failed with 401 "permission denied
+for table students" - the app loaded no data and mutations were dead.
+Re-granted standard Supabase ACLs (full grants, RLS is the gate) plus
+default privileges for future objects. Verified live via REST:
+anon SELECT 200, real login + JWT roster fetch, insert got
+ACK-2026-005 from the trigger, cleanup delete OK.
