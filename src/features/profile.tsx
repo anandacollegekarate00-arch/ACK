@@ -1,6 +1,7 @@
 import React from 'react';
 import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw, X } from '../icons';
 import { Avatar, Card, PrimaryButton, Field, inputCls, Modal } from '../components/ui';
+import { useToast } from '../components/Toast';
 import { ROYAL, DANGER, WARNING, SUCCESS } from '../lib/theme';
 import { displayName } from '../lib/identity';
 import { StudentProfilePage } from './/students';
@@ -276,6 +277,7 @@ export function ParentAccountsPanel({
   const [error, setError] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const [resetTarget, setResetTarget] = React.useState(null);
+  const { showToast, ToastComponent } = useToast();
   const parentProfiles = profiles.filter((p) => p.role === 'parent');
 
   function studentName(id) {
@@ -308,6 +310,7 @@ export function ParentAccountsPanel({
     try {
       const names = selectedIds.map(studentName).join(', ');
       await onCreate({ email: email.trim(), password, studentIds: selectedIds, name: `${names}'s guardian` });
+      showToast('Parent account created successfully');
       setEmail('');
       setPassword('');
       setSelectedIds([]);
@@ -320,6 +323,7 @@ export function ParentAccountsPanel({
 
   return (
     <Modal title="Parent Logins" onClose={onClose} wide>
+      {ToastComponent}
       <p className="text-xs text-[var(--ack-muted)] mb-3">
         Create a login for a parent and link it to one or more of their children. Parents can only view their own children, read-only. Share
         the password with them directly — they can change it after logging in. To create a login by WhatsApp number instead, use the "Create
@@ -370,7 +374,10 @@ export function ParentAccountsPanel({
             parent={p}
             students={students}
             linkedIds={linkedStudentIds(p.id)}
-            onLink={(studentId) => onLinkStudent(p.id, studentId)}
+            onLink={(studentId) => {
+              onLinkStudent(p.id, studentId);
+              showToast('Student linked successfully');
+            }}
             onUnlink={(studentId) => onUnlinkStudent(p.id, studentId)}
             onReset={() => setResetTarget(p)}
           />
