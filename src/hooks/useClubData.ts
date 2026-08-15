@@ -173,13 +173,38 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     },
     [refetch, supabaseClient]
   );
-  // Soft delete: mark the row archived instead of destroying the student's
-  // attendance/achievement history. Parent links are removed so the archived
-  // student disappears from their view, but all records survive.
+  // Mark a student as a former member: attendance marking stops (the UI hides
+  // them) and parent links are removed, but their attendance/achievement
+  // history stays for school-performance analysis.
+  const markStudentLeft = React.useCallback(
+    async (id) => {
+      await supabaseClient.from('parent_students').delete().eq('student_id', id);
+      const { error } = await supabaseClient.from('students').update({ left_at: new Date().toISOString() }).eq('id', id);
+      if (error) throw error;
+      await Promise.all([refetch('students'), refetch('profiles'), refetch('parent_students')]);
+    },
+    [refetch, supabaseClient]
+  );
+
+  // Bring a former member back into the active roster.
+  const reinstateStudent = React.useCallback(
+    async (id) => {
+      const { error } = await supabaseClient.from('students').update({ left_at: null }).eq('id', id);
+      if (error) throw error;
+      await refetch('students');
+    },
+    [refetch, supabaseClient]
+  );
+
+  // Permanent erase of a former member: the student and all of their
+  // attendance, achievements and registrations are gone for good.
   const deleteStudent = React.useCallback(
     async (id) => {
       await supabaseClient.from('parent_students').delete().eq('student_id', id);
-      const { error } = await supabaseClient.from('students').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      await supabaseClient.from('attendance').delete().eq('student_id', id);
+      await supabaseClient.from('achievements').delete().eq('student_id', id);
+      await supabaseClient.from('event_registrations').delete().eq('student_id', id);
+      const { error } = await supabaseClient.from('students').delete().eq('id', id);
       if (error) throw error;
       setStudents((prev) => prev.filter((s) => s.id !== id));
       await Promise.all([refetch('profiles'), refetch('parent_students')]);
@@ -477,6 +502,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     addStudent,
     addStudentsBatch,
     updateStudent,
+    markStudentLeft,
+    reinstateStudent,
     deleteStudent,
     markAttendance,
     deleteAttendance,

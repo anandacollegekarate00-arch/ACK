@@ -15,6 +15,8 @@ import {
   UploadCloud,
   FileText,
   Star,
+  LogOut,
+  RefreshCw,
 } from '../icons';
 import { MiniBarChart } from '../components/charts';
 import {
@@ -376,7 +378,12 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
   const distinctGrades: string[] = [...new Set(students.map((s) => s.grade).filter(Boolean))].sort() as string[];
   const distinctBelts = BELTS.filter((b) => students.some((s) => s.belt === b));
 
-  const filtered = students.filter((s) => {
+  // Former members (left_at set) live behind their own filter — the main
+  // roster, imports and attendance stay purely active-member.
+  const activeStudents = students.filter((s) => !s.left_at);
+  const formerStudents = students.filter((s) => s.left_at);
+
+  const filtered = (filterBy === 'Former' ? formerStudents : activeStudents).filter((s) => {
     if (filterBy === 'Belt') return selectedBelt ? s.belt === selectedBelt : true;
     if (filterBy === 'Grade') return selectedGrade ? s.grade === selectedGrade : true;
     const q = query.toLowerCase();
@@ -413,7 +420,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
                   'Guardian Email',
                   'Guardian Address',
                 ],
-                students.map((s) => [
+                (filterBy === 'Former' ? formerStudents : activeStudents).map((s) => [
                   s.admission_id,
                   s.name,
                   s.full_name,
@@ -461,7 +468,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
       )}
 
       <div className="flex gap-2 mb-3 overflow-x-auto">
-        {['All', 'Belt', 'Grade'].map((f) => (
+        {['All', 'Belt', 'Grade', 'Former members'].map((f) => (
           <button
             key={f}
             onClick={() => switchFilter(f)}
@@ -542,8 +549,16 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
                 <Avatar name={displayName(s)} size={48} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] text-[var(--ack-muted)]">{s.admission_id}</p>
-                  <p className="font-bold text-sm truncate" style={{ color: 'var(--ack-heading)' }}>
+                  <p className="font-bold text-sm truncate flex items-center gap-1.5" style={{ color: 'var(--ack-heading)' }}>
                     {displayName(s)}
+                    {s.left_at && (
+                      <span
+                        className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full shrink-0"
+                        style={{ background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }}
+                      >
+                        left
+                      </span>
+                    )}
                   </p>
                   <p className="text-[11px] text-[var(--ack-muted)]">Grade {s.grade}</p>
                 </div>
@@ -712,6 +727,118 @@ export function AttendanceCalendar({ studentId, attendance }) {
   );
 }
 
+export function StudentRecordModal({ student, attendance, achievements, tournaments = [], tournamentEvents = [], onClose }) {
+  const st = statsFor(student.id, attendance);
+  const my = achievements.filter((a) => a.student_id === student.id).sort((a, b) => b.date.localeCompare(a.date));
+  return (
+    <Modal title="Student Record" onClose={onClose} wide>
+      <div className="print-area">
+        <div className="mb-5 text-center">
+          <p className="text-sm font-extrabold tracking-wide" style={{ color: ROYAL, fontFamily: 'Poppins, sans-serif' }}>
+            ANANDA COLLEGE KARATE CLUB
+          </p>
+          <p className="text-[11px] text-[var(--ack-muted)] mt-0.5">Official Student Record</p>
+        </div>
+        <div className="flex items-center gap-3 mb-4">
+          <Avatar name={displayName(student)} size={56} />
+          <div className="flex-1 min-w-0">
+            <p className="font-extrabold text-lg truncate" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
+              {displayName(student)}
+            </p>
+            <p className="text-xs text-[var(--ack-muted)]">{student.full_name}</p>
+          </div>
+          <BeltBadge belt={student.belt} />
+        </div>
+        <div className="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs mb-4">
+          <p className="text-[var(--ack-muted)]">Admission ID</p>
+          <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
+            {student.admission_id}
+          </p>
+          <p className="text-[var(--ack-muted)]">Grade</p>
+          <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
+            {student.grade || '—'}
+          </p>
+          <p className="text-[var(--ack-muted)]">Date of birth</p>
+          <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
+            {student.dob || '—'}
+          </p>
+          <p className="text-[var(--ack-muted)]">Joined</p>
+          <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
+            {student.join_date || '—'}
+          </p>
+          <p className="text-[var(--ack-muted)]">Membership</p>
+          <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
+            {student.left_at ? `Left on ${student.left_at.slice(0, 10)}` : 'Active member'}
+          </p>
+        </div>
+        <div className="rounded-xl p-3 mb-4" style={{ background: 'var(--ack-surface-2)' }}>
+          <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: ROYAL }}>
+            Attendance Record
+          </p>
+          <div className="grid grid-cols-5 gap-2 text-center">
+            {[
+              ['Sessions', st.total],
+              ['Present', st.present],
+              ['Late', st.late],
+              ['Absent', st.absent],
+              ['Rate', `${st.presentPct}%`],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <p className="font-extrabold text-base" style={{ color: 'var(--ack-heading)' }}>
+                  {value}
+                </p>
+                <p className="text-[10px] text-[var(--ack-muted)]">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mb-4">
+          <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: ROYAL }}>
+            Achievements ({my.length})
+          </p>
+          {my.length === 0 ? (
+            <p className="text-xs text-[var(--ack-muted)]">No achievements recorded.</p>
+          ) : (
+            <div className="space-y-2">
+              {my.map((a) => {
+                const tournament = tournamentFor(a, tournaments);
+                const event = tournamentEvents.find((e) => e.id === a.event_id);
+                return (
+                  <div key={a.id} className="rounded-xl p-3" style={{ background: 'var(--ack-surface-2)' }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-bold" style={{ color: 'var(--ack-heading)' }}>
+                        {a.title}
+                        {a.placement && (
+                          <span className="ml-1.5" style={{ color: PLACEMENT_STYLE[a.placement]?.color || GOLD }}>
+                            {a.placement}
+                          </span>
+                        )}
+                      </p>
+                      <span className="text-[10px] text-[var(--ack-muted)] shrink-0">{a.date}</span>
+                    </div>
+                    <p className="text-[10px] text-[var(--ack-muted)] mt-0.5">
+                      {[tournament?.name, event?.name, a.level].filter(Boolean).join(' · ')}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <p className="text-[10px] text-[var(--ack-muted)] text-center pt-2 border-t border-[var(--ack-border)]">
+          Record generated {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} · Ananda College
+          Karate Club
+        </p>
+      </div>
+      <div className="print-hide">
+        <PrimaryButton onClick={() => window.print()} className="w-full">
+          Print / Save as PDF
+        </PrimaryButton>
+      </div>
+    </Modal>
+  );
+}
+
 export function StudentProfilePage({
   student,
   attendance,
@@ -724,6 +851,8 @@ export function StudentProfilePage({
   parentLinks = [],
   readOnly = false,
   onUpdate = undefined,
+  onMarkLeft = undefined,
+  onReinstate = undefined,
   onDelete = undefined,
   onAddAchievement = undefined,
   onCreateParentAccount = undefined,
@@ -733,9 +862,12 @@ export function StudentProfilePage({
   const [showEdit, setShowEdit] = React.useState(false);
   const [showAddAchievement, setShowAddAchievement] = React.useState(false);
   const [showChangeBelt, setShowChangeBelt] = React.useState(false);
-  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [confirmMarkLeft, setConfirmMarkLeft] = React.useState(false);
+  const [confirmErase, setConfirmErase] = React.useState(false);
+  const [showRecord, setShowRecord] = React.useState(false);
   const [showCreateParentLogin, setShowCreateParentLogin] = React.useState(false);
   const [resetParentTarget, setResetParentTarget] = React.useState(null);
+  const isFormer = !!student.left_at;
   const st = statsFor(student.id, attendance);
   const chartData = monthlySeries(student.id, attendance);
   const myAchievements = achievements.filter((a) => a.student_id === student.id).sort((a, b) => b.date.localeCompare(a.date));
@@ -772,7 +904,7 @@ export function StudentProfilePage({
           <p className="text-xs text-[var(--ack-muted)] mb-2">{student.admission_id}</p>
           <div className="flex items-center gap-2">
             <BeltBadge belt={student.belt} />
-            {!readOnly && (
+            {!readOnly && !isFormer && (
               <button
                 onClick={() => setShowChangeBelt(true)}
                 className="w-6 h-6 rounded-full flex items-center justify-center"
@@ -783,29 +915,66 @@ export function StudentProfilePage({
               </button>
             )}
           </div>
+          {isFormer && (
+            <span
+              className="mt-2 text-[10px] font-bold uppercase px-2 py-1 rounded-full"
+              style={{ background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }}
+            >
+              Former member — left {student.left_at.slice(0, 10)}
+            </span>
+          )}
           <div className="mt-4">
             <ProgressRing percent={st.presentPct} size={88} />
           </div>
           <p className="text-[11px] text-[var(--ack-muted)] mt-1">Attendance (late = half credit)</p>
         </div>
         {!readOnly && (
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setShowEdit(true)}
-              className="flex-1 py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
+              className="py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
               style={{ borderColor: ROYAL, color: ROYAL }}
             >
               <Edit3 size={14} />
               Edit
             </button>
             <button
-              onClick={() => setConfirmDelete(true)}
-              className="flex-1 py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
-              style={{ borderColor: DANGER, color: DANGER }}
+              onClick={() => setShowRecord(true)}
+              className="py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
+              style={{ borderColor: ROYAL, color: ROYAL }}
             >
-              <Trash2 size={14} />
-              Delete
+              <FileText size={14} />
+              Student record
             </button>
+            {isFormer ? (
+              <button
+                onClick={() => onReinstate && onReinstate(student.id)}
+                className="py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
+                style={{ borderColor: SUCCESS, color: SUCCESS }}
+              >
+                <RefreshCw size={14} />
+                Restore member
+              </button>
+            ) : (
+              <button
+                onClick={() => setConfirmMarkLeft(true)}
+                className="py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
+                style={{ borderColor: DANGER, color: DANGER }}
+              >
+                <LogOut size={14} />
+                Mark as left
+              </button>
+            )}
+            {isFormer && (
+              <button
+                onClick={() => setConfirmErase(true)}
+                className="py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
+                style={{ borderColor: DANGER, color: DANGER }}
+              >
+                <Trash2 size={14} />
+                Erase permanently
+              </button>
+            )}
           </div>
         )}
       </Card>
@@ -1054,15 +1223,38 @@ export function StudentProfilePage({
           }}
         />
       )}
-      {confirmDelete && (
+      {confirmMarkLeft && (
         <ConfirmDialog
-          title="Delete student?"
-          message={`This removes ${displayName(student)} and all of their attendance and achievement records${hasParentAccount ? `, and will unlink ${parentProfiles.length > 1 ? "their parents' logins" : "their parent's login"}` : ''}. This cannot be undone.`}
-          onCancel={() => setConfirmDelete(false)}
+          title="Mark as left?"
+          message={`${displayName(student)} stops appearing in attendance marking and their parent login${hasParentAccount ? (parentProfiles.length > 1 ? 's are' : ' is') : ' stays as is'} — no new absent marks will be recorded. Their achievements stay in the school performance analytics, and all of their records are kept for the student record. You can restore them anytime from the "Former members" filter.`}
+          confirmLabel="Mark as left"
+          onCancel={() => setConfirmMarkLeft(false)}
+          onConfirm={async () => {
+            await onMarkLeft(student.id);
+            setConfirmMarkLeft(false);
+          }}
+        />
+      )}
+      {confirmErase && (
+        <ConfirmDialog
+          title="Erase permanently?"
+          message={`This permanently deletes ${displayName(student)} and ALL of their attendance, achievements and registrations. This cannot be undone. Consider printing their student record first.`}
+          confirmLabel="Erase forever"
+          onCancel={() => setConfirmErase(false)}
           onConfirm={async () => {
             await onDelete(student.id);
-            setConfirmDelete(false);
+            setConfirmErase(false);
           }}
+        />
+      )}
+      {showRecord && (
+        <StudentRecordModal
+          student={student}
+          attendance={attendance}
+          achievements={achievements}
+          tournaments={tournaments}
+          tournamentEvents={tournamentEvents}
+          onClose={() => setShowRecord(false)}
         />
       )}
       {showCreateParentLogin && (

@@ -6,6 +6,9 @@ import { displayName } from '../lib/identity';
 
 export function computeNotifications(students, attendance, achievements) {
   const items = [];
+  // Former members (left_at) don't get absence nudges — they've left the
+  // club, so a stale absent mark from their last days shouldn't nag the coach.
+  const activeIds = new Set(students.filter((s) => !s.left_at).map((s) => s.id));
   function studentName(id) {
     return displayName(students.find((s) => s.id === id)) || 'A student';
   }
@@ -25,7 +28,7 @@ export function computeNotifications(students, attendance, achievements) {
   const recentDate = attendance.length ? [...attendance].sort((a, b) => b.date.localeCompare(a.date))[0].date : null;
   if (recentDate) {
     attendance
-      .filter((a) => a.date === recentDate && a.status === 'absent')
+      .filter((a) => a.date === recentDate && a.status === 'absent' && activeIds.has(a.student_id))
       .forEach((a) => {
         items.push({
           id: `abs-${a.id}`,

@@ -201,6 +201,8 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         profiles={data.profiles}
         parentLinks={data.parentLinks}
         onUpdate={data.updateStudent}
+        onMarkLeft={data.markStudentLeft}
+        onReinstate={data.reinstateStudent}
         onDelete={data.deleteStudent}
         onAddAchievement={data.addAchievement}
         onCreateParentAccount={data.createParentAccountByPhone}

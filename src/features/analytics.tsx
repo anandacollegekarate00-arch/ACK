@@ -103,9 +103,11 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
   // not just a low attendance percentage — deliberately ignores the year
   // filter (only the session filter) since "how long has it been" is a
   // question about right now, not about whichever year happens to be picked.
+  // Former members are excluded — a leaver isn't "needs attention".
   const needsAttention = React.useMemo(() => {
     const today = todayISO();
     return students
+      .filter((s) => !s.left_at)
       .map((s) => ({ student: s, status: studentAbsenceStatus(sessionScoped, s.id, today) }))
       .filter((r) => r.status && r.status.days > ABSENCE_ALERT_DAYS)
       .sort((a, b) => b.status.days - a.status.days)
@@ -332,8 +334,16 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
                   </span>
                   <Avatar name={displayName(r.student)} size={28} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate" style={{ color: 'var(--ack-heading)' }}>
+                    <p className="text-xs font-semibold truncate flex items-center gap-1.5" style={{ color: 'var(--ack-heading)' }}>
                       {displayName(r.student)}
+                      {r.student.left_at && (
+                        <span
+                          className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full shrink-0"
+                          style={{ background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }}
+                        >
+                          former
+                        </span>
+                      )}
                     </p>
                     <p className="text-[10px] text-[var(--ack-muted)] truncate">
                       {playerMetric === 'medals' &&

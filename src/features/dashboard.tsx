@@ -144,10 +144,14 @@ export function greetingFor() {
 }
 
 export function Dashboard({ profile, students, attendance, achievements, sessions, goToTab, push }) {
+  // Current-member stats only — former members (left_at set) drop out of the
+  // average attendance and absence alerts, but their history still counts in
+  // the dated trend charts (AttendanceTrend filters on dates, not students).
+  const activeStudents = students.filter((s) => !s.left_at);
   const todayRecs = attendance.filter((a) => a.date === todayISO());
   const presentToday = todayRecs.filter((r) => r.status === 'present').length;
-  const avgAttendance = students.length
-    ? Math.round(students.reduce((s, st) => s + statsFor(st.id, attendance).presentPct, 0) / students.length)
+  const avgAttendance = activeStudents.length
+    ? Math.round(activeStudents.reduce((s, st) => s + statsFor(st.id, attendance).presentPct, 0) / activeStudents.length)
     : 0;
   const todaysSessions = sessionsForToday(sessions);
 
@@ -159,13 +163,13 @@ export function Dashboard({ profile, students, attendance, achievements, session
       </h1>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-        <StatCard icon={Users} label="Total Students" value={students.length} tint={ROYAL} />
+        <StatCard icon={Users} label="Total Students" value={activeStudents.length} tint={ROYAL} />
         <StatCard icon={Check} label="Present Today" value={presentToday} tint={SUCCESS} />
         <StatCard icon={TrendingUp} label="Avg. Attendance (late = half)" value={`${avgAttendance}%`} tint={ROYAL} />
         <StatCard icon={Trophy} label="Achievements" value={achievements.length} tint={GOLD} />
       </div>
 
-      <AttendanceTrend attendance={attendance} sessions={sessions} students={students} goToAnalytics={() => goToTab('analytics')} />
+      <AttendanceTrend attendance={attendance} sessions={sessions} students={activeStudents} goToAnalytics={() => goToTab('analytics')} />
 
       <Card className="p-4 mb-4">
         <div className="flex items-center justify-between mb-3">

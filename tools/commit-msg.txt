@@ -1,0 +1,13 @@
+Former members feature
+
+- Migration 0010: students.left_at column (former member flag)
+- markStudentLeft: unlinks parents, stops attendance marking, keeps history
+- reinstateStudent: restores active status
+- deleteStudent: permanent erase of former member + all their records
+- Attendance view: former members excluded from marking/bulk absent/QR lookup
+- Dashboard: active-only totals, avg attendance, absence alerts
+- Analytics: former members in Top Players leaderboard (tagged "former"), excluded from Needs Attention
+- Notifications: absent alerts skip former members
+- Students screen: "Former members" filter, left badge on cards, mark-as-left / restore / erase actions
+- Student record modal: printable PDF via browser print (Print / Save as PDF), shows profile, attendance summary, all achievements
+- Print CSS isolates record area for clean PDF

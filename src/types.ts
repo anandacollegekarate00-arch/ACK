@@ -14,6 +14,7 @@ export interface Student {
   parent_email?: string;
   photo_url?: string | null;
   deleted_at?: string | null;
+  left_at?: string | null;
   created_at?: string;
   [key: string]: unknown;
 }

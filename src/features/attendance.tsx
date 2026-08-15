@@ -37,15 +37,18 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
     setSessionId(dateSessions.length === 1 ? dateSessions[0].id : null);
   }, [dateSessions, date, sessions]);
 
-  const filtered = students.filter(
+  // Former members (left_at set) no longer take part in attendance marking —
+  // they can't collect absent marks anymore, but their history stays intact.
+  const activeStudents = React.useMemo(() => students.filter((s) => !s.left_at), [students]);
+  const filtered = activeStudents.filter(
     (s) => displayName(s).toLowerCase().includes(query.toLowerCase()) || s.admission_id.toLowerCase().includes(query.toLowerCase())
   );
   const existingRec = selected ? findRec(attendance, date, sessionId, selected.id) : null;
   const sessionLabel = sessionId ? dateSessions.find((s) => s.id === sessionId)?.title || 'Session' : 'General (no session picked)';
   const isToday = date === todayISO();
   const unmarked = React.useMemo(
-    () => students.filter((s) => !findRec(attendance, date, sessionId, s.id)),
-    [students, attendance, date, sessionId]
+    () => activeStudents.filter((s) => !findRec(attendance, date, sessionId, s.id)),
+    [activeStudents, attendance, date, sessionId]
   );
 
   async function confirm() {
@@ -93,7 +96,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
   }
 
   function lookupByAdmissionId(code) {
-    const match = students.find((s) => s.admission_id.toLowerCase() === code.trim().toLowerCase());
+    const match = activeStudents.find((s) => s.admission_id.toLowerCase() === code.trim().toLowerCase());
     return match || null;
   }
 
@@ -175,7 +178,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
         <p className="text-[11px] text-[var(--ack-muted)] mb-3">Viewing a past date — you can still add, change, or remove marks here.</p>
       )}
 
-      <DaySummaryBar attendance={attendance} date={date} sessionId={sessionId} totalStudents={students.length} />
+      <DaySummaryBar attendance={attendance} date={date} sessionId={sessionId} totalStudents={activeStudents.length} />
 
       {unmarked.length > 0 && (
         <button
