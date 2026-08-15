@@ -479,7 +479,10 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   const linkParentToStudent = React.useCallback(
     async (parentId, studentId) => {
       const { error } = await supabaseClient.from('parent_students').insert({ parent_id: parentId, student_id: studentId });
-      if (error) throw error;
+      if (error) {
+        console.error('Link parent to student error:', error);
+        throw new Error(error.message || 'Could not link student to parent');
+      }
       await refetch('parent_students');
     },
     [refetch, supabaseClient]
