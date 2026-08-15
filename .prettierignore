@@ -6,3 +6,9 @@ tools/
 dist/
 build-app.mjs
 smoke-test.mjs
+
+# Vendored agent skills (installed via `npx skills`) — third-party content,
+# not ours to reformat.
+.agents/
+.opencode/
+skills-lock.json
