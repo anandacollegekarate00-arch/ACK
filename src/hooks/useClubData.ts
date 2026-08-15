@@ -550,6 +550,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   
   const createStaffAccount = React.useCallback(
     async ({ email, password, name, role, permissions }) => {
+      console.log('Creating staff account with role:', role);
+      
       const { data, error} = await supabaseSecondaryClient.auth.signUp({
         email,
         password,
@@ -568,10 +570,13 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
 
       const newUserId = data.user?.id;
       if (newUserId) {
-        await new Promise((r) => setTimeout(r, 500));
+        console.log('New user ID:', newUserId, 'Setting role to:', role);
+        await new Promise((r) => setTimeout(r, 1000)); // Increase wait time to 1 second
         
-        // Update profile with role
+        // Update profile with role - ensure role is set correctly
         const profileUpdate = await supabaseClient.from('profiles').update({ role, name }).eq('id', newUserId);
+        console.log('Profile update result:', profileUpdate);
+        
         if (profileUpdate.error) {
           console.error('Profile update error:', profileUpdate.error);
           throw profileUpdate.error;
@@ -587,10 +592,12 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
             can_promote_belts: false,
           };
           
+          console.log('Inserting permissions for senior player:', permsToInsert);
           const permInsert = await supabaseClient.from('user_permissions').insert({
             user_id: newUserId,
             ...permsToInsert
           });
+          
           if (permInsert.error) {
             console.error('Permissions insert error:', permInsert.error);
             throw permInsert.error;
@@ -600,6 +607,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
 
       await supabaseSecondaryClient.auth.signOut();
       await Promise.all([refetch('profiles'), refetch('user_permissions')]);
+      
+      console.log('Staff account created successfully');
     },
     [refetch, supabaseClient, supabaseSecondaryClient]
   );
