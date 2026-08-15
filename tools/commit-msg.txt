@@ -1,0 +1,7 @@
+Fix PGRST204: removed non-existent deleted_at column references
+
+The students table never had a deleted_at column (it was referenced in
+code but never created in any migration). This caused PGRST204
+"Could not find the deleted_at column" errors on every student fetch.
+Removed the dead filter and realtime handlers; former members now use
+left_at exclusively (UI-layer filtering).

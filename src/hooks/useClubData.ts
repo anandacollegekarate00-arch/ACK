@@ -33,10 +33,9 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
         if (data) setSettings(data);
         return;
       }
-      // Archived (soft-deleted) students are hidden from every listing the app
-      // builds from this list, but their rows remain in the DB for the record.
-      let query = supabaseClient.from(table).select('*');
-      if (table === 'students') query = query.is('deleted_at', null);
+      // Former members (left_at set) are filtered at the UI layer — the
+      // database no longer uses a deleted_at column.
+      const query = supabaseClient.from(table).select('*');
       const { data, error } = await query;
       if (error) {
         console.error(`Failed to load ${table}:`, error);
@@ -96,10 +95,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       setter((prev) => {
         switch (eventType) {
           case 'INSERT':
-            if (table === 'students' && row.deleted_at) return prev;
             return prev.some((r) => r.id === row.id) ? prev : [row, ...prev];
           case 'UPDATE':
-            if (table === 'students' && row.deleted_at) return prev.filter((r) => r.id !== row.id);
             return prev.map((r) => (r.id === row.id ? row : r));
           case 'DELETE':
             return prev.filter((r) => r.id !== (oldRow && oldRow.id));
