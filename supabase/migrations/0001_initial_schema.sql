@@ -225,6 +225,7 @@ CREATE TABLE IF NOT EXISTS admission_counters (
 );
 
 ALTER TABLE admission_counters ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Staff manage admission counters" ON admission_counters;
 CREATE POLICY "Staff manage admission counters"
   ON admission_counters FOR ALL
   USING (is_staff());
