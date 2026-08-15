@@ -550,6 +550,11 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   
   const createStaffAccount = React.useCallback(
     async ({ email, password, name, role, permissions }) => {
+      console.log('=== CREATE STAFF ACCOUNT DEBUG ===');
+      console.log('Input role:', role);
+      console.log('Input email:', email);
+      console.log('Input permissions:', permissions);
+      
       // Use database function to create staff account properly
       // This ensures role is set correctly from the start
       const { data, error } = await supabaseClient.rpc('admin_create_staff_user', {
@@ -559,12 +564,26 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
         user_permissions: permissions ? JSON.stringify(permissions) : null
       });
 
+      console.log('RPC response - data:', data);
+      console.log('RPC response - error:', error);
+
       if (error) {
         console.error('Staff account creation error:', error);
         throw new Error(error.message || 'Could not create staff account');
       }
 
-      console.log('Staff account created:', data);
+      console.log('Staff account created successfully, user_id:', data?.user_id);
+      
+      // Double-check the profile was created with correct role
+      if (data?.user_id) {
+        const { data: profileCheck } = await supabaseClient
+          .from('profiles')
+          .select('id, role, name')
+          .eq('id', data.user_id)
+          .single();
+        
+        console.log('Profile check after creation:', profileCheck);
+      }
       
       await Promise.all([refetch('profiles'), refetch('user_permissions')]);
     },
