@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw } from '../icons';
+import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw, X } from '../icons';
 import { Avatar, Card, PrimaryButton, Field, inputCls, Modal } from '../components/ui';
 import { ROYAL, DANGER, WARNING, SUCCESS } from '../lib/theme';
 import { displayName } from '../lib/identity';
@@ -161,7 +161,7 @@ export function CreateParentLoginModal({ student, onClose, onCreate }) {
     setError('');
     try {
       // onCreate returns the one-time password the DB generated for the parent
-      const pwd = await onCreate({ phone, studentId: student.id, name: `${displayName(student)}'s guardian` });
+      const pwd = await onCreate({ phone, studentIds: [student.id], name: `${displayName(student)}'s guardian` });
       setGeneratedPassword(pwd || '');
       setDone(true);
     } catch (e) {
@@ -260,8 +260,17 @@ export function ResetParentPasswordDialog({ parentProfile, onClose, onReset }) {
   );
 }
 
-export function ParentAccountsPanel({ students, profiles, parentLinks, onCreate, onResetPassword, onClose }) {
-  const [studentId, setStudentId] = React.useState(students[0]?.id ?? '');
+export function ParentAccountsPanel({
+  students,
+  profiles,
+  parentLinks,
+  onCreate,
+  onLinkStudent,
+  onUnlinkStudent,
+  onResetPassword,
+  onClose,
+}) {
+  const [selectedIds, setSelectedIds] = React.useState([]);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
@@ -273,12 +282,23 @@ export function ParentAccountsPanel({ students, profiles, parentLinks, onCreate,
     return displayName(students.find((s) => s.id === id)) || 'Unknown';
   }
 
-  function linkedStudents(parentId) {
-    return parentLinks.filter((l) => l.parent_id === parentId).map((l) => studentName(l.student_id));
+  function linkedStudentIds(parentId) {
+    return parentLinks.filter((l) => l.parent_id === parentId).map((l) => l.student_id);
+  }
+
+  function toggleSelected(id) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
   async function submit() {
-    if (!studentId || !email || !password) return;
+    if (selectedIds.length === 0) {
+      setError('Select at least one student to link.');
+      return;
+    }
+    if (!email || !password) {
+      setError('Email and password are required.');
+      return;
+    }
     if (password.length < 6) {
       setError('Password must be at least 6 characters.');
       return;
@@ -286,10 +306,11 @@ export function ParentAccountsPanel({ students, profiles, parentLinks, onCreate,
     setBusy(true);
     setError('');
     try {
-      const student = students.find((s) => s.id === studentId);
-      await onCreate({ email: email.trim(), password, studentId, name: `${student ? displayName(student) : ''}'s guardian` });
+      const names = selectedIds.map(studentName).join(', ');
+      await onCreate({ email: email.trim(), password, studentIds: selectedIds, name: `${names}'s guardian` });
       setEmail('');
       setPassword('');
+      setSelectedIds([]);
     } catch (e) {
       setError(e.message || 'Could not create that account.');
     } finally {
@@ -300,19 +321,35 @@ export function ParentAccountsPanel({ students, profiles, parentLinks, onCreate,
   return (
     <Modal title="Parent Logins" onClose={onClose} wide>
       <p className="text-xs text-[var(--ack-muted)] mb-3">
-        Create a login for a parent, tied to their child — a student can have more than one (e.g. both parents), and one parent can be
-        linked to several children. Parents can only view their own children, read-only. Share the password with them directly — they can
-        change it after logging in. To create a login by WhatsApp number instead, use the "Create Parent Login" button on the student's own
-        profile.
+        Create a login for a parent and link it to one or more of their children. Parents can only view their own children, read-only. Share
+        the password with them directly — they can change it after logging in. To create a login by WhatsApp number instead, use the "Create
+        Parent Login" button on the student's own profile.
       </p>
-      <Field label="Student">
-        <select className={inputCls} value={studentId} onChange={(e) => setStudentId(e.target.value)}>
-          {students.map((s) => (
-            <option key={s.id} value={s.id}>
-              {displayName(s)} ({s.admission_id})
-            </option>
-          ))}
-        </select>
+      <Field label="Students (select one or more)">
+        {students.length === 0 ? (
+          <p className="text-xs text-[var(--ack-muted)]">No students yet — add students first.</p>
+        ) : (
+          <div className="space-y-1.5 max-h-44 overflow-y-auto">
+            {students.map((s) => (
+              <label
+                key={s.id}
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 cursor-pointer"
+                style={{ background: selectedIds.includes(s.id) ? `${ROYAL}14` : 'var(--ack-surface-2)' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(s.id)}
+                  onChange={() => toggleSelected(s.id)}
+                  className="accent-[#1F5EFF]"
+                />
+                <span className="text-sm font-medium" style={{ color: 'var(--ack-heading)' }}>
+                  {displayName(s)}
+                </span>
+                <span className="text-[11px] text-[var(--ack-muted)] ml-auto">{s.admission_id}</span>
+              </label>
+            ))}
+          </div>
+        )}
       </Field>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="Parent's email">
@@ -328,23 +365,15 @@ export function ParentAccountsPanel({ students, profiles, parentLinks, onCreate,
       </PrimaryButton>
       <div className="space-y-2">
         {parentProfiles.map((p) => (
-          <div key={p.id} className="flex items-center justify-between bg-[var(--ack-surface-2)] rounded-xl p-3">
-            <div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
-                {p.name}
-              </p>
-              <p className="text-[11px] text-[var(--ack-muted)]">
-                {linkedStudents(p.id).length > 0 ? `Linked to ${linkedStudents(p.id).join(', ')}` : 'No students linked'}
-              </p>
-            </div>
-            <button
-              onClick={() => setResetTarget(p)}
-              className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg shrink-0"
-              style={{ background: `${WARNING}14`, color: WARNING }}
-            >
-              Reset Password
-            </button>
-          </div>
+          <ParentRow
+            key={p.id}
+            parent={p}
+            students={students}
+            linkedIds={linkedStudentIds(p.id)}
+            onLink={(studentId) => onLinkStudent(p.id, studentId)}
+            onUnlink={(studentId) => onUnlinkStudent(p.id, studentId)}
+            onReset={() => setResetTarget(p)}
+          />
         ))}
         {parentProfiles.length === 0 && <p className="text-xs text-[var(--ack-muted)] text-center py-4">No parent logins created yet.</p>}
       </div>
@@ -353,6 +382,102 @@ export function ParentAccountsPanel({ students, profiles, parentLinks, onCreate,
       )}
     </Modal>
   );
+}
+
+function ParentRow({ parent, students, linkedIds, onLink, onUnlink, onReset }) {
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [pendingStudent, setPendingStudent] = React.useState('');
+  const available = students.filter((s) => !linkedIds.includes(s.id));
+
+  async function add() {
+    if (!pendingStudent) return;
+    setBusy(true);
+    setError('');
+    try {
+      await onLink(pendingStudent);
+      setPendingStudent('');
+    } catch (e) {
+      setError(e.message || 'Could not link that student.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove(studentId) {
+    setBusy(true);
+    setError('');
+    try {
+      await onUnlink(studentId);
+    } catch (e) {
+      setError(e.message || 'Could not unlink that student.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="bg-[var(--ack-surface-2)] rounded-xl p-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold truncate" style={{ color: 'var(--ack-heading)' }}>
+            {parent.name}
+          </p>
+          {linkedIds.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              {linkedIds.map((sid) => (
+                <span
+                  key={sid}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: `${ROYAL}14`, color: ROYAL }}
+                >
+                  {studentNameFor(sid, students)}
+                  <button onClick={() => remove(sid)} disabled={busy} title="Unlink student" className="hover:opacity-70">
+                    <X size={10} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[11px] text-[var(--ack-muted)] mt-1">No students linked</p>
+          )}
+        </div>
+        <button
+          onClick={onReset}
+          className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg shrink-0"
+          style={{ background: `${WARNING}14`, color: WARNING }}
+        >
+          Reset Password
+        </button>
+      </div>
+      {available.length > 0 && (
+        <div className="flex gap-2 mt-2.5">
+          <select className={`${inputCls} !py-2 !text-xs`} value={pendingStudent} onChange={(e) => setPendingStudent(e.target.value)}>
+            <option value="">Add another child…</option>
+            {available.map((s) => (
+              <option key={s.id} value={s.id}>
+                {displayName(s)} ({s.admission_id})
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={add}
+            disabled={busy || !pendingStudent}
+            className="shrink-0 px-3 py-2 rounded-xl text-xs font-semibold text-white"
+            style={{ background: ROYAL }}
+          >
+            Link
+          </button>
+        </div>
+      )}
+      {error && <p className="text-[11px] text-red-600 mt-1.5">{error}</p>}
+    </div>
+  );
+}
+
+function studentNameFor(id, students) {
+  const s = students.find((x) => x.id === id);
+  return s ? displayName(s) : 'Unknown';
 }
 
 export function ProfileView({
@@ -364,6 +489,8 @@ export function ProfileView({
   onSignOut,
   onUpdateProfile,
   onCreateParentAccount,
+  onLinkStudent,
+  onUnlinkStudent,
   onResetParentPassword,
   darkMode,
   onToggleDarkMode,
@@ -475,6 +602,8 @@ export function ProfileView({
           profiles={profiles}
           parentLinks={parentLinks}
           onCreate={onCreateParentAccount}
+          onLinkStudent={onLinkStudent}
+          onUnlinkStudent={onUnlinkStudent}
           onResetPassword={onResetParentPassword}
           onClose={() => setShowParentPanel(false)}
         />

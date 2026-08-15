@@ -337,6 +337,8 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
           await refreshProfile();
         }}
         onCreateParentAccount={data.createParentAccount}
+        onLinkStudent={data.linkParentToStudent}
+        onUnlinkStudent={data.unlinkParentFromStudent}
         onResetParentPassword={data.resetParentPassword}
         darkMode={darkMode}
         onToggleDarkMode={toggleDarkMode}

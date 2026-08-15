@@ -391,7 +391,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   );
 
   const createParentAccount = React.useCallback(
-    async ({ email, password, studentId, name }) => {
+    async ({ email, password, studentIds, name }) => {
       const { data, error } = await supabaseSecondaryClient.auth.signUp({ email, password, options: { data: { role: 'parent', name } } });
       if (error) throw error;
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
@@ -402,7 +402,9 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       if (newUserId) {
         await new Promise((r) => setTimeout(r, 500));
         await supabaseClient.from('profiles').update({ role: 'parent', name }).eq('id', newUserId);
-        await supabaseClient.from('parent_students').insert({ parent_id: newUserId, student_id: studentId });
+        if (studentIds && studentIds.length > 0) {
+          await supabaseClient.from('parent_students').insert(studentIds.map((student_id) => ({ parent_id: newUserId, student_id })));
+        }
       }
       await supabaseSecondaryClient.auth.signOut();
       await Promise.all([refetch('profiles'), refetch('parent_students')]);
@@ -425,9 +427,9 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   );
 
   const createParentAccountByPhone = React.useCallback(
-    async ({ phone, studentId, name, password }) => {
+    async ({ phone, studentIds, name, password }) => {
       const { data, error } = await supabaseClient.rpc('admin_create_parent_login', {
-        student_id: studentId,
+        student_ids: studentIds,
         login_phone: phone,
         parent_name: name,
         new_password: password || null,
@@ -435,6 +437,26 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       if (error) throw error;
       await Promise.all([refetch('profiles'), refetch('parent_students')]);
       return data; // the generated password
+    },
+    [refetch, supabaseClient]
+  );
+
+  // Link/unlink additional students on an EXISTING parent account (staff RLS
+  // policy "Staff can manage parent links" allows direct inserts/deletes).
+  const linkParentToStudent = React.useCallback(
+    async (parentId, studentId) => {
+      const { error } = await supabaseClient.from('parent_students').insert({ parent_id: parentId, student_id: studentId });
+      if (error) throw error;
+      await refetch('parent_students');
+    },
+    [refetch, supabaseClient]
+  );
+
+  const unlinkParentFromStudent = React.useCallback(
+    async (parentId, studentId) => {
+      const { error } = await supabaseClient.from('parent_students').delete().eq('parent_id', parentId).eq('student_id', studentId);
+      if (error) throw error;
+      await refetch('parent_students');
     },
     [refetch, supabaseClient]
   );
@@ -477,6 +499,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     createParentAccount,
     createParentAccountByPhone,
     resetParentPassword,
+    linkParentToStudent,
+    unlinkParentFromStudent,
     refetchAll,
   };
 }
