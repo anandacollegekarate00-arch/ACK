@@ -609,16 +609,24 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
 
   const deleteUser = React.useCallback(
     async (userId) => {
+      console.log('Attempting to delete user:', userId);
+      
       // Use database function to delete user completely (auth + profile + permissions)
-      const { error } = await supabaseClient.rpc('admin_delete_user', {
+      const { data, error } = await supabaseClient.rpc('admin_delete_user', {
         target_user_id: userId
       });
+      
+      console.log('Delete result:', { data, error });
+      
       if (error) {
         console.error('Delete user error:', error);
-        throw error;
+        throw new Error(error.message || 'Could not delete user');
       }
       
+      // Force refetch to update UI
+      console.log('Refetching profiles and permissions...');
       await Promise.all([refetch('profiles'), refetch('user_permissions')]);
+      console.log('Refetch complete');
     },
     [refetch, supabaseClient]
   );
