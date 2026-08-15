@@ -244,6 +244,14 @@ export const FileText = makeIcon(
   </>
 );
 export const Star = makeIcon(<polygon points="12 2 15 9 22 9 16.5 13.5 18.5 21 12 16.5 5.5 21 7.5 13.5 2 9 9 9" />);
+export const RefreshCw = makeIcon(
+  <>
+    <polyline points="23 4 23 10 17 10" />
+    <polyline points="1 20 1 14 7 14" />
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+    <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+  </>
+);
 export const PieChartIcon = makeIcon(
   <>
     <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />

@@ -1,9 +1,12 @@
 import React from 'react';
-import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut } from '../icons';
+import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw } from '../icons';
 import { Avatar, Card, PrimaryButton, Field, inputCls, Modal } from '../components/ui';
-import { ROYAL, DANGER, WARNING } from '../lib/theme';
+import { ROYAL, DANGER, WARNING, SUCCESS } from '../lib/theme';
 import { displayName } from '../lib/identity';
 import { StudentProfilePage } from './/students';
+import { MiniBarChart } from '../components/charts';
+import { ProgressRing } from '../components/ui';
+import { AttendanceOverview } from '../types';
 
 export function EditProfileModal({ profile, onClose, onSave }) {
   const [name, setName] = React.useState(profile.name || '');
@@ -257,7 +260,7 @@ export function ResetParentPasswordDialog({ parentProfile, onClose, onReset }) {
   );
 }
 
-export function ParentAccountsPanel({ students, profiles, onCreate, onResetPassword, onClose }) {
+export function ParentAccountsPanel({ students, profiles, parentLinks, onCreate, onResetPassword, onClose }) {
   const [studentId, setStudentId] = React.useState(students[0]?.id ?? '');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -268,6 +271,10 @@ export function ParentAccountsPanel({ students, profiles, onCreate, onResetPassw
 
   function studentName(id) {
     return displayName(students.find((s) => s.id === id)) || 'Unknown';
+  }
+
+  function linkedStudents(parentId) {
+    return parentLinks.filter((l) => l.parent_id === parentId).map((l) => studentName(l.student_id));
   }
 
   async function submit() {
@@ -293,9 +300,10 @@ export function ParentAccountsPanel({ students, profiles, onCreate, onResetPassw
   return (
     <Modal title="Parent Logins" onClose={onClose} wide>
       <p className="text-xs text-[var(--ack-muted)] mb-3">
-        Create a login for a parent, tied to their child — a student can have more than one (e.g. both parents). Parents can only view their
-        own child, read-only. Share the password with them directly — they can change it after logging in. To create a login by WhatsApp
-        number instead, use the "Create Parent Login" button on the student's own profile.
+        Create a login for a parent, tied to their child — a student can have more than one (e.g. both parents), and one parent can be
+        linked to several children. Parents can only view their own children, read-only. Share the password with them directly — they can
+        change it after logging in. To create a login by WhatsApp number instead, use the "Create Parent Login" button on the student's own
+        profile.
       </p>
       <Field label="Student">
         <select className={inputCls} value={studentId} onChange={(e) => setStudentId(e.target.value)}>
@@ -325,7 +333,9 @@ export function ParentAccountsPanel({ students, profiles, onCreate, onResetPassw
               <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
                 {p.name}
               </p>
-              <p className="text-[11px] text-[var(--ack-muted)]">Linked to {studentName(p.student_id)}</p>
+              <p className="text-[11px] text-[var(--ack-muted)]">
+                {linkedStudents(p.id).length > 0 ? `Linked to ${linkedStudents(p.id).join(', ')}` : 'No students linked'}
+              </p>
             </div>
             <button
               onClick={() => setResetTarget(p)}
@@ -350,6 +360,7 @@ export function ProfileView({
   user,
   students,
   profiles,
+  parentLinks,
   onSignOut,
   onUpdateProfile,
   onCreateParentAccount,
@@ -462,6 +473,7 @@ export function ProfileView({
         <ParentAccountsPanel
           students={students}
           profiles={profiles}
+          parentLinks={parentLinks}
           onCreate={onCreateParentAccount}
           onResetPassword={onResetParentPassword}
           onClose={() => setShowParentPanel(false)}
@@ -473,6 +485,7 @@ export function ProfileView({
 
 export function ParentView({
   profile,
+  parentLinks,
   students,
   attendance,
   achievements,
@@ -480,9 +493,55 @@ export function ParentView({
   tournamentSeries,
   tournamentEvents,
   eventRegistrations,
+  supabaseClient,
   onSignOut,
 }) {
-  const student = students.find((s) => s.id === profile.student_id);
+  const [selectedId, setSelectedId] = React.useState('');
+  const [mode, setMode] = React.useState<'child' | 'overview'>('child');
+  const [overview, setOverview] = React.useState<AttendanceOverview | null>(null);
+  const [overviewLoading, setOverviewLoading] = React.useState(false);
+  const [overviewError, setOverviewError] = React.useState('');
+
+  const linked = React.useMemo(
+    () =>
+      parentLinks
+        .filter((l) => l.parent_id === profile.id)
+        .map((l) => students.find((s) => s.id === l.student_id))
+        .filter(Boolean),
+    [parentLinks, students, profile.id]
+  );
+
+  const activeStudent = linked.find((s) => s.id === selectedId) ?? linked[0];
+
+  const loadOverview = React.useCallback(async () => {
+    setOverviewLoading(true);
+    setOverviewError('');
+    try {
+      const { data, error } = await supabaseClient.rpc('get_attendance_overview');
+      if (error) throw error;
+      setOverview((data as AttendanceOverview) || null);
+    } catch (e) {
+      setOverviewError(e.message || 'Could not load the attendance overview.');
+    } finally {
+      setOverviewLoading(false);
+    }
+  }, [supabaseClient]);
+
+  React.useEffect(() => {
+    loadOverview();
+  }, [loadOverview]);
+
+  const chartData = React.useMemo(
+    () =>
+      overview
+        ? overview.months
+            .slice()
+            .reverse()
+            .map((m) => ({ month: m.label, rate: m.rate }))
+        : [],
+    [overview]
+  );
+
   return (
     <div className="min-h-dvh bg-[var(--ack-bg)]">
       <div
@@ -500,19 +559,161 @@ export function ParentView({
           <LogOut size={18} color="#fff" />
         </button>
       </div>
-      {student ? (
-        <StudentProfilePage
-          student={student}
-          attendance={attendance}
-          achievements={achievements}
-          tournaments={tournaments}
-          tournamentSeries={tournamentSeries}
-          tournamentEvents={tournamentEvents}
-          eventRegistrations={eventRegistrations}
-          readOnly
-        />
+
+      {linked.length === 0 ? (
+        <p className="p-6 text-sm text-gray-400">No children are linked to this account. Please contact a coach.</p>
       ) : (
-        <p className="p-6 text-sm text-gray-400">No student is linked to this account. Please contact a coach.</p>
+        <>
+          <div className="flex gap-2 p-4 pb-0">
+            {(
+              [
+                { key: 'child', label: 'My Children' },
+                { key: 'overview', label: 'Club Attendance' },
+              ] as const
+            ).map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setMode(t.key)}
+                className="flex-1 py-2 rounded-xl text-xs font-semibold transition"
+                style={
+                  mode === t.key ? { background: ROYAL, color: '#fff' } : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }
+                }
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {mode === 'child' ? (
+            <>
+              {linked.length > 1 && (
+                <div className="flex gap-2 p-4 pb-0 overflow-x-auto">
+                  {linked.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedId(s.id)}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition"
+                      style={
+                        activeStudent?.id === s.id
+                          ? { background: `${ROYAL}1A`, color: ROYAL }
+                          : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }
+                      }
+                    >
+                      {displayName(s)}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {activeStudent ? (
+                <StudentProfilePage
+                  student={activeStudent}
+                  attendance={attendance}
+                  achievements={achievements}
+                  tournaments={tournaments}
+                  tournamentSeries={tournamentSeries}
+                  tournamentEvents={tournamentEvents}
+                  eventRegistrations={eventRegistrations}
+                  readOnly
+                />
+              ) : (
+                <p className="p-6 text-sm text-gray-400">Could not load this child's details.</p>
+              )}
+            </>
+          ) : (
+            <div className="p-4 sm:p-6 max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-extrabold" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
+                  Club Attendance
+                </h2>
+                <button
+                  onClick={loadOverview}
+                  className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg"
+                  style={{ background: `${ROYAL}14`, color: ROYAL }}
+                >
+                  <RefreshCw size={12} /> Refresh
+                </button>
+              </div>
+              <p className="text-xs text-[var(--ack-muted)] mb-4">
+                Overall attendance across the whole club — no individual student data is shown.
+              </p>
+
+              {overviewLoading && !overview ? (
+                <p className="text-sm text-[var(--ack-muted)] text-center py-10">Loading attendance overview…</p>
+              ) : overviewError ? (
+                <p className="text-sm text-red-500 text-center py-10">{overviewError}</p>
+              ) : overview ? (
+                <>
+                  <Card className="p-5 mb-3 flex flex-col items-center text-center">
+                    <ProgressRing percent={overview.rate} size={88} />
+                    <p className="text-[11px] text-[var(--ack-muted)] mt-1">Overall club attendance (late = half credit)</p>
+                    <div className="grid grid-cols-3 gap-3 w-full mt-4 text-center">
+                      <div>
+                        <p className="text-lg font-extrabold" style={{ color: SUCCESS }}>
+                          {overview.present}
+                        </p>
+                        <p className="text-[10px] text-[var(--ack-muted)]">Present</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-extrabold" style={{ color: WARNING }}>
+                          {overview.late}
+                        </p>
+                        <p className="text-[10px] text-[var(--ack-muted)]">Late</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-extrabold" style={{ color: DANGER }}>
+                          {overview.absent}
+                        </p>
+                        <p className="text-[10px] text-[var(--ack-muted)]">Absent</p>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-[var(--ack-muted)] mt-3">
+                      {overview.total} mark{overview.total === 1 ? '' : 's'} across {overview.students} student
+                      {overview.students === 1 ? '' : 's'}
+                    </p>
+                  </Card>
+
+                  <Card className="p-4 mb-3">
+                    <p className="font-bold text-sm mb-3" style={{ color: 'var(--ack-heading)' }}>
+                      Today
+                    </p>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div className="rounded-xl p-3" style={{ background: `${SUCCESS}14` }}>
+                        <p className="text-lg font-extrabold" style={{ color: SUCCESS }}>
+                          {overview.today.present}
+                        </p>
+                        <p className="text-[10px] text-[var(--ack-muted)]">Present</p>
+                      </div>
+                      <div className="rounded-xl p-3" style={{ background: `${WARNING}14` }}>
+                        <p className="text-lg font-extrabold" style={{ color: WARNING }}>
+                          {overview.today.late}
+                        </p>
+                        <p className="text-[10px] text-[var(--ack-muted)]">Late</p>
+                      </div>
+                      <div className="rounded-xl p-3" style={{ background: `${DANGER}14` }}>
+                        <p className="text-lg font-extrabold" style={{ color: DANGER }}>
+                          {overview.today.absent}
+                        </p>
+                        <p className="text-[10px] text-[var(--ack-muted)]">Absent</p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-4">
+                    <p className="font-bold text-sm mb-3" style={{ color: 'var(--ack-heading)' }}>
+                      Monthly Attendance
+                    </p>
+                    <div style={{ width: '100%', height: 160 }}>
+                      <MiniBarChart data={chartData} labelKey="month" valueKey="rate" color={ROYAL} />
+                    </div>
+                    {chartData.length === 0 && (
+                      <p className="text-xs text-[var(--ack-muted)] text-center py-6">No attendance records yet.</p>
+                    )}
+                  </Card>
+                </>
+              ) : null}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

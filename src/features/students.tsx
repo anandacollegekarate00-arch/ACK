@@ -721,6 +721,7 @@ export function StudentProfilePage({
   tournamentEvents = [],
   eventRegistrations = [],
   profiles = [],
+  parentLinks = [],
   readOnly = false,
   onUpdate = undefined,
   onDelete = undefined,
@@ -739,7 +740,10 @@ export function StudentProfilePage({
   const chartData = monthlySeries(student.id, attendance);
   const myAchievements = achievements.filter((a) => a.student_id === student.id).sort((a, b) => b.date.localeCompare(a.date));
   const medalCount = myAchievements.filter((a) => a.placement === 'Gold' || a.placement === 'Silver' || a.placement === 'Bronze').length;
-  const parentProfiles = profiles.filter((p) => p.role === 'parent' && p.student_id === student.id);
+  const parentProfiles = parentLinks
+    .filter((l) => l.student_id === student.id)
+    .map((l) => profiles.find((p) => p.id === l.parent_id))
+    .filter(Boolean);
   const hasParentAccount = parentProfiles.length > 0;
 
   // Upcoming Tournaments — events this student is registered for whose
@@ -806,7 +810,7 @@ export function StudentProfilePage({
         )}
       </Card>
 
-      {upcoming.length > 0 && (
+      {!readOnly && upcoming.length > 0 && (
         <Card className="overflow-hidden mb-4">
           <div className="px-4 py-3 border-b border-[var(--ack-border)] flex items-center gap-2">
             <Trophy size={16} color={ROYAL} />
@@ -939,20 +943,22 @@ export function StudentProfilePage({
         </Card>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-        <Card className="p-4">
-          <p className="text-2xl font-extrabold" style={{ color: 'var(--ack-heading)' }}>
-            {myAchievements.length}
-          </p>
-          <p className="text-[11px] text-[var(--ack-muted)]">Total Achievements</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-2xl font-extrabold" style={{ color: GOLD }}>
-            {medalCount}
-          </p>
-          <p className="text-[11px] text-[var(--ack-muted)]">Medals Won</p>
-        </Card>
-      </div>
+      {!readOnly && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <Card className="p-4">
+            <p className="text-2xl font-extrabold" style={{ color: 'var(--ack-heading)' }}>
+              {myAchievements.length}
+            </p>
+            <p className="text-[11px] text-[var(--ack-muted)]">Total Achievements</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-2xl font-extrabold" style={{ color: GOLD }}>
+              {medalCount}
+            </p>
+            <p className="text-[11px] text-[var(--ack-muted)]">Medals Won</p>
+          </Card>
+        </div>
+      )}
 
       {!readOnly && (
         <button
@@ -978,49 +984,51 @@ export function StudentProfilePage({
         <AttendanceCalendar studentId={student.id} attendance={attendance} />
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="px-4 py-3 border-b border-[var(--ack-border)] flex items-center gap-2">
-          <Award size={16} color={GOLD} />
-          <span className="font-bold text-sm" style={{ color: 'var(--ack-heading)' }}>
-            Achievement History
-          </span>
-        </div>
-        <div className="divide-y divide-[var(--ack-border)]">
-          {myAchievements.map((a) => {
-            const t = tournamentFor(a, tournaments);
-            const s = seriesFor(t, tournamentSeries);
-            return (
-              <div key={a.id} className="px-4 py-3">
-                {t && (
-                  <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: ROYAL }}>
-                    {s ? `${s.name} · ${t.name}` : t.name}
-                  </p>
-                )}
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
-                    {a.title}
-                  </p>
-                  <span className="text-[11px] text-[var(--ack-muted)]">{a.date}</span>
-                </div>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <LevelBadge level={a.level} />
-                  {a.placement && (
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: PLACEMENT_STYLE[a.placement].bg, color: PLACEMENT_STYLE[a.placement].fg }}
-                    >
-                      {a.placement}
-                    </span>
+      {!readOnly && (
+        <Card className="overflow-hidden">
+          <div className="px-4 py-3 border-b border-[var(--ack-border)] flex items-center gap-2">
+            <Award size={16} color={GOLD} />
+            <span className="font-bold text-sm" style={{ color: 'var(--ack-heading)' }}>
+              Achievement History
+            </span>
+          </div>
+          <div className="divide-y divide-[var(--ack-border)]">
+            {myAchievements.map((a) => {
+              const t = tournamentFor(a, tournaments);
+              const s = seriesFor(t, tournamentSeries);
+              return (
+                <div key={a.id} className="px-4 py-3">
+                  {t && (
+                    <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: ROYAL }}>
+                      {s ? `${s.name} · ${t.name}` : t.name}
+                    </p>
                   )}
-                  <span className="text-[11px] text-[var(--ack-muted)]">{a.date}</span>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
+                      {a.title}
+                    </p>
+                    <span className="text-[11px] text-[var(--ack-muted)]">{a.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <LevelBadge level={a.level} />
+                    {a.placement && (
+                      <span
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: PLACEMENT_STYLE[a.placement].bg, color: PLACEMENT_STYLE[a.placement].fg }}
+                      >
+                        {a.placement}
+                      </span>
+                    )}
+                    <span className="text-[11px] text-[var(--ack-muted)]">{a.date}</span>
+                  </div>
+                  {a.notes && <p className="text-xs text-[var(--ack-muted)] mt-1">{a.notes}</p>}
                 </div>
-                {a.notes && <p className="text-xs text-[var(--ack-muted)] mt-1">{a.notes}</p>}
-              </div>
-            );
-          })}
-          {myAchievements.length === 0 && <p className="p-4 text-sm text-[var(--ack-muted)]">No achievements logged yet.</p>}
-        </div>
-      </Card>
+              );
+            })}
+            {myAchievements.length === 0 && <p className="p-4 text-sm text-[var(--ack-muted)]">No achievements logged yet.</p>}
+          </div>
+        </Card>
+      )}
 
       {showEdit && (
         <StudentFormModal

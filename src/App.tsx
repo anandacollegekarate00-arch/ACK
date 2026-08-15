@@ -74,7 +74,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 export function App({ supabaseClient, supabaseSecondaryClient }) {
   const { session, profile, profileError, loading: authLoading, signIn, signOut, refreshProfile } = useAuth(supabaseClient);
   const isLoggedIn = !!session;
-  const data = useClubData(supabaseClient, supabaseSecondaryClient, isLoggedIn);
+  const data = useClubData(supabaseClient, supabaseSecondaryClient, isLoggedIn, session?.user?.id);
 
   const [tab, setTab] = React.useState('dashboard');
   const [stack, setStack] = React.useState([]);
@@ -158,6 +158,7 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
       <div className={darkMode ? 'ack-dark' : ''}>
         <ParentView
           profile={profile}
+          parentLinks={data.parentLinks}
           students={data.students}
           attendance={data.attendance}
           achievements={data.achievements}
@@ -165,6 +166,7 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
           tournamentSeries={data.tournamentSeries}
           tournamentEvents={data.tournamentEvents}
           eventRegistrations={data.eventRegistrations}
+          supabaseClient={supabaseClient}
           onSignOut={signOut}
         />
         {forcePwChange && <ChangePasswordModal supabaseClient={supabaseClient} required onClose={() => setForcePwChange(false)} />}
@@ -197,6 +199,7 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         tournamentEvents={data.tournamentEvents}
         eventRegistrations={data.eventRegistrations}
         profiles={data.profiles}
+        parentLinks={data.parentLinks}
         onUpdate={data.updateStudent}
         onDelete={data.deleteStudent}
         onAddAchievement={data.addAchievement}
@@ -326,6 +329,7 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         user={session.user}
         students={data.students}
         profiles={data.profiles}
+        parentLinks={data.parentLinks}
         supabaseClient={supabaseClient}
         onSignOut={signOut}
         onUpdateProfile={async (patch) => {

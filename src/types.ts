@@ -94,10 +94,39 @@ export interface Profile {
   id: string;
   full_name?: string;
   role: ProfileRole;
-  student_id?: string | null;
   avatar_url?: string | null;
   phone?: string | null;
   [key: string]: unknown;
+}
+
+// Many-to-many: one parent login can be linked to several children, and a
+// child can have more than one parent (see migration 0005).
+export interface ParentStudentLink {
+  parent_id: string;
+  student_id: string;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
+export interface AttendanceOverviewMonth {
+  month: string; // "2026-08"
+  label: string; // "Aug"
+  total: number;
+  present: number;
+  absent: number;
+  late: number;
+  rate: number; // late counts as half credit, 1 decimal
+}
+
+export interface AttendanceOverview {
+  students: number; // distinct students with any attendance record
+  total: number;
+  present: number;
+  absent: number;
+  late: number;
+  rate: number;
+  today: { present: number; absent: number; late: number };
+  months: AttendanceOverviewMonth[];
 }
 
 export interface ClubSettings {

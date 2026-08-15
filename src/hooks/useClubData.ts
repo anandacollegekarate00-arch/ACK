@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
+export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, userId) {
   const [students, setStudents] = React.useState([]);
   const [attendance, setAttendance] = React.useState([]);
   const [achievements, setAchievements] = React.useState([]);
@@ -11,6 +11,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
   const [sessions, setSessions] = React.useState([]);
   const [settings, setSettings] = React.useState({ id: 1, weight_attendance: 0.6 });
   const [profiles, setProfiles] = React.useState([]);
+  const [parentLinks, setParentLinks] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
   const refetch = React.useCallback(
@@ -25,6 +26,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
         event_registrations: setEventRegistrations,
         sessions: setSessions,
         profiles: setProfiles,
+        parent_students: setParentLinks,
       };
       if (table === 'club_settings') {
         const { data } = await supabaseClient.from('club_settings').select('*').eq('id', 1).single();
@@ -57,46 +59,57 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
       refetch('sessions'),
       refetch('club_settings'),
       refetch('profiles'),
+      refetch('parent_students'),
     ]);
   }, [refetch]);
 
   // Apply a realtime change to local state directly instead of re-downloading
   // the whole table. This keeps cross-device sync instant and cheap; full
   // refetches only happen after our own mutations or an explicit refresh.
-  const applyChange = React.useCallback((table, payload) => {
-    const setters = {
-      students: setStudents,
-      attendance: setAttendance,
-      achievements: setAchievements,
-      tournaments: setTournaments,
-      tournament_series: setTournamentSeries,
-      tournament_events: setTournamentEvents,
-      event_registrations: setEventRegistrations,
-      sessions: setSessions,
-      profiles: setProfiles,
-    };
-    const { eventType, new: row, old: oldRow } = payload;
-    if (table === 'club_settings' && row && eventType === 'UPDATE') {
-      setSettings(row);
-      return;
-    }
-    const setter = setters[table];
-    if (!setter || !row) return;
-    setter((prev) => {
-      switch (eventType) {
-        case 'INSERT':
-          if (table === 'students' && row.deleted_at) return prev;
-          return prev.some((r) => r.id === row.id) ? prev : [row, ...prev];
-        case 'UPDATE':
-          if (table === 'students' && row.deleted_at) return prev.filter((r) => r.id !== row.id);
-          return prev.map((r) => (r.id === row.id ? row : r));
-        case 'DELETE':
-          return prev.filter((r) => r.id !== (oldRow && oldRow.id));
-        default:
-          return prev;
+  const applyChange = React.useCallback(
+    (table, payload) => {
+      const setters = {
+        students: setStudents,
+        attendance: setAttendance,
+        achievements: setAchievements,
+        tournaments: setTournaments,
+        tournament_series: setTournamentSeries,
+        tournament_events: setTournamentEvents,
+        event_registrations: setEventRegistrations,
+        sessions: setSessions,
+        profiles: setProfiles,
+        parent_students: setParentLinks,
+      };
+      const { eventType, new: row, old: oldRow } = payload;
+      if (table === 'club_settings' && row && eventType === 'UPDATE') {
+        setSettings(row);
+        return;
       }
-    });
-  }, []);
+      // Parent links are personal: a parent must never receive another parent's
+      // link rows through realtime, even though RLS already trims their queries.
+      if (table === 'parent_students') {
+        const ownerId = eventType === 'DELETE' ? oldRow?.parent_id : row?.parent_id;
+        if (!ownerId || ownerId !== userId) return;
+      }
+      const setter = setters[table];
+      if (!setter || !row) return;
+      setter((prev) => {
+        switch (eventType) {
+          case 'INSERT':
+            if (table === 'students' && row.deleted_at) return prev;
+            return prev.some((r) => r.id === row.id) ? prev : [row, ...prev];
+          case 'UPDATE':
+            if (table === 'students' && row.deleted_at) return prev.filter((r) => r.id !== row.id);
+            return prev.map((r) => (r.id === row.id ? row : r));
+          case 'DELETE':
+            return prev.filter((r) => r.id !== (oldRow && oldRow.id));
+          default:
+            return prev;
+        }
+      });
+    },
+    [userId]
+  );
 
   React.useEffect(() => {
     if (!enabled) {
@@ -116,6 +129,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sessions' }, (p) => applyChange('sessions', p))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_events' }, (p) => applyChange('tournament_events', p))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_registrations' }, (p) => applyChange('event_registrations', p))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'parent_students' }, (p) => applyChange('parent_students', p))
       .subscribe();
     return () => {
       cancelled = true;
@@ -160,15 +174,15 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
     [refetch, supabaseClient]
   );
   // Soft delete: mark the row archived instead of destroying the student's
-  // attendance/achievement history. Parent profiles are unlinked so the
-  // archived student disappears from their view, but all records survive.
+  // attendance/achievement history. Parent links are removed so the archived
+  // student disappears from their view, but all records survive.
   const deleteStudent = React.useCallback(
     async (id) => {
-      await supabaseClient.from('profiles').update({ student_id: null }).eq('student_id', id);
+      await supabaseClient.from('parent_students').delete().eq('student_id', id);
       const { error } = await supabaseClient.from('students').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
       setStudents((prev) => prev.filter((s) => s.id !== id));
-      await refetch('profiles');
+      await Promise.all([refetch('profiles'), refetch('parent_students')]);
     },
     [refetch, supabaseClient]
   );
@@ -387,10 +401,11 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
       const newUserId = data.user?.id;
       if (newUserId) {
         await new Promise((r) => setTimeout(r, 500));
-        await supabaseClient.from('profiles').update({ role: 'parent', name, student_id: studentId }).eq('id', newUserId);
+        await supabaseClient.from('profiles').update({ role: 'parent', name }).eq('id', newUserId);
+        await supabaseClient.from('parent_students').insert({ parent_id: newUserId, student_id: studentId });
       }
       await supabaseSecondaryClient.auth.signOut();
-      await refetch('profiles');
+      await Promise.all([refetch('profiles'), refetch('parent_students')]);
     },
     [refetch, supabaseClient, supabaseSecondaryClient]
   );
@@ -418,7 +433,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
         new_password: password || null,
       });
       if (error) throw error;
-      await refetch('profiles');
+      await Promise.all([refetch('profiles'), refetch('parent_students')]);
       return data; // the generated password
     },
     [refetch, supabaseClient]
@@ -435,6 +450,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
     sessions,
     settings,
     profiles,
+    parentLinks,
     loading,
     addStudent,
     addStudentsBatch,
