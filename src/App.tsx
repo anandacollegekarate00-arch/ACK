@@ -332,15 +332,16 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         students={data.students}
         profiles={data.profiles}
         parentLinks={data.parentLinks}
+        userPermissions={data.userPermissions}
         supabaseClient={supabaseClient}
         onSignOut={signOut}
         onUpdateProfile={async (patch) => {
           await data.updateOwnProfile(session.user.id, patch);
           await refreshProfile();
         }}
-        onCreateParentAccount={data.createParentAccount}
-        onLinkStudent={data.linkParentToStudent}
-        onUnlinkStudent={data.unlinkParentFromStudent}
+        onCreateStaffAccount={data.createStaffAccount}
+        onUpdateUserPermissions={data.updateUserPermissions}
+        onDeleteUser={data.deleteUser}
         onResetParentPassword={data.resetParentPassword}
         darkMode={darkMode}
         onToggleDarkMode={toggleDarkMode}

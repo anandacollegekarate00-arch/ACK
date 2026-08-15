@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw, X } from '../icons';
+import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw, X, Shield } from '../icons';
 import { Avatar, Card, PrimaryButton, Field, inputCls, Modal } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { ROYAL, DANGER, WARNING, SUCCESS } from '../lib/theme';
@@ -8,6 +8,7 @@ import { StudentProfilePage } from './/students';
 import { MiniBarChart } from '../components/charts';
 import { ProgressRing } from '../components/ui';
 import { AttendanceOverview } from '../types';
+import { UserManagementPanel } from './userManagement';
 
 export function EditProfileModal({ profile, onClose, onSave }) {
   const [name, setName] = React.useState(profile.name || '');
@@ -516,11 +517,12 @@ export function ProfileView({
   students,
   profiles,
   parentLinks,
+  userPermissions,
   onSignOut,
   onUpdateProfile,
-  onCreateParentAccount,
-  onLinkStudent,
-  onUnlinkStudent,
+  onCreateStaffAccount,
+  onUpdateUserPermissions,
+  onDeleteUser,
   onResetParentPassword,
   darkMode,
   onToggleDarkMode,
@@ -530,7 +532,7 @@ export function ProfileView({
   const [notifOn, setNotifOn] = React.useState(true);
   const [showPwModal, setShowPwModal] = React.useState(false);
   const [showEditModal, setShowEditModal] = React.useState(false);
-  const [showParentPanel, setShowParentPanel] = React.useState(false);
+  const [showUserManagement, setShowUserManagement] = React.useState(false);
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-24 sm:pb-6">
@@ -599,11 +601,11 @@ export function ProfileView({
           Account Security
         </button>
         <button
-          onClick={() => setShowParentPanel(true)}
+          onClick={() => setShowUserManagement(true)}
           className="w-full flex items-center gap-2 px-4 py-3.5 text-sm text-[var(--ack-text)]"
         >
-          <Users size={16} color="var(--ack-heading)" />
-          Parent Logins
+          <Shield size={16} color="var(--ack-heading)" />
+          User Management
         </button>
       </Card>
 
@@ -626,16 +628,15 @@ export function ProfileView({
           }}
         />
       )}
-      {showParentPanel && (
-        <ParentAccountsPanel
-          students={students}
+      {showUserManagement && (
+        <UserManagementPanel
           profiles={profiles}
-          parentLinks={parentLinks}
-          onCreate={onCreateParentAccount}
-          onLinkStudent={onLinkStudent}
-          onUnlinkStudent={onUnlinkStudent}
+          userPermissions={userPermissions}
+          onCreate={onCreateStaffAccount}
+          onUpdatePermissions={onUpdateUserPermissions}
           onResetPassword={onResetParentPassword}
-          onClose={() => setShowParentPanel(false)}
+          onDeleteUser={onDeleteUser}
+          onClose={() => setShowUserManagement(false)}
         />
       )}
     </div>

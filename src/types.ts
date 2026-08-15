@@ -190,3 +190,15 @@ export interface NotificationsItem {
   text: string;
   date: string;
 }
+
+export interface UserPermissions {
+  user_id: string;
+  can_mark_attendance: boolean;
+  can_manage_students: boolean;
+  can_add_achievements: boolean;
+  can_register_tournaments: boolean;
+  can_promote_belts: boolean;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+}

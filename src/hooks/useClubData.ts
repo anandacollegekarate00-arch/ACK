@@ -12,6 +12,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   const [settings, setSettings] = React.useState({ id: 1, weight_attendance: 0.6 });
   const [profiles, setProfiles] = React.useState([]);
   const [parentLinks, setParentLinks] = React.useState([]);
+  const [userPermissions, setUserPermissions] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
   const refetch = React.useCallback(
@@ -59,6 +60,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       refetch('club_settings'),
       refetch('profiles'),
       refetch('parent_students'),
+      refetch('user_permissions'),
     ]);
   }, [refetch]);
 
@@ -530,6 +532,85 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     [refetch, supabaseClient]
   );
 
+  // === USER MANAGEMENT FUNCTIONS ===
+  
+  const createStaffAccount = React.useCallback(
+    async ({ email, password, name, role, permissions }) => {
+      const { data, error} = await supabaseSecondaryClient.auth.signUp({
+        email,
+        password,
+        options: { data: { role, name, must_change_password: true } }
+      });
+
+      if (error) {
+        console.error('Staff signup error:', error);
+        throw error;
+      }
+
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        await supabaseSecondaryClient.auth.signOut();
+        throw new Error('That email is already registered. Use a different email.');
+      }
+
+      const newUserId = data.user?.id;
+      if (newUserId) {
+        await new Promise((r) => setTimeout(r, 500));
+        
+        // Update profile with role
+        const profileUpdate = await supabaseClient.from('profiles').update({ role, name }).eq('id', newUserId);
+        if (profileUpdate.error) {
+          console.error('Profile update error:', profileUpdate.error);
+          throw profileUpdate.error;
+        }
+
+        // If senior player, set permissions
+        if (role === 'senior_player' && permissions) {
+          const permInsert = await supabaseClient.from('user_permissions').insert({
+            user_id: newUserId,
+            ...permissions
+          });
+          if (permInsert.error) {
+            console.error('Permissions insert error:', permInsert.error);
+            throw permInsert.error;
+          }
+        }
+      }
+
+      await supabaseSecondaryClient.auth.signOut();
+      await Promise.all([refetch('profiles'), refetch('user_permissions')]);
+    },
+    [refetch, supabaseClient, supabaseSecondaryClient]
+  );
+
+  const updateUserPermissions = React.useCallback(
+    async (userId, permissions) => {
+      const { error } = await supabaseClient
+        .from('user_permissions')
+        .upsert({ user_id: userId, ...permissions, updated_at: new Date().toISOString() });
+      
+      if (error) {
+        console.error('Update permissions error:', error);
+        throw error;
+      }
+      await refetch('user_permissions');
+    },
+    [refetch, supabaseClient]
+  );
+
+  const deleteUser = React.useCallback(
+    async (userId) => {
+      // Delete from user_permissions first (if exists)
+      await supabaseClient.from('user_permissions').delete().eq('user_id', userId);
+      
+      // Delete profile (cascade will handle auth.users if using triggers)
+      const { error } = await supabaseClient.from('profiles').delete().eq('id', userId);
+      if (error) throw error;
+      
+      await Promise.all([refetch('profiles'), refetch('user_permissions')]);
+    },
+    [refetch, supabaseClient]
+  );
+
   return {
     students,
     attendance,
@@ -542,6 +623,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     settings,
     profiles,
     parentLinks,
+    userPermissions,
     loading,
     addStudent,
     addStudentsBatch,
@@ -573,5 +655,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     linkParentToStudent,
     unlinkParentFromStudent,
     refetchAll,
+    createStaffAccount,
+    updateUserPermissions,
+    deleteUser,
   };
 }
