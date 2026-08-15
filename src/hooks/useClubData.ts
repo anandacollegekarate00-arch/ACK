@@ -563,11 +563,19 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
           throw profileUpdate.error;
         }
 
-        // If senior player, set permissions
-        if (role === 'senior_player' && permissions) {
+        // If senior player, set permissions (create row even if all false for read-only mode)
+        if (role === 'senior_player') {
+          const permsToInsert = permissions || {
+            can_mark_attendance: false,
+            can_manage_students: false,
+            can_add_achievements: false,
+            can_register_tournaments: false,
+            can_promote_belts: false,
+          };
+          
           const permInsert = await supabaseClient.from('user_permissions').insert({
             user_id: newUserId,
-            ...permissions
+            ...permsToInsert
           });
           if (permInsert.error) {
             console.error('Permissions insert error:', permInsert.error);

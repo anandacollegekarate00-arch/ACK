@@ -200,7 +200,7 @@ export function UserManagementPanel({
         {role === 'senior_player' && (
           <div className="mt-3 p-3 rounded-xl" style={{ background: 'var(--ack-bg)' }}>
             <p className="text-xs font-semibold mb-2" style={{ color: 'var(--ack-heading)' }}>
-              Grant Permissions:
+              Grant Permissions: {Object.values(permissions).every(v => !v) && <span className="text-[var(--ack-muted)] font-normal">(Read Only)</span>}
             </p>
             {Object.keys(permissions).map((key) => (
               <label key={key} className="flex items-center gap-2 py-1.5 cursor-pointer">
