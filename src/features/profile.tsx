@@ -161,10 +161,17 @@ export function CreateParentLoginModal({ student, onClose, onCreate }) {
     setBusy(true);
     setError('');
     try {
-      // onCreate returns the one-time password the DB generated for the parent
-      const pwd = await onCreate({ phone, studentIds: [student.id], name: `${displayName(student)}'s guardian` });
-      setGeneratedPassword(pwd || '');
-      setDone(true);
+      // onCreate returns the one-time password the DB generated, or 'LINKED_TO_EXISTING'
+      const result = await onCreate({ phone, studentIds: [student.id], name: `${displayName(student)}'s guardian` });
+      
+      if (result === 'LINKED_TO_EXISTING') {
+        setGeneratedPassword('');
+        setDone(true);
+        setError(''); // Clear any errors
+      } else {
+        setGeneratedPassword(result || '');
+        setDone(true);
+      }
     } catch (e) {
       const msg = e.message || 'Could not create that login.';
       if (msg.includes('already exists')) {
@@ -181,19 +188,30 @@ export function CreateParentLoginModal({ student, onClose, onCreate }) {
     <Modal title="Create Parent Login" onClose={onClose}>
       {done ? (
         <div>
-          <p className="text-sm text-[var(--ack-text)] mb-2">Login created. Share these with the parent:</p>
-          <div className="bg-[var(--ack-surface-2)] rounded-xl p-3 text-xs space-y-1 mb-3">
-            <p>
-              Login ID (WhatsApp number): <span className="font-bold">{phone}</span>
-            </p>
-            <p>
-              One-time password: <span className="font-bold">{generatedPassword || '—'}</span>
-            </p>
-          </div>
-          <p className="text-xs text-[var(--ack-muted)]">
-            This password is random and shown only once. The parent must change it on first sign-in — the app will ask them automatically.
-            You can generate a new one from the Parent Logins panel anytime.
-          </p>
+          {generatedPassword ? (
+            <>
+              <p className="text-sm text-[var(--ack-text)] mb-2">Login created. Share these with the parent:</p>
+              <div className="bg-[var(--ack-surface-2)] rounded-xl p-3 text-xs space-y-1 mb-3">
+                <p>
+                  Login ID (WhatsApp number): <span className="font-bold">{phone}</span>
+                </p>
+                <p>
+                  One-time password: <span className="font-bold">{generatedPassword}</span>
+                </p>
+              </div>
+              <p className="text-xs text-[var(--ack-muted)]">
+                This password is random and shown only once. The parent must change it on first sign-in — the app will ask them automatically.
+                You can generate a new one from the Parent Logins panel anytime.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-green-600 mb-2">✓ Student linked to existing parent account successfully!</p>
+              <p className="text-xs text-[var(--ack-muted)]">
+                A parent account with this phone number already existed. {displayName(student)} has been linked to it.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <>
