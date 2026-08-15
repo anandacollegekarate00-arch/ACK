@@ -166,7 +166,12 @@ export function CreateParentLoginModal({ student, onClose, onCreate }) {
       setGeneratedPassword(pwd || '');
       setDone(true);
     } catch (e) {
-      setError(e.message || 'Could not create that login.');
+      const msg = e.message || 'Could not create that login.';
+      if (msg.includes('already exists')) {
+        setError('A parent account with this phone number already exists. Go to Profile → Parent Logins to link more students to it.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setBusy(false);
     }
