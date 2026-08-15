@@ -28,6 +28,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
         sessions: setSessions,
         profiles: setProfiles,
         parent_students: setParentLinks,
+        user_permissions: setUserPermissions,
       };
       if (table === 'club_settings') {
         const { data } = await supabaseClient.from('club_settings').select('*').eq('id', 1).single();
@@ -80,6 +81,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
         sessions: setSessions,
         profiles: setProfiles,
         parent_students: setParentLinks,
+        user_permissions: setUserPermissions,
       };
       const { eventType, new: row, old: oldRow } = payload;
       if (table === 'club_settings' && row && eventType === 'UPDATE') {
@@ -607,12 +609,14 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
 
   const deleteUser = React.useCallback(
     async (userId) => {
-      // Delete from user_permissions first (if exists)
-      await supabaseClient.from('user_permissions').delete().eq('user_id', userId);
-      
-      // Delete profile (cascade will handle auth.users if using triggers)
-      const { error } = await supabaseClient.from('profiles').delete().eq('id', userId);
-      if (error) throw error;
+      // Use database function to delete user completely (auth + profile + permissions)
+      const { error } = await supabaseClient.rpc('admin_delete_user', {
+        target_user_id: userId
+      });
+      if (error) {
+        console.error('Delete user error:', error);
+        throw error;
+      }
       
       await Promise.all([refetch('profiles'), refetch('user_permissions')]);
     },
