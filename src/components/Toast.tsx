@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { CheckCircle, X } from 'react-feather';
+import { Check, X } from '../icons';
 
 interface ToastProps {
   message: string;
@@ -17,7 +17,7 @@ export function Toast({ message, onClose }: ToastProps) {
       className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg animate-slide-up"
       style={{ background: '#10b981', color: '#fff', minWidth: '280px' }}
     >
-      <CheckCircle size={20} />
+      <Check size={20} />
       <span className="flex-1 font-semibold text-sm">{message}</span>
       <button onClick={onClose} className="hover:opacity-70">
         <X size={18} />
