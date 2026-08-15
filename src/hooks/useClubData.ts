@@ -415,7 +415,10 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   const createParentAccount = React.useCallback(
     async ({ email, password, studentIds, name }) => {
       const { data, error } = await supabaseSecondaryClient.auth.signUp({ email, password, options: { data: { role: 'parent', name } } });
-      if (error) throw error;
+      if (error) {
+        console.error('Parent signup error:', error);
+        throw error;
+      }
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
         await supabaseSecondaryClient.auth.signOut();
         throw new Error('That email is already registered to an account. Use a different email for this parent.');
@@ -423,9 +426,17 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       const newUserId = data.user?.id;
       if (newUserId) {
         await new Promise((r) => setTimeout(r, 500));
-        await supabaseClient.from('profiles').update({ role: 'parent', name }).eq('id', newUserId);
+        const profileUpdate = await supabaseClient.from('profiles').update({ role: 'parent', name }).eq('id', newUserId);
+        if (profileUpdate.error) {
+          console.error('Profile update error:', profileUpdate.error);
+          throw profileUpdate.error;
+        }
         if (studentIds && studentIds.length > 0) {
-          await supabaseClient.from('parent_students').insert(studentIds.map((student_id) => ({ parent_id: newUserId, student_id })));
+          const linkResult = await supabaseClient.from('parent_students').insert(studentIds.map((student_id) => ({ parent_id: newUserId, student_id })));
+          if (linkResult.error) {
+            console.error('Student linking error:', linkResult.error);
+            throw linkResult.error;
+          }
         }
       }
       await supabaseSecondaryClient.auth.signOut();
