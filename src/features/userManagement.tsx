@@ -6,12 +6,7 @@ import { ROYAL, DANGER, WARNING } from '../lib/theme';
 import { UserPermissions } from '../types';
 
 function generateTempPassword() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-  let password = '';
-  for (let i = 0; i < 8; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
+  return '000000';
 }
 
 interface UserManagementPanelProps {
@@ -76,7 +71,7 @@ export function UserManagementPanel({
 
       // Show success with temp password
       alert(
-        `Account Created Successfully!\n\nEmail: ${email}\nTemporary Password: ${tempPassword}\n\nThe user must change this password on first login.`
+        `Account Created Successfully!\n\nEmail: ${email}\nTemporary Password: 000000\n\nThe user must change this password on first login.`
       );
 
       showToast('User account created successfully');
@@ -121,12 +116,12 @@ export function UserManagementPanel({
   }
 
   async function handleResetPassword(user: any) {
-    if (!confirm(`Reset password for ${user.name}?`)) return;
+    if (!confirm(`Reset password for ${user.name} to "000000"?`)) return;
 
     setBusy(true);
     try {
       const newPassword = await onResetPassword(user.id);
-      alert(`New Password for ${user.name}:\n\n${newPassword}\n\nThey must change this on next login.`);
+      alert(`Password Reset Successful!\n\nNew temporary password for ${user.name}: ${newPassword}\n\nThey must change this password on next login.`);
       showToast('Password reset successfully');
     } catch (e: any) {
       alert('Error: ' + (e.message || 'Could not reset password.'));

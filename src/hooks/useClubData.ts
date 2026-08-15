@@ -451,16 +451,28 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
 
   const resetParentPassword = React.useCallback(
     async (userId, newPassword) => {
-      // The DB generates a random password unless one is supplied, and returns
-      // it so the coach can share it. Never a fixed default.
-      const { data, error } = await supabaseClient.rpc('admin_reset_parent_password', {
-        target_user_id: userId,
-        new_password: newPassword || null,
-      });
-      if (error) throw error;
-      return data;
+      // Check if user is staff or parent
+      const profile = profiles.find(p => p.id === userId);
+      if (!profile) throw new Error('User not found');
+      
+      if (['coach', 'captain', 'senior_player'].includes(profile.role)) {
+        // Staff users: use admin_reset_staff_password (always returns "000000")
+        const { data, error } = await supabaseClient.rpc('admin_reset_staff_password', {
+          target_user_id: userId,
+        });
+        if (error) throw error;
+        return data; // Returns "000000"
+      } else {
+        // Parent users: use the old function with random password
+        const { data, error } = await supabaseClient.rpc('admin_reset_parent_password', {
+          target_user_id: userId,
+          new_password: newPassword || null,
+        });
+        if (error) throw error;
+        return data;
+      }
     },
-    [supabaseClient]
+    [supabaseClient, profiles]
   );
 
   const createParentAccountByPhone = React.useCallback(
