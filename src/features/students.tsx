@@ -383,7 +383,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
   const activeStudents = students.filter((s) => !s.left_at);
   const formerStudents = students.filter((s) => s.left_at);
 
-  const filtered = (filterBy === 'Former' ? formerStudents : activeStudents).filter((s) => {
+  const filtered = (filterBy === 'Former members' ? formerStudents : activeStudents).filter((s) => {
     if (filterBy === 'Belt') return selectedBelt ? s.belt === selectedBelt : true;
     if (filterBy === 'Grade') return selectedGrade ? s.grade === selectedGrade : true;
     const q = query.toLowerCase();
