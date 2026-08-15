@@ -468,7 +468,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
       )}
 
       <div className="flex gap-2 mb-3 overflow-x-auto">
-        {['All', 'Belt', 'Grade', 'Former members'].map((f) => (
+        {['All', 'Belt', 'Grade'].map((f) => (
           <button
             key={f}
             onClick={() => switchFilter(f)}
@@ -482,6 +482,18 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
             {f}
           </button>
         ))}
+        <button
+          key="Former members"
+          onClick={() => switchFilter('Former members')}
+          className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap"
+          style={
+            filterBy === 'Former members'
+              ? { background: '#f59e0b', color: '#fff' }
+              : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }
+          }
+        >
+          Past Students {formerStudents.length > 0 ? `(${formerStudents.length})` : ''}
+        </button>
       </div>
 
       {filterBy === 'Belt' && (
@@ -537,6 +549,14 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
             </button>
           ))}
           {distinctGrades.length === 0 && <p className="text-xs text-[var(--ack-muted)]">No students registered yet.</p>}
+        </div>
+      )}
+
+      {filterBy === 'Former members' && formerStudents.length > 0 && (
+        <div className="mb-4 p-3 rounded-xl" style={{ background: '#fef3c7', border: '1px solid #f59e0b' }}>
+          <p className="text-xs font-semibold" style={{ color: '#92400e' }}>
+            📚 Past Students Section — These students have left the club but their records are preserved. Parents can still view their history.
+          </p>
         </div>
       )}
 
@@ -953,16 +973,16 @@ export function StudentProfilePage({
                 style={{ borderColor: SUCCESS, color: SUCCESS }}
               >
                 <RefreshCw size={14} />
-                Restore member
+                Restore to Active
               </button>
             ) : (
               <button
                 onClick={() => setConfirmMarkLeft(true)}
                 className="py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
-                style={{ borderColor: DANGER, color: DANGER }}
+                style={{ borderColor: '#f59e0b', color: '#f59e0b' }}
               >
                 <LogOut size={14} />
-                Mark as left
+                Mark as Past Student
               </button>
             )}
             {isFormer && (
@@ -972,7 +992,7 @@ export function StudentProfilePage({
                 style={{ borderColor: DANGER, color: DANGER }}
               >
                 <Trash2 size={14} />
-                Erase permanently
+                Delete Permanently
               </button>
             )}
           </div>
@@ -1225,9 +1245,9 @@ export function StudentProfilePage({
       )}
       {confirmMarkLeft && (
         <ConfirmDialog
-          title="Mark as left?"
-          message={`${displayName(student)} stops appearing in attendance marking and their parent login${hasParentAccount ? (parentProfiles.length > 1 ? 's are' : ' is') : ' stays as is'} — no new absent marks will be recorded. Their achievements stay in the school performance analytics, and all of their records are kept for the student record. You can restore them anytime from the "Former members" filter.`}
-          confirmLabel="Mark as left"
+          title="Mark as Past Student?"
+          message={`${displayName(student)} will be moved to "Past Students" section and removed from active attendance marking. Parents will still have access to view their historical records. All attendance and achievement history is preserved. You can restore them anytime from the "Past Students" filter.`}
+          confirmLabel="Mark as Past Student"
           onCancel={() => setConfirmMarkLeft(false)}
           onConfirm={async () => {
             await onMarkLeft(student.id);
@@ -1237,9 +1257,9 @@ export function StudentProfilePage({
       )}
       {confirmErase && (
         <ConfirmDialog
-          title="Erase permanently?"
-          message={`This permanently deletes ${displayName(student)} and ALL of their attendance, achievements and registrations. This cannot be undone. Consider printing their student record first.`}
-          confirmLabel="Erase forever"
+          title="⚠️ Permanently Delete Student?"
+          message={`This will PERMANENTLY DELETE ${displayName(student)} and ALL their data including attendance records, achievements, tournament registrations, and parent access. This action CANNOT be undone. Consider marking as "Past Student" instead to preserve records.`}
+          confirmLabel="Delete Permanently"
           onCancel={() => setConfirmErase(false)}
           onConfirm={async () => {
             await onDelete(student.id);

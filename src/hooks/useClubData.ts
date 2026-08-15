@@ -171,14 +171,14 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     [refetch, supabaseClient]
   );
   // Mark a student as a former member: attendance marking stops (the UI hides
-  // them) and parent links are removed, but their attendance/achievement
-  // history stays for school-performance analysis.
+  // them from active roster) but their attendance/achievement history stays
+  // intact and parents can still view their records.
   const markStudentLeft = React.useCallback(
     async (id) => {
-      await supabaseClient.from('parent_students').delete().eq('student_id', id);
+      // Keep parent links intact so parents can still view historical records
       const { error } = await supabaseClient.from('students').update({ left_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
-      await Promise.all([refetch('students'), refetch('profiles'), refetch('parent_students')]);
+      await refetch('students');
     },
     [refetch, supabaseClient]
   );
