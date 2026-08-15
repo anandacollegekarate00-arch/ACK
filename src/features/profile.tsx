@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw, X, Shield } from '../icons';
 import { Avatar, Card, PrimaryButton, Field, inputCls, Modal } from '../components/ui';
 import { useToast } from '../components/Toast';
@@ -156,7 +156,7 @@ export function CreateParentLoginModal({ student, onClose, onCreate }) {
 
   async function submit() {
     if (!digits) {
-      setError('Add a WhatsApp number for this student first, via Edit → Guardian Information.');
+      setError('Add a WhatsApp number for this student first, via Edit â†’ Guardian Information.');
       return;
     }
     setBusy(true);
@@ -176,7 +176,7 @@ export function CreateParentLoginModal({ student, onClose, onCreate }) {
     } catch (e) {
       const msg = e.message || 'Could not create that login.';
       if (msg.includes('already exists')) {
-        setError('A parent account with this phone number already exists. Go to Profile → Parent Logins to link more students to it.');
+        setError('A parent account with this phone number already exists. Go to Profile â†’ Parent Logins to link more students to it.');
       } else {
         setError(msg);
       }
@@ -201,13 +201,13 @@ export function CreateParentLoginModal({ student, onClose, onCreate }) {
                 </p>
               </div>
               <p className="text-xs text-[var(--ack-muted)]">
-                This password is random and shown only once. The parent must change it on first sign-in — the app will ask them automatically.
+                This password is random and shown only once. The parent must change it on first sign-in â€” the app will ask them automatically.
                 You can generate a new one from the Parent Logins panel anytime.
               </p>
             </>
           ) : (
             <>
-              <p className="text-sm text-green-600 mb-2">✓ Student linked to existing parent account successfully!</p>
+              <p className="text-sm text-green-600 mb-2">âœ“ Student linked to existing parent account successfully!</p>
               <p className="text-xs text-[var(--ack-muted)]">
                 A parent account with this phone number already existed. {displayName(student)} has been linked to it.
               </p>
@@ -218,17 +218,17 @@ export function CreateParentLoginModal({ student, onClose, onCreate }) {
         <>
           <p className="text-xs text-[var(--ack-muted)] mb-3">
             Creates a read-only login for {displayName(student)}'s parent, using their WhatsApp number as the login ID. A random one-time
-            password is generated and shown once — the parent must change it after their first sign-in.
+            password is generated and shown once â€” the parent must change it after their first sign-in.
           </p>
           <div className="bg-[var(--ack-surface-2)] rounded-xl p-3 text-xs mb-3">
             <p className="text-[var(--ack-muted)]">WhatsApp number on file</p>
             <p className="font-bold" style={{ color: 'var(--ack-heading)' }}>
-              {phone || '— not set —'}
+              {phone || 'â€” not set â€”'}
             </p>
           </div>
           {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
           <PrimaryButton onClick={submit} disabled={busy} className="w-full">
-            {busy ? 'Creating…' : 'Create Login'}
+            {busy ? 'Creatingâ€¦' : 'Create Login'}
           </PrimaryButton>
         </>
       )}
@@ -262,7 +262,7 @@ export function ResetParentPasswordDialog({ parentProfile, onClose, onReset }) {
           <p className="text-sm text-[var(--ack-text)] mb-2">Password reset. Share this new one-time password with the parent:</p>
           <div className="bg-[var(--ack-surface-2)] rounded-xl p-3 text-xs mb-3">
             <p>
-              New password: <span className="font-bold">{newPassword || '—'}</span>
+              New password: <span className="font-bold">{newPassword || 'â€”'}</span>
             </p>
           </div>
           <p className="text-xs text-[var(--ack-muted)]">
@@ -273,11 +273,11 @@ export function ResetParentPasswordDialog({ parentProfile, onClose, onReset }) {
         <>
           <p className="text-xs text-[var(--ack-muted)] mb-3">
             This generates a new random one-time password for <span className="font-semibold">{parentProfile.name}</span>. It will be shown
-            once, right here — share it with the parent.
+            once, right here â€” share it with the parent.
           </p>
           {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
           <PrimaryButton onClick={confirm} disabled={busy} className="w-full" style={{ background: WARNING }}>
-            {busy ? 'Resetting…' : 'Reset Password'}
+            {busy ? 'Resettingâ€¦' : 'Reset Password'}
           </PrimaryButton>
         </>
       )}
@@ -350,12 +350,12 @@ export function ParentAccountsPanel({
       {ToastComponent}
       <p className="text-xs text-[var(--ack-muted)] mb-3">
         Create a login for a parent and link it to one or more of their children. Parents can only view their own children, read-only. Share
-        the password with them directly — they can change it after logging in. To create a login by WhatsApp number instead, use the "Create
+        the password with them directly â€” they can change it after logging in. To create a login by WhatsApp number instead, use the "Create
         Parent Login" button on the student's own profile.
       </p>
       <Field label="Students (select one or more)">
         {students.length === 0 ? (
-          <p className="text-xs text-[var(--ack-muted)]">No students yet — add students first.</p>
+          <p className="text-xs text-[var(--ack-muted)]">No students yet â€” add students first.</p>
         ) : (
           <div className="space-y-1.5 max-h-44 overflow-y-auto">
             {students.map((s) => (
@@ -389,7 +389,7 @@ export function ParentAccountsPanel({
       </div>
       {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
       <PrimaryButton onClick={submit} disabled={busy} className="w-full mb-4">
-        {busy ? 'Creating…' : 'Create parent login'}
+        {busy ? 'Creatingâ€¦' : 'Create parent login'}
       </PrimaryButton>
       <div className="space-y-2">
         {parentProfiles.map((p) => (
@@ -484,7 +484,7 @@ function ParentRow({ parent, students, linkedIds, onLink, onUnlink, onReset }) {
       {available.length > 0 && (
         <div className="flex gap-2 mt-2.5">
           <select className={`${inputCls} !py-2 !text-xs`} value={pendingStudent} onChange={(e) => setPendingStudent(e.target.value)}>
-            <option value="">Add another child…</option>
+            <option value="">Add another childâ€¦</option>
             {available.map((s) => (
               <option key={s.id} value={s.id}>
                 {displayName(s)} ({s.admission_id})
@@ -631,9 +631,7 @@ export function ProfileView({
       {showUserManagement && (
         <UserManagementPanel
           profiles={profiles}
-          userPermissions={userPermissions}
           onCreate={onCreateStaffAccount}
-          onUpdatePermissions={onUpdateUserPermissions}
           onResetPassword={onResetParentPassword}
           onDeleteUser={onDeleteUser}
           onClose={() => setShowUserManagement(false)}
@@ -794,11 +792,11 @@ export function ParentView({
                 </button>
               </div>
               <p className="text-xs text-[var(--ack-muted)] mb-4">
-                Overall attendance across the whole club — no individual student data is shown.
+                Overall attendance across the whole club â€” no individual student data is shown.
               </p>
 
               {overviewLoading && !overview ? (
-                <p className="text-sm text-[var(--ack-muted)] text-center py-10">Loading attendance overview…</p>
+                <p className="text-sm text-[var(--ack-muted)] text-center py-10">Loading attendance overviewâ€¦</p>
               ) : overviewError ? (
                 <p className="text-sm text-red-500 text-center py-10">{overviewError}</p>
               ) : overview ? (
@@ -878,3 +876,5 @@ export function ParentView({
     </div>
   );
 }
+
+
