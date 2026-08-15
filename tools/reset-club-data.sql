@@ -7,13 +7,14 @@
 -- NOTE: TRUNCATE ... CASCADE removes ALL rows of any table that has a
 -- foreign key to a truncated table (it does NOT respect WHERE clauses).
 -- profiles.student_id references students, so the whole profiles table
--- would be wiped — including the coach login. The coach profile is saved
--- to a temp table first and re-inserted afterwards.
+-- would be wiped — including staff logins. Staff profiles (coach/captain/
+-- admin) are saved to a temp table first and re-inserted afterwards, so
+-- the staff can still log in. Parent accounts are wiped entirely.
 -- ============================================================================
 
--- Preserve coach login (temp table lives for this one connection/transaction)
-CREATE TEMP TABLE _coach_profiles ON COMMIT DROP AS
-  SELECT * FROM profiles WHERE role = 'coach';
+-- Preserve staff logins (temp table lives for this one connection/transaction)
+CREATE TEMP TABLE _staff_profiles ON COMMIT DROP AS
+  SELECT * FROM profiles WHERE role IN ('coach', 'captain', 'admin');
 
 -- Wipe all club data (profiles included, see note above). admission_counters
 -- is cleared too, so the next student inserted gets ACK-<year>-001 again.
@@ -30,5 +31,5 @@ TRUNCATE TABLE
   profiles
 RESTART IDENTITY CASCADE;
 
--- Restore the coach login
-INSERT INTO profiles SELECT * FROM _coach_profiles;
+-- Restore staff logins
+INSERT INTO profiles SELECT * FROM _staff_profiles;
