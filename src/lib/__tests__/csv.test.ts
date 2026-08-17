@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { parseCSV, normHeaderToken, normalizeISODate, normalizeBelt, csvToStudents } from '../csv';
 
 describe('parseCSV', () => {
@@ -50,14 +50,14 @@ describe('normalizeISODate', () => {
 });
 
 describe('normalizeBelt', () => {
-  it('maps black belt variants to the first dan label', () => {
-    expect(normalizeBelt('Black Belt')).toBe('Black (1st Dan)');
-    expect(normalizeBelt('1st Dan')).toBe('Black (1st Dan)');
+  it('maps black belt variants to the Black label', () => {
+    expect(normalizeBelt('Black Belt')).toBe('Black');
+    expect(normalizeBelt('1st Dan')).toBe('Black');
   });
 
-  it('maps color names and grey→gray spelling', () => {
-    expect(normalizeBelt('grey belt')).toBe('Gray (9th Kyu)');
-    expect(normalizeBelt('Yellow')).toBe('Yellow (7th Kyu)');
+  it('maps color names and grey->yellow spelling', () => {
+    expect(normalizeBelt('grey belt')).toBe('Yellow (9th Kyu)');
+    expect(normalizeBelt('Yellow')).toBe('Yellow (9th Kyu)');
   });
 
   it('returns null for unrecognized belts', () => {
@@ -75,7 +75,7 @@ describe('csvToStudents', () => {
     expect(valid[0]).toMatchObject({
       name: 'Amal Perera',
       dob: '2009-05-14',
-      belt: 'Blue (5th Kyu)',
+      belt: 'Blue 1 (5th Kyu)',
       grade: '9',
       guardian_name: 'Sunil Perera',
       guardian_phone: '0771234567',

@@ -1,4 +1,4 @@
-import { BELTS } from './/theme';
+﻿import { BELTS } from './/theme';
 import { todayISO } from './/dates';
 
 export function downloadCSV(filename, headers, rows) {
@@ -78,7 +78,7 @@ export const CSV_HEADER_MAP = {
   guardian_email: ['guardianemail', 'email', 'emailaddress', 'guardianemailaddress'],
   guardian_address: ['guardianaddress', 'address'],
 };
-// Recognised but not imported — the database trigger assigns admission IDs.
+// Recognised but not imported â€” the database trigger assigns admission IDs.
 export const CSV_IGNORED_HEADERS = ['admissionid', 'admissionno', 'admissionnumber', 'admission'];
 
 export function normalizeISODate(v) {
@@ -107,16 +107,16 @@ export function normalizeBelt(v) {
   const s = String(v || '').trim();
   if (!s) return null;
   const n = s.toLowerCase().replace(/[^a-z0-9]/g, '');
-  if (/^(black|blackbelt|1stdan|dan\d*|shodan)/.test(n)) return 'Black (1st Dan)';
+  if (/^(black|blackbelt|1stdan|dan\d*|shodan)/.test(n)) return 'Black';
   let word = s.split(/\s+/)[0].toLowerCase();
-  if (word === 'grey') word = 'gray';
+  if (word === 'grey') word = 'yellow';
   return (
     BELTS.find((b) => b.toLowerCase().replace(/[^a-z0-9]/g, '') === n) || BELTS.find((b) => b.toLowerCase().split(' ')[0] === word) || null
   );
 }
 
 // Maps CSV rows to student records. Returns { valid, skipped } where skipped
-// is [{ row, name, reason }] — row numbers are 1-based file lines.
+// is [{ row, name, reason }] â€” row numbers are 1-based file lines.
 export function csvToStudents(headers, rows, roster) {
   const idx = {};
   headers.forEach((h, i) => {

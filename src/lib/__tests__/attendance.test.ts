@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { AttendanceRecord, Session, Student } from '../../types';
 import {
   statsFor,
@@ -62,7 +62,7 @@ describe('monthlySeries', () => {
       rec('c', 's1', '2026-02-05', 'present'),
     ];
     expect(monthlySeries('s1', records)).toEqual([
-      { month: '01', rate: 50 }, // present/total — no late half-credit here
+      { month: '01', rate: 50 }, // present/total â€” no late half-credit here
       { month: '02', rate: 100 },
     ]);
   });
@@ -91,7 +91,7 @@ describe('attendanceYears / attendanceBreakdown', () => {
 });
 
 describe('periodRange', () => {
-  it('finds the Monday–Sunday week around a Wednesday anchor', () => {
+  it('finds the Mondayâ€“Sunday week around a Wednesday anchor', () => {
     expect(periodRange('week', '2026-08-12')).toEqual({ start: '2026-08-10', end: '2026-08-16' });
   });
 
@@ -191,7 +191,7 @@ describe('clubTrendSeries', () => {
 
 describe('roster helpers typing sanity', () => {
   it('accepts the real student shape used by views', () => {
-    const students: Student[] = [{ id: 's1', name: 'Kamal', full_name: 'Kamal Perera', belt: 'Blue (5th Kyu)' }];
-    expect(students[0].belt).toBe('Blue (5th Kyu)');
+    const students: Student[] = [{ id: 's1', name: 'Kamal', full_name: 'Kamal Perera', belt: 'Blue 1 (5th Kyu)' }];
+    expect(students[0].belt).toBe('Blue 1 (5th Kyu)');
   });
 });
