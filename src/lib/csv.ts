@@ -148,6 +148,12 @@ export function normalizeBelt(v) {
     const num = parseInt(s, 10);
     if (KYU_TO_BELT[num]) return KYU_TO_BELT[num];
   }
+  // Bare ordinal only e.g. "9th", "5th", "3rd", "1st" (no "kyu" word)
+  const ordinalMatch = s.match(/^(\d{1,2})(?:st|nd|rd|th)$/i);
+  if (ordinalMatch) {
+    const num = parseInt(ordinalMatch[1], 10);
+    if (KYU_TO_BELT[num]) return KYU_TO_BELT[num];
+  }
 
   let word = s.split(/\s+/)[0].toLowerCase();
   if (word === 'grey') word = 'yellow';

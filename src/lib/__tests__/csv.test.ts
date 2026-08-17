@@ -75,6 +75,10 @@ describe('normalizeBelt', () => {
     expect(normalizeBelt('9th kyu')).toBe('Yellow (9th Kyu)');
     expect(normalizeBelt('kyu 5')).toBe('Blue 1 (5th Kyu)');
     expect(normalizeBelt('3rd Kyu')).toBe('Brown 1 (3rd Kyu)');
+    expect(normalizeBelt('9th')).toBe('Yellow (9th Kyu)');
+    expect(normalizeBelt('5th')).toBe('Blue 1 (5th Kyu)');
+    expect(normalizeBelt('3rd')).toBe('Brown 1 (3rd Kyu)');
+    expect(normalizeBelt('1st')).toBe('Brown 3 (1st Kyu)');
   });
 });
 
