@@ -78,7 +78,7 @@ export const CSV_HEADER_MAP = {
   guardian_email: ['guardianemail', 'email', 'emailaddress', 'guardianemailaddress'],
   guardian_address: ['guardianaddress', 'address'],
 };
-// Recognised but not imported â€” the database trigger assigns admission IDs.
+// Recognised but not imported — the database trigger assigns admission IDs.
 export const CSV_IGNORED_HEADERS = ['admissionid', 'admissionno', 'admissionnumber', 'admission'];
 
 export function normalizeISODate(v) {
@@ -103,20 +103,49 @@ export function normalizeISODate(v) {
   return '';
 }
 
+// Maps kyu number to canonical belt label (new belt system).
+const KYU_TO_BELT: Record<number, string> = {
+  10: 'White (10th Kyu)',
+  9:  'Yellow (9th Kyu)',
+  8:  'Orange (8th Kyu)',
+  7:  'Green (7th Kyu)',
+  6:  'Purple (6th Kyu)',
+  5:  'Blue 1 (5th Kyu)',
+  4:  'Blue 2 (4th Kyu)',
+  3:  'Brown 1 (3rd Kyu)',
+  2:  'Brown 2 (2nd Kyu)',
+  1:  'Brown 3 (1st Kyu)',
+};
+
 export function normalizeBelt(v) {
   const s = String(v || '').trim();
   if (!s) return null;
   const n = s.toLowerCase().replace(/[^a-z0-9]/g, '');
   if (/^(black|blackbelt|1stdan|dan\d*|shodan)/.test(n)) return 'Black';
+
+  // Match kyu formats: "9th kyu", "kyu 9", "9 kyu", "9th", bare "9"
+  const kyuNumMatch = s.match(/(?:kyu\s*(\d{1,2})|(\d{1,2})(?:st|nd|rd|th)?\s*kyu)/i);
+  if (kyuNumMatch) {
+    const num = parseInt(kyuNumMatch[1] || kyuNumMatch[2], 10);
+    if (KYU_TO_BELT[num]) return KYU_TO_BELT[num];
+  }
+  // Bare number only e.g. "9"
+  if (/^\d{1,2}$/.test(s)) {
+    const num = parseInt(s, 10);
+    if (KYU_TO_BELT[num]) return KYU_TO_BELT[num];
+  }
+
   let word = s.split(/\s+/)[0].toLowerCase();
   if (word === 'grey') word = 'yellow';
   return (
-    BELTS.find((b) => b.toLowerCase().replace(/[^a-z0-9]/g, '') === n) || BELTS.find((b) => b.toLowerCase().split(' ')[0] === word) || null
+    BELTS.find((b) => b.toLowerCase().replace(/[^a-z0-9]/g, '') === n) ||
+    BELTS.find((b) => b.toLowerCase().split(' ')[0] === word) ||
+    null
   );
 }
 
 // Maps CSV rows to student records. Returns { valid, skipped } where skipped
-// is [{ row, name, reason }] â€” row numbers are 1-based file lines.
+// is [{ row, name, reason }] — row numbers are 1-based file lines.
 export function csvToStudents(headers, rows, roster) {
   const idx = {};
   headers.forEach((h, i) => {

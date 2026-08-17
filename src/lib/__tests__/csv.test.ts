@@ -63,6 +63,19 @@ describe('normalizeBelt', () => {
   it('returns null for unrecognized belts', () => {
     expect(normalizeBelt('Rainbow')).toBeNull();
   });
+
+  it('maps bare kyu numbers to the correct belt', () => {
+    expect(normalizeBelt('9')).toBe('Yellow (9th Kyu)');
+    expect(normalizeBelt('5')).toBe('Blue 1 (5th Kyu)');
+    expect(normalizeBelt('1')).toBe('Brown 3 (1st Kyu)');
+    expect(normalizeBelt('10')).toBe('White (10th Kyu)');
+  });
+
+  it('maps kyu-format strings to the correct belt', () => {
+    expect(normalizeBelt('9th kyu')).toBe('Yellow (9th Kyu)');
+    expect(normalizeBelt('kyu 5')).toBe('Blue 1 (5th Kyu)');
+    expect(normalizeBelt('3rd Kyu')).toBe('Brown 1 (3rd Kyu)');
+  });
 });
 
 describe('csvToStudents', () => {
