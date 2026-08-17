@@ -1980,12 +1980,13 @@ function StudentsView({ students, attendance, onAddStudent, openStudent, autoOpe
     setQuery('');
   }
 
-  const distinctGrades = [...new Set(students.map(s => s.grade).filter(Boolean))].sort();
+  const gradeKey = g => { const m = String(g || '').match(/^(\d+)/); return m ? m[1] : String(g || ''); };
+  const distinctGrades = [...new Set(students.map(s => s.grade).filter(Boolean).map(gradeKey))].sort((a, b) => Number(a) - Number(b));
   const distinctBelts = BELTS.filter(b => students.some(s => s.belt === b));
 
   const filtered = students.filter(s => {
     if (filterBy === 'Belt') return selectedBelt ? s.belt === selectedBelt : true;
-    if (filterBy === 'Grade') return selectedGrade ? s.grade === selectedGrade : true;
+    if (filterBy === 'Grade') return selectedGrade ? gradeKey(s.grade) === selectedGrade : true;
     const q = query.toLowerCase();
     if (!q) return true;
     return displayName(s).toLowerCase().includes(q) || s.admission_id.toLowerCase().includes(q);
