@@ -1,4 +1,4 @@
-﻿import { BELTS } from './/theme';
+import { BELTS } from './/theme';
 import { todayISO } from './/dates';
 
 export function downloadCSV(filename, headers, rows) {
@@ -153,7 +153,7 @@ export function csvToStudents(headers, rows, roster) {
     seen.add(key);
     valid.push({
       name,
-      full_name: get('full_name') || null,
+      full_name: get('full_name') || name,
       dob,
       belt: normalizeBelt(get('belt')) || 'White (10th Kyu)',
       grade: get('grade') || null,
