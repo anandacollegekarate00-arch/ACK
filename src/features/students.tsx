@@ -382,7 +382,8 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
 
   // gradeKey extracts the leading numeric part so "12m6" groups with "12"
   const gradeKey = (g: string) => { const m = String(g || '').replace(/^(class|grade)\s*/i, '').match(/^(\d+)/); return m ? m[1] : String(g || ''); };
-  const distinctGrades: string[] = [...new Set(students.map((s) => s.grade).filter(Boolean).map(gradeKey))].sort((a, b) => Number(a) - Number(b)) as string[];
+  const VALID_GRADES = ['1','2','3','4','5','6','7','8','9','10','11','12','13'];
+  const distinctGrades: string[] = VALID_GRADES.filter((g) => students.some((s) => gradeKey(s.grade) === g));
   const distinctBelts = BELTS.filter((b) => students.some((s) => s.belt === b));
 
   // Former members (left_at set) live behind their own filter — the main
