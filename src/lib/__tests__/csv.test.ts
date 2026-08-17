@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest';
-import { parseCSV, normHeaderToken, normalizeISODate, normalizeBelt, csvToStudents } from '../csv';
+import { parseCSV, normHeaderToken, normalizeISODate, normalizeBelt, normalizeGrade, csvToStudents } from '../csv';
 
 describe('parseCSV', () => {
   it('parses plain rows with CRLF endings', () => {
@@ -127,5 +127,33 @@ describe('csvToStudents', () => {
     const { valid } = csvToStudents(h, [['Nimal', '2010-02-02', 'ACK-2026-001']], []);
     expect(valid).toHaveLength(1);
     expect(valid[0]).not.toHaveProperty('admission_id');
+  });
+});
+
+describe('normalizeGrade', () => {
+  it('extracts leading number from dash-separated grades', () => {
+    expect(normalizeGrade('8-2')).toBe('8');
+    expect(normalizeGrade('10-7')).toBe('10');
+    expect(normalizeGrade('12-3')).toBe('12');
+  });
+
+  it('strips class/grade prefix', () => {
+    expect(normalizeGrade('class 8-2')).toBe('8');
+    expect(normalizeGrade('Grade 10')).toBe('10');
+  });
+
+  it('strips surrounding brackets', () => {
+    expect(normalizeGrade('(8-2)')).toBe('8');
+    expect(normalizeGrade('[10-7]')).toBe('10');
+  });
+
+  it('handles plain numbers', () => {
+    expect(normalizeGrade('8')).toBe('8');
+    expect(normalizeGrade('12')).toBe('12');
+  });
+
+  it('returns null for empty input', () => {
+    expect(normalizeGrade('')).toBeNull();
+    expect(normalizeGrade(null as any)).toBeNull();
   });
 });

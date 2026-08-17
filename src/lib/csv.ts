@@ -81,6 +81,20 @@ export const CSV_HEADER_MAP = {
 // Recognised but not imported — the database trigger assigns admission IDs.
 export const CSV_IGNORED_HEADERS = ['admissionid', 'admissionno', 'admissionnumber', 'admission'];
 
+// Extracts the grade number from messy formats:
+// "8-2" → "8", "class 8-2" → "8", "(8-2)" → "8", "8" → "8", "Grade 10" → "10"
+export function normalizeGrade(v: string): string | null {
+  const s = String(v || '').trim();
+  if (!s) return null;
+  // Strip common prefixes: "class", "grade", "std", "standard"
+  const stripped = s.replace(/^(class|grade|std|standard)\s*/i, '').trim();
+  // Remove surrounding brackets/parens
+  const clean = stripped.replace(/^[\(\[]\s*/, '').replace(/\s*[\)\]]$/, '').trim();
+  // Extract leading number (before any dash, slash, letter, space)
+  const m = clean.match(/^(\d+)/);
+  return m ? m[1] : (s || null);
+}
+
 export function normalizeISODate(v) {
   const s = String(v || '').trim();
   if (!s) return '';
@@ -185,7 +199,7 @@ export function csvToStudents(headers, rows, roster) {
       full_name: get('full_name') || name,
       dob,
       belt: normalizeBelt(get('belt')) || 'White (10th Kyu)',
-      grade: get('grade') || null,
+      grade: normalizeGrade(get('grade')),
       join_date: normalizeISODate(get('join_date')) || todayISO(),
       birth_cert_no: get('birth_cert_no') || null,
       nic: get('nic') || null,

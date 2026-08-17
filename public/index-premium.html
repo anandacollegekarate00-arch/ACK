@@ -1796,6 +1796,15 @@ const KYU_TO_BELT = {
   2:  'Brown 2 (2nd Kyu)',
   1:  'Brown 3 (1st Kyu)',
 };
+function normalizeGrade(v) {
+  const s = String(v || '').trim();
+  if (!s) return null;
+  const stripped = s.replace(/^(class|grade|std|standard)\s*/i, '').trim();
+  const clean = stripped.replace(/^[\(\[]\s*/, '').replace(/\s*[\)\]]$/, '').trim();
+  const m = clean.match(/^(\d+)/);
+  return m ? m[1] : (s || null);
+}
+
 function normalizeBelt(v) {
   const s = String(v || '').trim();
   if (!s) return null;
@@ -1848,7 +1857,7 @@ function csvToStudents(headers, rows, roster) {
       full_name: get('full_name') || name,
       dob,
       belt: normalizeBelt(get('belt')) || 'White (10th Kyu)',
-      grade: get('grade') || null,
+      grade: normalizeGrade(get('grade')),
       join_date: normalizeISODate(get('join_date')) || todayISO(),
       birth_cert_no: get('birth_cert_no') || null,
       nic: get('nic') || null,
@@ -1980,7 +1989,7 @@ function StudentsView({ students, attendance, onAddStudent, openStudent, autoOpe
     setQuery('');
   }
 
-  const gradeKey = g => { const m = String(g || '').match(/^(\d+)/); return m ? m[1] : String(g || ''); };
+  const gradeKey = g => { const m = String(g || '').replace(/^(class|grade)\s*/i, '').match(/^(\d+)/); return m ? m[1] : String(g || ''); };
   const distinctGrades = [...new Set(students.map(s => s.grade).filter(Boolean).map(gradeKey))].sort((a, b) => Number(a) - Number(b));
   const distinctBelts = BELTS.filter(b => students.some(s => s.belt === b));
 
