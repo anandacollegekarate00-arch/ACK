@@ -1673,7 +1673,14 @@ function StudentFormModal({ students, existing, onClose, onSave }) {
         <Field label="NIC / Postal ID (if have)"><input className={inputCls} value={form.nic || ''} onChange={e => set('nic', e.target.value)} /></Field>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Grade / class"><input className={inputCls} value={form.grade || ''} onChange={e => set('grade', e.target.value)} /></Field>
+        <Field label="Grade">
+          <select className={inputCls} value={form.grade || ''} onChange={e => set('grade', e.target.value)}>
+            <option value="">— Select grade —</option>
+            {['1','2','3','4','5','6','7','8','9','10','11','12','13'].map(g => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
+        </Field>
         <Field label="Kyu">
           <select className={inputCls} value={form.belt} onChange={e => set('belt', e.target.value)}>
             {BELTS.map(b => <option key={b} value={b}>{b}</option>)}
@@ -1862,7 +1869,7 @@ function csvToStudents(headers, rows, roster) {
       full_name: get('full_name') || name,
       dob,
       belt: normalizeBelt(get('belt')) || 'White (10th Kyu)',
-      grade: get('grade') || null,
+      grade: normalizeGrade(get('grade')),
       join_date: normalizeISODate(get('join_date')) || todayISO(),
       birth_cert_no: get('birth_cert_no') || null,
       nic: get('nic') || null,

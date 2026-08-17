@@ -119,8 +119,13 @@ export function StudentFormModal({ students, existing = undefined, onClose, onSa
         </Field>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Grade / class">
-          <input className={inputCls} value={form.grade || ''} onChange={(e) => set('grade', e.target.value)} />
+        <Field label="Grade">
+          <select className={inputCls} value={form.grade || ''} onChange={(e) => set('grade', e.target.value)}>
+            <option value="">— Select grade —</option>
+            {['1','2','3','4','5','6','7','8','9','10','11','12','13'].map((g) => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
         </Field>
         <Field label="Kyu">
           <select className={inputCls} value={form.belt} onChange={(e) => set('belt', e.target.value)}>

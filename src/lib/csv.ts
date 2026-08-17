@@ -205,7 +205,7 @@ export function csvToStudents(headers, rows, roster) {
       full_name: get('full_name') || name,
       dob,
       belt: normalizeBelt(get('belt')) || 'White (10th Kyu)',
-      grade: get('grade') || null,
+      grade: normalizeGrade(get('grade')),
       join_date: normalizeISODate(get('join_date')) || todayISO(),
       birth_cert_no: get('birth_cert_no') || null,
       nic: get('nic') || null,
