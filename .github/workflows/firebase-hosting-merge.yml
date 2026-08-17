@@ -18,19 +18,11 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Build Vite app
+      - name: Build app
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-      - name: Build premium bundle
-        run: npm run build:app
-      - name: Copy premium files to dist
-        run: |
-          cp public/index-premium.html dist/index-premium.html
-          cp public/index-premium.bundle.js dist/index-premium.bundle.js
-          cp public/app.bundle.js dist/app.bundle.js
-          cp public/app.css dist/app.css
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
