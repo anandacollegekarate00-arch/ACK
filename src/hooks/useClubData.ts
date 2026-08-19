@@ -13,6 +13,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   const [profiles, setProfiles] = React.useState([]);
   const [parentLinks, setParentLinks] = React.useState([]);
   const [userPermissions, setUserPermissions] = React.useState([]);
+  const [clubHistory, setClubHistory] = React.useState([]);
+  const [clubHistoryEntries, setClubHistoryEntries] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
   const refetch = React.useCallback(
@@ -29,6 +31,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
         profiles: setProfiles,
         parent_students: setParentLinks,
         user_permissions: setUserPermissions,
+        club_history: setClubHistory,
+        club_history_entries: setClubHistoryEntries,
       };
       if (table === 'club_settings') {
         const { data } = await supabaseClient.from('club_settings').select('*').eq('id', 1).single();
@@ -62,6 +66,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       refetch('profiles'),
       refetch('parent_students'),
       refetch('user_permissions'),
+      refetch('club_history'),
+      refetch('club_history_entries'),
     ]);
   }, [refetch]);
 
@@ -82,6 +88,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
         profiles: setProfiles,
         parent_students: setParentLinks,
         user_permissions: setUserPermissions,
+        club_history: setClubHistory,
+        club_history_entries: setClubHistoryEntries,
       };
       const { eventType, new: row, old: oldRow } = payload;
       if (table === 'club_settings' && row && eventType === 'UPDATE') {
@@ -131,6 +139,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_events' }, (p) => applyChange('tournament_events', p))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_registrations' }, (p) => applyChange('event_registrations', p))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'parent_students' }, (p) => applyChange('parent_students', p))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'club_history' }, (p) => applyChange('club_history', p))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'club_history_entries' }, (p) => applyChange('club_history_entries', p))
       .subscribe();
     return () => {
       cancelled = true;
@@ -683,6 +693,69 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     [refetch, supabaseClient]
   );
 
+  // ── Club History ──────────────────────────────────────────────────────────
+
+  const addClubYear = React.useCallback(
+    async (record) => {
+      const { data, error } = await supabaseClient.from('club_history').insert(record).select().single();
+      if (error) throw error;
+      await refetch('club_history');
+      return data;
+    },
+    [refetch, supabaseClient]
+  );
+
+  const updateClubYear = React.useCallback(
+    async (record) => {
+      const { id, ...rest } = record;
+      const { error } = await supabaseClient
+        .from('club_history')
+        .update({ ...rest, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+      await refetch('club_history');
+    },
+    [refetch, supabaseClient]
+  );
+
+  const deleteClubYear = React.useCallback(
+    async (id) => {
+      const { error } = await supabaseClient.from('club_history').delete().eq('id', id);
+      if (error) throw error;
+      await Promise.all([refetch('club_history'), refetch('club_history_entries')]);
+    },
+    [refetch, supabaseClient]
+  );
+
+  const addClubHistoryEntry = React.useCallback(
+    async (entry) => {
+      const { data, error } = await supabaseClient.from('club_history_entries').insert(entry).select().single();
+      if (error) throw error;
+      await refetch('club_history_entries');
+      return data;
+    },
+    [refetch, supabaseClient]
+  );
+
+  const updateClubHistoryEntry = React.useCallback(
+    async (entry) => {
+      const { id, ...rest } = entry;
+      const { error } = await supabaseClient.from('club_history_entries').update(rest).eq('id', id);
+      if (error) throw error;
+      await refetch('club_history_entries');
+    },
+    [refetch, supabaseClient]
+  );
+
+  const deleteClubHistoryEntry = React.useCallback(
+    async (id) => {
+      const { error } = await supabaseClient.from('club_history_entries').delete().eq('id', id);
+      if (error) throw error;
+      await refetch('club_history_entries');
+    },
+    [refetch, supabaseClient]
+  );
+
   return {
     students,
     attendance,
@@ -730,5 +803,13 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     createStaffAccount,
     updateUserPermissions,
     deleteUser,
+    clubHistory,
+    clubHistoryEntries,
+    addClubYear,
+    updateClubYear,
+    deleteClubYear,
+    addClubHistoryEntry,
+    updateClubHistoryEntry,
+    deleteClubHistoryEntry,
   };
 }

@@ -9,7 +9,7 @@ import { AttendanceView, ManageSessionsModal } from './features/attendance';
 import { TournamentDetailPage, SeriesDetailPage, AchievementsView } from './features/achievements';
 import { AnalyticsView } from './features/analytics';
 import { computeNotifications, NotificationsView } from './features/notifications';
-import { ChangePasswordModal, ProfileView, ParentView } from './features/profile';
+import { ChangePasswordModal, ProfileView, ParentView, ClubHistoryPage } from './features/profile';
 import { SplashScreen, LoginScreen } from './features/auth';
 import { createSupabaseClients, DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY } from './lib/supabase';
 
@@ -180,6 +180,21 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
   if (top === 'notifications') {
     content = <NotificationsView students={data.students} attendance={data.attendance} achievements={data.achievements} />;
     headerTitle = 'Notifications';
+  } else if (top === 'history') {
+    content = (
+      <ClubHistoryPage
+        clubHistory={data.clubHistory}
+        clubHistoryEntries={data.clubHistoryEntries}
+        isStaff={profile.role === 'coach' || profile.role === 'captain'}
+        onAddYear={data.addClubYear}
+        onUpdateYear={data.updateClubYear}
+        onDeleteYear={data.deleteClubYear}
+        onAddEntry={data.addClubHistoryEntry}
+        onUpdateEntry={data.updateClubHistoryEntry}
+        onDeleteEntry={data.deleteClubHistoryEntry}
+      />
+    );
+    headerTitle = 'Club History';
   } else if (top === 'manageSessions') {
     content = (
       <div className="p-4 sm:p-6 max-w-2xl mx-auto">
@@ -346,6 +361,7 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         darkMode={darkMode}
         onToggleDarkMode={toggleDarkMode}
         push={push}
+        onOpenHistory={() => push('history')}
       />
     );
     headerTitle = 'My Profile';

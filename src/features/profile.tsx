@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw, X, Shield } from '../icons';
+import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw, X, Shield, Plus, Trash2, ChevronRight, BookOpen } from '../icons';
 import { Avatar, Card, PrimaryButton, Field, inputCls, Modal } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { ROYAL, DANGER, WARNING, SUCCESS } from '../lib/theme';
@@ -528,6 +528,7 @@ export function ProfileView({
   onToggleDarkMode,
   push,
   supabaseClient,
+  onOpenHistory,
 }) {
   const [notifOn, setNotifOn] = React.useState(true);
   const [showPwModal, setShowPwModal] = React.useState(false);
@@ -606,6 +607,16 @@ export function ProfileView({
         >
           <Shield size={16} color="var(--ack-heading)" />
           User Management
+        </button>
+        <button
+          onClick={onOpenHistory}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-[var(--ack-text)]"
+        >
+          <span className="flex items-center gap-2">
+            <BookOpen size={16} color="var(--ack-heading)" />
+            History
+          </span>
+          <ChevronRight size={16} color="var(--ack-muted)" />
         </button>
       </Card>
 
@@ -878,3 +889,345 @@ export function ParentView({
 }
 
 
+
+// ─── Club History ────────────────────────────────────────────────────────────
+
+function YearFormModal({ existing = undefined, onClose, onSave }) {
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = React.useState(existing?.year ?? currentYear);
+  const [captain, setCaptain] = React.useState(existing?.captain ?? '');
+  const [viceCaptain, setViceCaptain] = React.useState(existing?.vice_captain ?? '');
+  const [coach, setCoach] = React.useState(existing?.coach ?? '');
+  const [assistants, setAssistants] = React.useState(existing?.assistant_coaches ?? '');
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState('');
+
+  async function submit() {
+    setError('');
+    if (!year || year < 1900 || year > 2100) { setError('Enter a valid year.'); return; }
+    setSaving(true);
+    try {
+      await onSave({
+        ...(existing ? { id: existing.id } : {}),
+        year: Number(year),
+        captain: captain.trim() || null,
+        vice_captain: viceCaptain.trim() || null,
+        coach: coach.trim() || null,
+        assistant_coaches: assistants.trim() || null,
+      });
+      onClose();
+    } catch (e) {
+      setError(e.message || 'Something went wrong.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal title={existing ? 'Edit Year' : 'Add Year'} onClose={onClose}>
+      <Field label="Year">
+        <input
+          type="number"
+          className={inputCls}
+          value={year}
+          onChange={(e) => setYear(Number(e.target.value))}
+          min={1900}
+          max={2100}
+        />
+      </Field>
+      <Field label="Captain">
+        <input className={inputCls} value={captain} onChange={(e) => setCaptain(e.target.value)} placeholder="Full name" />
+      </Field>
+      <Field label="Vice Captain">
+        <input className={inputCls} value={viceCaptain} onChange={(e) => setViceCaptain(e.target.value)} placeholder="Full name" />
+      </Field>
+      <Field label="Coach">
+        <input className={inputCls} value={coach} onChange={(e) => setCoach(e.target.value)} placeholder="Full name" />
+      </Field>
+      <Field label="Assistant Coaches">
+        <input className={inputCls} value={assistants} onChange={(e) => setAssistants(e.target.value)} placeholder="Name 1, Name 2, …" />
+      </Field>
+      {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
+      <PrimaryButton onClick={submit} disabled={saving} className="w-full">
+        {saving ? 'Saving…' : existing ? 'Save Changes' : 'Add Year'}
+      </PrimaryButton>
+    </Modal>
+  );
+}
+
+function EntryFormModal({ historyId, section, existing = undefined, onClose, onSave }) {
+  const [title, setTitle] = React.useState(existing?.title ?? '');
+  const [description, setDescription] = React.useState(existing?.description ?? '');
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState('');
+
+  const sectionLabel = section === 'achievement' ? 'Achievement' : 'Other';
+
+  async function submit() {
+    setError('');
+    if (!title.trim()) { setError('Title is required.'); return; }
+    setSaving(true);
+    try {
+      await onSave({
+        ...(existing ? { id: existing.id } : {}),
+        history_id: historyId,
+        section,
+        title: title.trim(),
+        description: description.trim() || null,
+      });
+      onClose();
+    } catch (e) {
+      setError(e.message || 'Something went wrong.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal title={existing ? `Edit ${sectionLabel}` : `Add ${sectionLabel}`} onClose={onClose}>
+      <Field label="Title">
+        <input className={inputCls} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={`e.g. ${section === 'achievement' ? 'Gold Medal – National Championships' : 'New equipment donation'}`} />
+      </Field>
+      <Field label="Description (optional)">
+        <textarea
+          className={inputCls}
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Additional details…"
+          style={{ resize: 'vertical' }}
+        />
+      </Field>
+      {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
+      <PrimaryButton onClick={submit} disabled={saving} className="w-full">
+        {saving ? 'Saving…' : existing ? 'Save Changes' : `Add ${sectionLabel}`}
+      </PrimaryButton>
+    </Modal>
+  );
+}
+
+function HistoryEntryList({ entries, section, historyId, isStaff, onAdd, onEdit, onDelete }) {
+  const sectionEntries = entries.filter((e) => e.history_id === historyId && e.section === section);
+  const label = section === 'achievement' ? 'Achievements' : 'Other';
+  const accentColor = section === 'achievement' ? '#D4AF37' : ROYAL;
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-bold uppercase tracking-wide" style={{ color: accentColor }}>{label}</p>
+        {isStaff && (
+          <button
+            onClick={onAdd}
+            className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+            style={{ background: `${accentColor}1A`, color: accentColor }}
+          >
+            <Plus size={11} /> Add
+          </button>
+        )}
+      </div>
+      {sectionEntries.length === 0 ? (
+        <p className="text-xs text-[var(--ack-muted)] italic">No {label.toLowerCase()} recorded yet.</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {sectionEntries.map((entry) => (
+            <div
+              key={entry.id}
+              className="rounded-xl p-3 flex items-start justify-between gap-2"
+              style={{ background: `${accentColor}0D`, border: `1px solid ${accentColor}22` }}
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>{entry.title}</p>
+                {entry.description && (
+                  <p className="text-xs text-[var(--ack-muted)] mt-0.5">{entry.description}</p>
+                )}
+              </div>
+              {isStaff && (
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    onClick={() => onEdit(entry)}
+                    className="p-1.5 rounded-lg"
+                    style={{ background: `${ROYAL}14`, color: ROYAL }}
+                  >
+                    <Edit3 size={12} />
+                  </button>
+                  <button
+                    onClick={() => onDelete(entry.id)}
+                    className="p-1.5 rounded-lg"
+                    style={{ background: `${DANGER}14`, color: DANGER }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function ClubHistoryPage({ clubHistory, clubHistoryEntries, isStaff, onAddYear, onUpdateYear, onDeleteYear, onAddEntry, onUpdateEntry, onDeleteEntry }) {
+  const [showYearForm, setShowYearForm] = React.useState(false);
+  const [editingYear, setEditingYear] = React.useState(null);
+  const [addEntryFor, setAddEntryFor] = React.useState<{ historyId: string; section: string } | null>(null);
+  const [editingEntry, setEditingEntry] = React.useState<any>(null);
+  const [expandedYear, setExpandedYear] = React.useState<string | null>(null);
+
+  const sorted = [...clubHistory].sort((a, b) => b.year - a.year);
+
+  // Auto-expand the first (latest) year
+  React.useEffect(() => {
+    if (sorted.length > 0 && expandedYear === null) {
+      setExpandedYear(sorted[0].id);
+    }
+  }, [sorted.length]);
+
+  return (
+    <div className="p-4 sm:p-6 max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-24 sm:pb-6">
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-xl font-extrabold" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
+          Club History
+        </h1>
+        {isStaff && (
+          <button
+            onClick={() => { setEditingYear(null); setShowYearForm(true); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white"
+            style={{ background: ROYAL }}
+          >
+            <Plus size={13} /> Add Year
+          </button>
+        )}
+      </div>
+
+      {sorted.length === 0 ? (
+        <Card className="p-8 text-center">
+          <BookOpen size={32} color="var(--ack-muted)" className="mx-auto mb-3" />
+          <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>No history recorded yet</p>
+          <p className="text-xs text-[var(--ack-muted)] mt-1">
+            {isStaff ? 'Tap "Add Year" to start building the club\'s history.' : 'The coaching staff haven\'t added any history yet.'}
+          </p>
+        </Card>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {sorted.map((yr) => {
+            const isOpen = expandedYear === yr.id;
+            return (
+              <Card key={yr.id} className="overflow-hidden">
+                {/* Year header */}
+                <button
+                  className="w-full flex items-center justify-between px-4 py-3.5"
+                  onClick={() => setExpandedYear(isOpen ? null : yr.id)}
+                >
+                  <span className="font-extrabold text-lg" style={{ color: ROYAL, fontFamily: 'Poppins, sans-serif' }}>
+                    {yr.year}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {isStaff && (
+                      <>
+                        <span
+                          onClick={(e) => { e.stopPropagation(); setEditingYear(yr); setShowYearForm(true); }}
+                          className="p-1.5 rounded-lg"
+                          style={{ background: `${ROYAL}14`, color: ROYAL }}
+                          role="button"
+                        >
+                          <Edit3 size={13} />
+                        </span>
+                        <span
+                          onClick={(e) => { e.stopPropagation(); onDeleteYear(yr.id); }}
+                          className="p-1.5 rounded-lg"
+                          style={{ background: `${DANGER}14`, color: DANGER }}
+                          role="button"
+                        >
+                          <Trash2 size={13} />
+                        </span>
+                      </>
+                    )}
+                    <ChevronRight
+                      size={16}
+                      color="var(--ack-muted)"
+                      style={{ transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}
+                    />
+                  </div>
+                </button>
+
+                {isOpen && (
+                  <div className="px-4 pb-4 border-t border-[var(--ack-border)]">
+                    {/* Leadership */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 py-3 mb-3">
+                      {[
+                        { label: 'Captain', value: yr.captain },
+                        { label: 'Vice Captain', value: yr.vice_captain },
+                        { label: 'Coach', value: yr.coach },
+                        { label: 'Assistant Coaches', value: yr.assistant_coaches },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex flex-col">
+                          <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--ack-muted)]">{label}</span>
+                          <span className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
+                            {value || <span className="text-[var(--ack-muted)] font-normal italic">—</span>}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Achievements section */}
+                    <HistoryEntryList
+                      entries={clubHistoryEntries}
+                      section="achievement"
+                      historyId={yr.id}
+                      isStaff={isStaff}
+                      onAdd={() => setAddEntryFor({ historyId: yr.id, section: 'achievement' })}
+                      onEdit={(e) => setEditingEntry(e)}
+                      onDelete={onDeleteEntry}
+                    />
+
+                    {/* Other section */}
+                    <HistoryEntryList
+                      entries={clubHistoryEntries}
+                      section="other"
+                      historyId={yr.id}
+                      isStaff={isStaff}
+                      onAdd={() => setAddEntryFor({ historyId: yr.id, section: 'other' })}
+                      onEdit={(e) => setEditingEntry(e)}
+                      onDelete={onDeleteEntry}
+                    />
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Year add/edit modal */}
+      {showYearForm && (
+        <YearFormModal
+          existing={editingYear}
+          onClose={() => { setShowYearForm(false); setEditingYear(null); }}
+          onSave={editingYear ? onUpdateYear : onAddYear}
+        />
+      )}
+
+      {/* Entry add modal */}
+      {addEntryFor && (
+        <EntryFormModal
+          historyId={addEntryFor.historyId}
+          section={addEntryFor.section}
+          onClose={() => setAddEntryFor(null)}
+          onSave={async (entry) => { await onAddEntry(entry); setAddEntryFor(null); }}
+        />
+      )}
+
+      {/* Entry edit modal */}
+      {editingEntry && (
+        <EntryFormModal
+          historyId={editingEntry.history_id}
+          section={editingEntry.section}
+          existing={editingEntry}
+          onClose={() => setEditingEntry(null)}
+          onSave={async (entry) => { await onUpdateEntry(entry); setEditingEntry(null); }}
+        />
+      )}
+    </div>
+  );
+}
