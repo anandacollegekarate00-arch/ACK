@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, userId) {
   const [students, setStudents] = React.useState([]);
@@ -39,7 +39,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
         if (data) setSettings(data);
         return;
       }
-      // Former members (left_at set) are filtered at the UI layer — the
+      // Former members (left_at set) are filtered at the UI layer â€” the
       // database no longer uses a deleted_at column.
       const query = supabaseClient.from(table).select('*');
       const { data, error } = await query;
@@ -150,7 +150,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     };
   }, [enabled, refetchAll, applyChange, supabaseClient]);
 
-  // No admission_id from the client — the DB trigger assigns it (see
+  // No admission_id from the client â€” the DB trigger assigns it (see
   // database-schema.sql: assign_admission_id). We select() the inserted row
   // so the roster gets the server-assigned ID immediately.
   const addStudent = React.useCallback(
@@ -548,31 +548,13 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
   
   const createStaffAccount = React.useCallback(
     async ({ email, password, name, role, permissions }) => {
-      console.log('=== CREATE STAFF ACCOUNT DEBUG ===');
-      console.log('Input role:', role);
-      console.log('Input email:', email);
-      console.log('Input permissions:', permissions);
-      
-      // TEMPORARY FIX: Use auth.signUp and force-update the profile role
       const { data, error } = await supabaseSecondaryClient.auth.signUp({
         email: email.trim(),
         password: '000000',
-        options: { 
-          data: { 
-            role: role, 
-            name: name, 
-            must_change_password: true 
-          } 
-        }
+        options: { data: { role, name, must_change_password: true } },
       });
 
-      console.log('SignUp response - data:', data);
-      console.log('SignUp response - error:', error);
-
-      if (error) {
-        console.error('Staff signup error:', error);
-        throw new Error(error.message || 'Could not create staff account');
-      }
+      if (error) throw new Error(error.message || 'Could not create staff account');
 
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
         await supabaseSecondaryClient.auth.signOut();
@@ -581,37 +563,14 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
 
       const newUserId = data.user?.id;
       if (newUserId) {
-        console.log('New user ID:', newUserId, '- FORCING role to:', role);
-        
-        // Wait longer for any triggers to complete
-        await new Promise((r) => setTimeout(r, 2000));
-        
-        // FORCE UPDATE the profile with correct role - do this twice to override any trigger
-        for (let i = 0; i < 2; i++) {
-          const { error: updateError } = await supabaseClient
-            .from('profiles')
-            .update({ role: role, name: name })
-            .eq('id', newUserId);
-          
-          if (updateError) {
-            console.error(`Profile update attempt ${i + 1} error:`, updateError);
-          } else {
-            console.log(`Profile update attempt ${i + 1} success`);
-          }
-          
-          await new Promise((r) => setTimeout(r, 500));
-        }
-        
-        // Verify the role is correct
-        const { data: profileCheck } = await supabaseClient
+        // Give the auth trigger ~800 ms to create the profiles row before updating role.
+        await new Promise((r) => setTimeout(r, 800));
+        const { error: updateError } = await supabaseClient
           .from('profiles')
-          .select('id, role, name')
-          .eq('id', newUserId)
-          .single();
-        
-        console.log('Profile after force update:', profileCheck);
-        
-        // If senior player, set permissions
+          .update({ role, name })
+          .eq('id', newUserId);
+        if (updateError) console.error('Profile update error:', updateError);
+
         if (role === 'senior_player') {
           const permsToInsert = permissions || {
             can_mark_attendance: false,
@@ -620,24 +579,15 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
             can_register_tournaments: false,
             can_promote_belts: false,
           };
-          
-          const { error: permError } = await supabaseClient.from('user_permissions').insert({
-            user_id: newUserId,
-            ...permsToInsert
-          });
-          
-          if (permError) {
-            console.error('Permissions insert error:', permError);
-          } else {
-            console.log('Permissions inserted successfully');
-          }
+          const { error: permError } = await supabaseClient
+            .from('user_permissions')
+            .insert({ user_id: newUserId, ...permsToInsert });
+          if (permError) console.error('Permissions insert error:', permError);
         }
       }
 
       await supabaseSecondaryClient.auth.signOut();
       await Promise.all([refetch('profiles'), refetch('user_permissions')]);
-      
-      console.log('=== ACCOUNT CREATION COMPLETE ===');
     },
     [refetch, supabaseClient, supabaseSecondaryClient]
   );
@@ -659,14 +609,12 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
 
   const deleteUser = React.useCallback(
     async (userId) => {
-      console.log('Attempting to delete user:', userId);
       
       // Use database function to delete user completely (auth + profile + permissions)
       const { data, error } = await supabaseClient.rpc('admin_delete_user', {
         target_user_id: userId
       });
       
-      console.log('Delete result:', { data, error });
       
       if (error) {
         console.error('Delete user error:', error);
@@ -674,14 +622,12 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       }
       
       // Force refetch to update UI
-      console.log('Refetching profiles and permissions...');
       await Promise.all([refetch('profiles'), refetch('user_permissions')]);
-      console.log('Refetch complete');
     },
     [refetch, supabaseClient]
   );
 
-  // ── Club History ──────────────────────────────────────────────────────────
+  // â”€â”€ Club History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const addClubYear = React.useCallback(
     async (record) => {
@@ -801,3 +747,5 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     deleteClubHistoryEntry,
   };
 }
+
+

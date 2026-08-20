@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Calendar, Trophy, Check, Clock, AlertTriangle, TrendingUp, PieChartIcon } from '../icons';
 import { DonutChart, TrendBarChart } from '../components/charts';
 import { Avatar, BeltBadge, Card, StatCard, inputCls } from '../components/ui';
@@ -33,7 +33,7 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
   const [anchorDate, setAnchorDate] = React.useState(todayISO());
   const [playerMetric, setPlayerMetric] = React.useState('medals');
 
-  // Year + session filtered slice — drives the daily/monthly trend charts
+  // Year + session filtered slice â€” drives the daily/monthly trend charts
   // and the per-student needs-attention / top-performer lists.
   const scoped = React.useMemo(
     () =>
@@ -43,7 +43,7 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
     [attendance, year, sessionId]
   );
 
-  // Only the session filter applies here — "all years" is the whole point
+  // Only the session filter applies here â€” "all years" is the whole point
   // of this chart, so the year dropdown shouldn't collapse it to one bar.
   const sessionScoped = React.useMemo(
     () => attendance.filter((a) => sessionId === 'all' || (a.session_id || null) === sessionId),
@@ -51,7 +51,7 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
   );
 
   // Independent Day/Week/Month/Year/All picker for the breakdown pie chart
-  // and the stat row above it — separate from the year filter above so you
+  // and the stat row above it â€” separate from the year filter above so you
   // can look at, say, just today's breakdown without losing the trend
   // charts' year context.
   const periodScoped = React.useMemo(() => {
@@ -69,7 +69,7 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
   );
   const yearly = React.useMemo(() => yearlyRateSeries(sessionScoped), [sessionScoped]);
 
-  // Top Players — ranked by real data only: medals won (Gold first, then
+  // Top Players â€” ranked by real data only: medals won (Gold first, then
   // Silver, then Bronze), attendance rate in the current filter, or number of
   // events entered. No synthetic scores, no weights.
   const topPlayers = React.useMemo(() => {
@@ -100,10 +100,10 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
   }, [students, scoped, achievements, eventRegistrations, playerMetric]);
 
   // Needs Attention flags long absence streaks (2+ weeks since last seen),
-  // not just a low attendance percentage — deliberately ignores the year
+  // not just a low attendance percentage â€” deliberately ignores the year
   // filter (only the session filter) since "how long has it been" is a
   // question about right now, not about whichever year happens to be picked.
-  // Former members are excluded — a leaver isn't "needs attention".
+  // Former members are excluded â€” a leaver isn't "needs attention".
   const needsAttention = React.useMemo(() => {
     const today = todayISO();
     return students
@@ -221,7 +221,7 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
                     {row.label}
                   </span>
                   <span className="text-[var(--ack-muted)]">
-                    {row.value} · {breakdown.total ? Math.round((row.value / breakdown.total) * 100) : 0}%
+                    {row.value} Â· {breakdown.total ? Math.round((row.value / breakdown.total) * 100) : 0}%
                   </span>
                 </div>
               ))}
@@ -257,14 +257,14 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
 
       <Card className="p-4 mb-4">
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--ack-heading)' }}>
-          Monthly Attendance Rate {year !== 'all' ? `— ${year}` : '(rolling 12 months)'}
+          Monthly Attendance Rate {year !== 'all' ? `â€” ${year}` : '(rolling 12 months)'}
         </h2>
         <TrendBarChart data={monthly} color="#1F5EFF" barMinWidth={52} />
       </Card>
 
       <Card className="p-4 mb-4">
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--ack-heading)' }}>
-          Overall Attendance — All Years
+          Overall Attendance â€” All Years
         </h2>
         <TrendBarChart data={yearly} color={GOLD} barMinWidth={64} />
       </Card>
@@ -302,7 +302,7 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
           <h2 className="text-sm font-bold mb-1 flex items-center gap-1.5" style={{ color: 'var(--ack-heading)' }}>
             <Trophy size={14} color={GOLD} /> Top Players
           </h2>
-          <p className="text-[10px] text-[var(--ack-muted)] mb-2">Ranked by real results — medals, attendance, or participation</p>
+          <p className="text-[10px] text-[var(--ack-muted)] mb-2">Ranked by real results â€” medals, attendance, or participation</p>
           <div className="flex gap-1 mb-3">
             {[
               ['medals', 'Medals'],
@@ -347,10 +347,10 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
                     </p>
                     <p className="text-[10px] text-[var(--ack-muted)] truncate">
                       {playerMetric === 'medals' &&
-                        `${r.medals.Gold}G · ${r.medals.Silver}S · ${r.medals.Bronze}B · ${r.att.rate}% attendance`}
-                      {playerMetric === 'attendance' && `${r.att.rate}% · ${r.att.total} marks in range`}
+                        `${r.medals.Gold}G Â· ${r.medals.Silver}S Â· ${r.medals.Bronze}B Â· ${r.att.rate}% attendance`}
+                      {playerMetric === 'attendance' && `${r.att.rate}% Â· ${r.att.total} marks in range`}
                       {playerMetric === 'participation' &&
-                        `${r.entries} events entered · ${r.medalsTotal} medal${r.medalsTotal === 1 ? '' : 's'}`}
+                        `${r.entries} events entered Â· ${r.medalsTotal} medal${r.medalsTotal === 1 ? '' : 's'}`}
                     </p>
                   </div>
                   <BeltBadge belt={r.student.belt} small />
@@ -368,6 +368,7 @@ export function AnalyticsView({ students, attendance, sessions, achievements, ev
 }
 
 // Notifications are derived client-side (latest achievements + the most
-// recent session's absentees) — there's no table for them, so "unread" is
+// recent session's absentees) â€” there's no table for them, so "unread" is
 // tracked with a last-seen timestamp: anything dated after that counts as
 // unread on the bell badge, and visiting the screen marks everything seen.
+

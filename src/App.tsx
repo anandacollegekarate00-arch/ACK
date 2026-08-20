@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { GlassHeader, BottomNav } from './components/nav';
 import { displayName } from './lib/identity';
 import { useAuth } from './hooks/useAuth';
@@ -17,7 +17,7 @@ export function AppRoot() {
   const [clients, setClients] = React.useState(null);
 
   React.useEffect(() => {
-    // Always the club's own project — no storage overrides, no gate.
+    // Always the club's own project â€” no storage overrides, no gate.
     try {
       setClients(createSupabaseClients(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY));
     } catch (e) {
@@ -226,13 +226,13 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         eventRegistrations={data.eventRegistrations}
         profiles={data.profiles}
         parentLinks={data.parentLinks}
-        onUpdate={data.updateStudent}
-        onMarkLeft={data.markStudentLeft}
-        onReinstate={data.reinstateStudent}
-        onDelete={data.deleteStudent}
-        onAddAchievement={data.addAchievement}
-        onUpdateAchievement={data.updateAchievement}
-        onDeleteAchievement={data.deleteAchievement}
+        onUpdate={isReadOnly('can_manage_students') ? undefined : data.updateStudent}
+        onMarkLeft={isReadOnly('can_manage_students') ? undefined : data.markStudentLeft}
+        onReinstate={isReadOnly('can_manage_students') ? undefined : data.reinstateStudent}
+        onDelete={isReadOnly('can_manage_students') ? undefined : data.deleteStudent}
+        onAddAchievement={isReadOnly('can_add_achievements') ? undefined : data.addAchievement}
+        onUpdateAchievement={isReadOnly('can_add_achievements') ? undefined : data.updateAchievement}
+        onDeleteAchievement={isReadOnly('can_add_achievements') ? undefined : data.deleteAchievement}
         onCreateParentAccount={data.createParentAccountByPhone}
         onResetParentPassword={data.resetParentPassword}
         openTournament={openTournament}
@@ -257,7 +257,7 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         onRegister={data.registerForEvent}
         onUnregister={data.unregisterFromEvent}
         onSaveResult={(a) => (a.id ? data.updateAchievement(a) : data.addAchievement(a))}
-        onDeleteAchievement={data.deleteAchievement}
+        onDeleteAchievement={isReadOnly('can_add_achievements') ? undefined : data.deleteAchievement}
         onSaveTournament={data.updateTournament}
         onDeleteTournament={async (id) => {
           await data.deleteTournament(id);
@@ -306,11 +306,12 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
       <StudentsView
         students={data.students}
         attendance={data.attendance}
-        onAddStudent={data.addStudent}
+        onAddStudent={isReadOnly('can_manage_students') ? undefined : data.addStudent}
         openStudent={openStudent}
         autoOpenAdd={!!pendingAction.addStudent}
         onConsumeAutoOpen={consumePendingAction}
-        onImportStudents={data.addStudentsBatch}
+        onImportStudents={isReadOnly('can_manage_students') ? undefined : data.addStudentsBatch}
+        readOnly={isReadOnly('can_manage_students')}
       />
     );
     headerTitle = 'Students';
@@ -324,6 +325,7 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         onRemoveMark={data.deleteAttendance}
         onMarkAllAbsent={data.markAllAbsent}
         currentUser={{ ...session.user, name: profile.name }}
+        readOnly={isReadOnly('can_mark_attendance')}
       />
     );
     headerTitle = 'Attendance';

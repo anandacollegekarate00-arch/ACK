@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Search, Check, X, Clock, ArrowLeft, Download, Trash2, ChevronLeft, ChevronRight, Camera, QrCode, AlertTriangle } from '../icons';
 import { Avatar, BeltBadge, Card, PrimaryButton, Field, inputCls, Modal, ConfirmDialog } from '../components/ui';
 import { QRScannerModal } from '../components/QRScannerModal';
@@ -9,13 +9,13 @@ import { WEEKDAY_LABELS, sessionsForDate } from '../lib/attendance';
 import { downloadCSV } from '../lib/csv';
 import { DaySummaryBar } from './/dashboard';
 
-// The attendance record for one student on one date (+ optional session) —
+// The attendance record for one student on one date (+ optional session) â€”
 // module-level so the views' memos stay dependency-clean.
 function findRec(attendance, date, sessionId, studentId) {
   return attendance.find((a) => a.student_id === studentId && a.date === date && (a.session_id || null) === (sessionId || null));
 }
 
-export function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, onMarkAllAbsent, currentUser }) {
+export function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, onMarkAllAbsent, currentUser, readOnly = false }) {
   const [date, setDate] = React.useState(todayISO());
   const dateSessions = React.useMemo(() => sessionsForDate(sessions, date), [sessions, date]);
   const [sessionId, setSessionId] = React.useState(null);
@@ -37,7 +37,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
     setSessionId(dateSessions.length === 1 ? dateSessions[0].id : null);
   }, [dateSessions, date, sessions]);
 
-  // Former members (left_at set) no longer take part in attendance marking —
+  // Former members (left_at set) no longer take part in attendance marking â€”
   // they can't collect absent marks anymore, but their history stays intact.
   const activeStudents = React.useMemo(() => students.filter((s) => !s.left_at), [students]);
   const filtered = activeStudents.filter(
@@ -175,7 +175,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
         </button>
       </div>
       {!isToday && (
-        <p className="text-[11px] text-[var(--ack-muted)] mb-3">Viewing a past date — you can still add, change, or remove marks here.</p>
+        <p className="text-[11px] text-[var(--ack-muted)] mb-3">Viewing a past date â€” you can still add, change, or remove marks here.</p>
       )}
 
       <DaySummaryBar attendance={attendance} date={date} sessionId={sessionId} totalStudents={activeStudents.length} />
@@ -203,7 +203,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
                   : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }
               }
             >
-              {s.name} · {s.time}
+              {s.name} Â· {s.time}
             </button>
           ))}
           <button
@@ -219,7 +219,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
       )}
       {dateSessions.length === 0 && (
         <p className="text-[11px] text-[var(--ack-muted)] mb-3">
-          No practice sessions were scheduled that day — attendance is marked generally for the date. Add sessions from the Dashboard.
+          No practice sessions were scheduled that day â€” attendance is marked generally for the date. Add sessions from the Dashboard.
         </p>
       )}
 
@@ -305,7 +305,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
         </div>
       )}
 
-      {selected && (
+      {selected && !readOnly && (
         <Card className="p-4 mt-3">
           <button
             onClick={() => {
@@ -330,7 +330,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
             <p>
               Session:{' '}
               <span className="font-semibold text-[var(--ack-text)]">
-                {sessionLabel} · {date}
+                {sessionLabel} Â· {date}
               </span>
             </p>
             <p>
@@ -378,7 +378,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
             <textarea rows={2} className={inputCls} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </Field>
           <PrimaryButton onClick={confirm} disabled={!pendingStatus || busy} className="w-full mb-2">
-            {busy ? 'Saving…' : 'Confirm Attendance'}
+            {busy ? 'Savingâ€¦' : 'Confirm Attendance'}
           </PrimaryButton>
           {existingRec && (
             <button
@@ -396,7 +396,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
       {confirmRemove && (
         <ConfirmDialog
           title="Remove this attendance mark?"
-          message={`This clears ${selected ? displayName(selected) : ''}'s "${existingRec?.status}" mark for ${date} entirely — it'll show as not marked, not just changed. This cannot be undone.`}
+          message={`This clears ${selected ? displayName(selected) : ''}'s "${existingRec?.status}" mark for ${date} entirely â€” it'll show as not marked, not just changed. This cannot be undone.`}
           confirmLabel="Remove"
           onCancel={() => setConfirmRemove(false)}
           onConfirm={removeMark}
@@ -406,7 +406,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
         <ConfirmDialog
           title="Mark all unmarked students absent?"
           message={`This marks ${unmarked.length} student${unmarked.length === 1 ? '' : 's'} with no record yet for ${sessionLabel} on ${date} as absent. Anyone already marked present or late is left untouched.`}
-          confirmLabel={bulkBusy ? 'Marking…' : 'Mark Absent'}
+          confirmLabel={bulkBusy ? 'Markingâ€¦' : 'Mark Absent'}
           onCancel={() => setConfirmBulkAbsent(false)}
           onConfirm={confirmMarkAllAbsent}
         />
@@ -475,7 +475,7 @@ export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
                 {s.name}
               </p>
               <p className="text-[11px] text-[var(--ack-muted)]">
-                {s.time} · {s.days.map((d) => WEEKDAY_LABELS[d]).join(', ')}
+                {s.time} Â· {s.days.map((d) => WEEKDAY_LABELS[d]).join(', ')}
               </p>
             </div>
             <button onClick={() => setConfirmDeleteId(s.id)} className="p-2 rounded-lg" style={{ color: DANGER }}>

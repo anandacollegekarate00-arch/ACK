@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Users, Calendar, Trophy, Plus, X, Edit3, Edit2, Trash2, Award, Medal, TrendingUp, PieChartIcon } from '../icons';
 import { DonutChart, TrendBarChart } from '../components/charts';
 import { Avatar, LevelBadge, Card, StatCard, PrimaryButton, Field, inputCls, Modal, ConfirmDialog } from '../components/ui';
@@ -73,7 +73,7 @@ export function AddAchievementModal({ students, tournaments, onClose, onSave, lo
       </div>
       <Field label="Placement (optional)">
         <select className={inputCls} value={placement} onChange={(e) => setPlacement(e.target.value)}>
-          <option value="">— None —</option>
+          <option value="">â€” None â€”</option>
           {PLACEMENTS.map((p) => (
             <option key={p} value={p}>
               {p}
@@ -90,7 +90,7 @@ export function AddAchievementModal({ students, tournaments, onClose, onSave, lo
         </summary>
         <div className="mt-2">
           <select className={inputCls} value={tournamentId} onChange={(e) => setTournamentId(e.target.value)}>
-            <option value="">— None —</option>
+            <option value="">â€” None â€”</option>
             {tournaments.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
@@ -166,7 +166,7 @@ export function TournamentFormModal({ series, existing = undefined, onClose, onS
   return (
     <Modal title={existing ? 'Edit Tournament' : 'New Tournament'} onClose={onClose} wide>
       <p className="text-xs text-[var(--ack-muted)] mb-3">
-        Link this to a series (e.g. "Senior School Championship") so results across years — '26, '27, '28 — can be compared automatically.
+        Link this to a series (e.g. "Senior School Championship") so results across years â€” '26, '27, '28 â€” can be compared automatically.
       </p>
       <Field label="Series">
         {!useNewSeries ? (
@@ -178,7 +178,7 @@ export function TournamentFormModal({ series, existing = undefined, onClose, onS
               applySeriesDefaults(e.target.value, date);
             }}
           >
-            <option value="">— One-off tournament (no series) —</option>
+            <option value="">â€” One-off tournament (no series) â€”</option>
             {series.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -203,7 +203,7 @@ export function TournamentFormModal({ series, existing = undefined, onClose, onS
             className="text-xs font-semibold mt-1.5"
             style={{ color: ROYAL }}
           >
-            {useNewSeries ? '← Choose an existing series instead' : '+ Start a new series'}
+            {useNewSeries ? 'â† Choose an existing series instead' : '+ Start a new series'}
           </button>
         )}
       </Field>
@@ -242,7 +242,7 @@ export function TournamentFormModal({ series, existing = undefined, onClose, onS
       </Field>
       {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
       <PrimaryButton onClick={submit} disabled={saving} className="w-full">
-        {saving ? 'Saving…' : existing ? 'Save Changes' : 'Create Tournament'}
+        {saving ? 'Savingâ€¦' : existing ? 'Save Changes' : 'Create Tournament'}
       </PrimaryButton>
     </Modal>
   );
@@ -337,7 +337,7 @@ export function TournamentEventFormModal({ onClose, onSave }) {
         </div>
       </Field>
       <PrimaryButton onClick={submit} disabled={saving} className="w-full">
-        {saving ? 'Adding…' : 'Add Event'}
+        {saving ? 'Addingâ€¦' : 'Add Event'}
       </PrimaryButton>
     </Modal>
   );
@@ -353,7 +353,7 @@ export function ResultEntryModal({ student, event, tournament, existing, onClose
   async function submit() {
     setSaving(true);
     try {
-      const title = `${event.name}${placement ? ' — ' + placement : ''}`;
+      const title = `${event.name}${placement ? ' â€” ' + placement : ''}`;
       await onSave({
         ...(existing ? { id: existing.id } : {}),
         student_id: student.id,
@@ -372,14 +372,14 @@ export function ResultEntryModal({ student, event, tournament, existing, onClose
   }
 
   return (
-    <Modal title={`Result — ${displayName(student)}`} onClose={onClose}>
+    <Modal title={`Result â€” ${displayName(student)}`} onClose={onClose}>
       <p className="text-xs text-[var(--ack-muted)] mb-3">
         {event.name}
         {event.category === 'team' ? ` (Team of ${event.team_size})` : ''}
       </p>
       <Field label="Placement">
         <select className={inputCls} value={placement} onChange={(e) => setPlacement(e.target.value)}>
-          <option value="">— No result yet —</option>
+          <option value="">â€” No result yet â€”</option>
           {PLACEMENTS.map((p) => (
             <option key={p} value={p}>
               {p}
@@ -394,7 +394,7 @@ export function ResultEntryModal({ student, event, tournament, existing, onClose
         <textarea rows={2} className={inputCls} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
       <PrimaryButton onClick={submit} disabled={saving} className="w-full" style={{ background: GOLD }}>
-        {saving ? 'Saving…' : 'Save Result'}
+        {saving ? 'Savingâ€¦' : 'Save Result'}
       </PrimaryButton>
       {existing && (
         <button onClick={() => setConfirmDelete(true)} className="w-full mt-2 text-xs font-semibold text-red-600 py-2">
@@ -458,10 +458,10 @@ export function EventRosterCard({
           </p>
           <p className="text-[11px] text-[var(--ack-muted)]">
             {event.category === 'team'
-              ? `Team event · ${roster.length}/${event.team_size || '?'} registered`
-              : `Individual · ${roster.length} registered`}
+              ? `Team event Â· ${roster.length}/${event.team_size || '?'} registered`
+              : `Individual Â· ${roster.length} registered`}
           </p>
-          {event.dates && event.dates.length > 0 && <p className="text-[11px] text-[var(--ack-muted)] mt-0.5">{event.dates.join(' · ')}</p>}
+          {event.dates && event.dates.length > 0 && <p className="text-[11px] text-[var(--ack-muted)] mt-0.5">{event.dates.join(' Â· ')}</p>}
         </div>
         <button
           onClick={() => setConfirmDeleteEvent(true)}
@@ -516,7 +516,7 @@ export function EventRosterCard({
       {!full && (
         <div className="flex gap-2">
           <select className={`${inputCls} flex-1`} value={addingStudentId} onChange={(e) => setAddingStudentId(e.target.value)}>
-            <option value="">Select a student…</option>
+            <option value="">Select a studentâ€¦</option>
             {available.map((s) => (
               <option key={s.id} value={s.id}>
                 {displayName(s)}
@@ -607,7 +607,7 @@ export function TournamentDetailPage({
           <div className="min-w-0">
             {thisSeries && (
               <button onClick={() => openSeries(thisSeries.id)} className="text-[11px] font-bold mb-1" style={{ color: ROYAL }}>
-                {thisSeries.name} ↗
+                {thisSeries.name} â†—
               </button>
             )}
             <h1 className="text-lg font-extrabold" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
@@ -616,7 +616,7 @@ export function TournamentDetailPage({
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               <LevelBadge level={tournament.level} />
               {tournament.date && <span className="text-[11px] text-[var(--ack-muted)]">{tournament.date}</span>}
-              {tournament.location && <span className="text-[11px] text-[var(--ack-muted)]">· {tournament.location}</span>}
+              {tournament.location && <span className="text-[11px] text-[var(--ack-muted)]">Â· {tournament.location}</span>}
             </div>
           </div>
           <div className="flex gap-1.5 shrink-0">
@@ -691,7 +691,7 @@ export function TournamentDetailPage({
                     {row.event.name}
                   </p>
                   <p className="text-[11px] text-[var(--ack-muted)]">
-                    {row.registered} registered · {row.results} results
+                    {row.registered} registered Â· {row.results} results
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] font-bold shrink-0">
@@ -731,7 +731,7 @@ export function TournamentDetailPage({
       ))}
       {myEvents.length === 0 && (
         <p className="text-xs text-[var(--ack-muted)] text-center py-6">
-          No events yet — add Kata, Kumite, or a team event to start building the roster.
+          No events yet â€” add Kata, Kumite, or a team event to start building the roster.
         </p>
       )}
 
@@ -802,14 +802,14 @@ export function SeriesDetailPage({ series, tournaments, events, registrations, a
         <Medal size={20} color={GOLD} /> {series.name}
       </h1>
       <p className="text-xs text-[var(--ack-muted)] mb-4">
-        {rows.length} edition{rows.length === 1 ? '' : 's'} tracked · Year-over-year performance
+        {rows.length} edition{rows.length === 1 ? '' : 's'} tracked Â· Year-over-year performance
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <StatCard icon={Trophy} label="Total Gold" value={totalGold} tint="#D4AF37" />
         <StatCard icon={Medal} label="Total Silver" value={totalSilver} tint="#9CA3AF" />
         <StatCard icon={Award} label="Total Bronze" value={totalBronze} tint="#CD7F32" />
-        <StatCard icon={TrendingUp} label="Best Year" value={bestYear ? yearLabel(bestYear.tournament) : '—'} tint={ROYAL} />
+        <StatCard icon={TrendingUp} label="Best Year" value={bestYear ? yearLabel(bestYear.tournament) : 'â€”'} tint={ROYAL} />
       </div>
 
       <Card className="p-4 mb-4">
@@ -847,7 +847,7 @@ export function SeriesDetailPage({ series, tournaments, events, registrations, a
                     {r.tournament.name}
                   </p>
                   <p className="text-[11px] text-[var(--ack-muted)]">
-                    {r.tournament.date || 'No date set'} · {r.participants} competed
+                    {r.tournament.date || 'No date set'} Â· {r.participants} competed
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] font-bold shrink-0">
@@ -919,6 +919,7 @@ export function AchievementsView({
   onConsumeAutoOpen,
   openTournament,
   openSeries,
+  readOnly = false,
 }) {
   const [showAdd, setShowAdd] = React.useState(false);
 
@@ -968,7 +969,7 @@ export function AchievementsView({
                   {series.name}
                 </p>
                 <p className="text-[10px] text-[var(--ack-muted)]">
-                  {count} edition{count === 1 ? '' : 's'} · view trends
+                  {count} edition{count === 1 ? '' : 's'} Â· view trends
                 </p>
               </button>
             ))}
@@ -1018,7 +1019,7 @@ export function AchievementsView({
         })}
         {sortedTournaments.length === 0 && (
           <p className="text-sm text-[var(--ack-muted)] py-10 text-center">
-            No tournaments recorded yet — add one to start building rosters and tracking results.
+            No tournaments recorded yet â€” add one to start building rosters and tracking results.
           </p>
         )}
       </div>
