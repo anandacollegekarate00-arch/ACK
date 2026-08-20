@@ -99,6 +99,11 @@ export const Edit3 = makeIcon(
     <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
   </>
 );
+export const Edit2 = makeIcon(
+  <>
+    <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+  </>
+);
 export const Download = makeIcon(
   <>
     <path d="M12 3v12" />

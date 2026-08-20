@@ -220,6 +220,8 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         onReinstate={data.reinstateStudent}
         onDelete={data.deleteStudent}
         onAddAchievement={data.addAchievement}
+        onUpdateAchievement={data.updateAchievement}
+        onDeleteAchievement={data.deleteAchievement}
         onCreateParentAccount={data.createParentAccountByPhone}
         onResetParentPassword={data.resetParentPassword}
         openTournament={openTournament}

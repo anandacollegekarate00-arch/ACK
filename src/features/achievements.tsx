@@ -7,22 +7,24 @@ import { rosterForEvent, tournamentAnalytics, seriesYearlyStats } from '../lib/t
 import { todayISO } from '../lib/dates';
 import { displayName } from '../lib/identity';
 
-export function AddAchievementModal({ students, tournaments, onClose, onSave, lockStudentId }) {
-  const [studentId, setStudentId] = React.useState(lockStudentId || students[0]?.id || '');
+export function AddAchievementModal({ students, tournaments, onClose, onSave, lockStudentId, existing }) {
+  const [studentId, setStudentId] = React.useState(lockStudentId || existing?.student_id || students[0]?.id || '');
   const lockedStudent = lockStudentId ? students.find((s) => s.id === lockStudentId) : null;
-  const [title, setTitle] = React.useState('');
-  const [level, setLevel] = React.useState('School');
-  const [tournamentId, setTournamentId] = React.useState('');
-  const [date, setDate] = React.useState(todayISO());
-  const [notes, setNotes] = React.useState('');
+  const [title, setTitle] = React.useState(existing?.title || '');
+  const [level, setLevel] = React.useState(existing?.level || 'School');
+  const [tournamentId, setTournamentId] = React.useState(existing?.tournament_id || '');
+  const [date, setDate] = React.useState(existing?.date || todayISO());
+  const [notes, setNotes] = React.useState(existing?.notes || '');
 
   async function submit() {
     if (!studentId || !title) return;
-    await onSave({ student_id: studentId, title, level, date, notes: notes || null, tournament_id: tournamentId || null });
+    const data = { student_id: studentId, title, level, date, notes: notes || null, tournament_id: tournamentId || null };
+    if (existing) data.id = existing.id;
+    await onSave(data);
   }
 
   return (
-    <Modal title="Add Achievement" onClose={onClose} wide>
+    <Modal title={existing ? "Edit Achievement" : "Add Achievement"} onClose={onClose} wide>
       <Field label="Student">
         {lockedStudent ? (
           <div className={`${inputCls} flex items-center text-[var(--ack-muted)]`}>

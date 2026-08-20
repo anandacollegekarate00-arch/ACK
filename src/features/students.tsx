@@ -5,6 +5,7 @@ import {
   Plus,
   Check,
   Edit3,
+  Edit2,
   Download,
   Trash2,
   ChevronLeft,
@@ -883,12 +884,16 @@ export function StudentProfilePage({
   onReinstate = undefined,
   onDelete = undefined,
   onAddAchievement = undefined,
+  onUpdateAchievement = undefined,
+  onDeleteAchievement = undefined,
   onCreateParentAccount = undefined,
   onResetParentPassword = undefined,
   openTournament = undefined,
 }) {
   const [showEdit, setShowEdit] = React.useState(false);
   const [showAddAchievement, setShowAddAchievement] = React.useState(false);
+  const [editingAchievement, setEditingAchievement] = React.useState(null);
+  const [deletingAchievement, setDeletingAchievement] = React.useState(null);
   const [showChangeBelt, setShowChangeBelt] = React.useState(false);
   const [confirmMarkLeft, setConfirmMarkLeft] = React.useState(false);
   const [confirmErase, setConfirmErase] = React.useState(false);
@@ -1201,10 +1206,32 @@ export function StudentProfilePage({
                     </p>
                   )}
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
-                      {a.title}
-                    </p>
-                    <span className="text-[11px] text-[var(--ack-muted)]">{a.date}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
+                        {a.title}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-[var(--ack-muted)]">{a.date}</span>
+                      {!readOnly && (
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => setEditingAchievement(a)}
+                            className="p-1 rounded hover:bg-[var(--ack-card)] transition-colors"
+                            title="Edit achievement"
+                          >
+                            <Edit2 size={14} color={ROYAL} />
+                          </button>
+                          <button
+                            onClick={() => setDeletingAchievement(a)}
+                            className="p-1 rounded hover:bg-[var(--ack-card)] transition-colors"
+                            title="Delete achievement"
+                          >
+                            <Trash2 size={14} color="#ef4444" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <LevelBadge level={a.level} />
@@ -1216,7 +1243,6 @@ export function StudentProfilePage({
                         {a.placement}
                       </span>
                     )}
-                    <span className="text-[11px] text-[var(--ack-muted)]">{a.date}</span>
                   </div>
                   {a.notes && <p className="text-xs text-[var(--ack-muted)] mt-1">{a.notes}</p>}
                 </div>
@@ -1248,6 +1274,31 @@ export function StudentProfilePage({
           onSave={async (a) => {
             await onAddAchievement(a);
             setShowAddAchievement(false);
+          }}
+        />
+      )}
+      {editingAchievement && (
+        <AddAchievementModal
+          students={[student]}
+          tournaments={tournaments}
+          lockStudentId={student.id}
+          existing={editingAchievement}
+          onClose={() => setEditingAchievement(null)}
+          onSave={async (a) => {
+            await onUpdateAchievement(a);
+            setEditingAchievement(null);
+          }}
+        />
+      )}
+      {deletingAchievement && (
+        <ConfirmDialog
+          title="Delete Achievement?"
+          message={`Remove "${deletingAchievement.title}" from ${displayName(student)}'s record? This cannot be undone.`}
+          confirmLabel="Delete"
+          onCancel={() => setDeletingAchievement(null)}
+          onConfirm={async () => {
+            await onDeleteAchievement(deletingAchievement.id);
+            setDeletingAchievement(null);
           }}
         />
       )}
