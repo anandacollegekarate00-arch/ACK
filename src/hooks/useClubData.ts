@@ -141,6 +141,8 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       .on('postgres_changes', { event: '*', schema: 'public', table: 'parent_students' }, (p) => applyChange('parent_students', p))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'club_history' }, (p) => applyChange('club_history', p))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'club_history_entries' }, (p) => applyChange('club_history_entries', p))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tournaments' }, (p) => applyChange('tournaments', p))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_series' }, (p) => applyChange('tournament_series', p))
       .subscribe();
     return () => {
       cancelled = true;
@@ -498,31 +500,17 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
       });
       
       if (error) {
-        // If account already exists, find it and link the students instead
+        // If account already exists, use the purpose-built RPC to link students
+        // to the correct parent (matched by synthetic email from phone number).
         if (error.message && error.message.includes('already exists')) {
-          // Query auth.users for the parent with this phone's synthetic email
-          const syntheticEmail = `${cleanPhone}@parent.anandakarateclub.local`;
-          
-          // Get all parent profiles and find the one with matching email
-          const { data: allProfiles } = await supabaseClient
-            .from('profiles')
-            .select('id')
-            .eq('role', 'parent');
-            
-          // We need to check which profile matches this email
-          // Since we can't directly query auth.users, we'll use the phone pattern
-          // The parent was created with this phone, so link to any existing parent
-          if (allProfiles && allProfiles.length > 0) {
-            // Link the students to the first parent (or find by checking existing links)
-            const parentId = allProfiles[0].id;
-            for (const studentId of studentIds) {
-              await supabaseClient
-                .from('parent_students')
-                .insert({ parent_id: parentId, student_id: studentId });
-            }
-            await Promise.all([refetch('profiles'), refetch('parent_students')]);
-            return 'LINKED_TO_EXISTING'; // Special return value to show different message
+          for (const sid of studentIds) {
+            await supabaseClient.rpc('link_student_to_phone_parent', {
+              login_phone: phone,
+              p_student_id: sid,
+            });
           }
+          await Promise.all([refetch('profiles'), refetch('parent_students')]);
+          return 'LINKED_TO_EXISTING';
         }
         throw error;
       }

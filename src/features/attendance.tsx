@@ -44,7 +44,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
     (s) => displayName(s).toLowerCase().includes(query.toLowerCase()) || s.admission_id.toLowerCase().includes(query.toLowerCase())
   );
   const existingRec = selected ? findRec(attendance, date, sessionId, selected.id) : null;
-  const sessionLabel = sessionId ? dateSessions.find((s) => s.id === sessionId)?.title || 'Session' : 'General (no session picked)';
+  const sessionLabel = sessionId ? dateSessions.find((s) => s.id === sessionId)?.name || 'Session' : 'General (no session picked)';
   const isToday = date === todayISO();
   const unmarked = React.useMemo(
     () => activeStudents.filter((s) => !findRec(attendance, date, sessionId, s.id)),
@@ -203,7 +203,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
                   : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }
               }
             >
-              {s.title} · {s.time}
+              {s.name} · {s.time}
             </button>
           ))}
           <button
@@ -421,12 +421,18 @@ export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
   const [days, setDays] = React.useState([]);
   const [confirmDeleteId, setConfirmDeleteId] = React.useState(null);
 
+  React.useEffect(() => {
+    if (confirmDeleteId && !sessions.find((s: any) => s.id === confirmDeleteId)) {
+      setConfirmDeleteId(null);
+    }
+  }, [sessions, confirmDeleteId]);
+
   function toggleDay(d) {
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort()));
   }
   async function submit() {
     if (!title || days.length === 0) return;
-    await onAdd({ title, time, days });
+    await onAdd({ name: title, time, days });
     setTitle('');
     setDays([]);
   }
@@ -466,7 +472,7 @@ export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
           <div key={s.id} className="flex items-center justify-between bg-[var(--ack-surface-2)] rounded-xl p-3">
             <div>
               <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
-                {s.title}
+                {s.name}
               </p>
               <p className="text-[11px] text-[var(--ack-muted)]">
                 {s.time} · {s.days.map((d) => WEEKDAY_LABELS[d]).join(', ')}
@@ -482,10 +488,10 @@ export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
       {toDelete && (
         <ConfirmDialog
           title="Remove this session?"
-          message={`"${toDelete.title}" (${toDelete.time}) will no longer appear on the Dashboard.`}
+          message={`"${toDelete.name}" (${toDelete.time}) will no longer appear on the Dashboard.`}
           onCancel={() => setConfirmDeleteId(null)}
           onConfirm={async () => {
-            await onDelete(toDelete.id);
+            if (toDelete) await onDelete(toDelete.id);
             setConfirmDeleteId(null);
           }}
         />

@@ -107,12 +107,27 @@ export function normalizeISODate(v) {
     const y = Number(yy),
       mo = Number(mm),
       d = Number(dd);
-    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31 && y >= 1900 && y <= 2100)
-      return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31 && y >= 1900 && y <= 2100) {
+      const candidate = new Date(y, mo - 1, d); // local, no timezone shift
+      // If the date wraps (e.g. Feb 30 → Mar 2), the day/month won't match back
+      if (
+        candidate.getFullYear() === y &&
+        candidate.getMonth() === mo - 1 &&
+        candidate.getDate() === d
+      ) {
+        return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+    }
+    return ''; // impossible date
   }
   const parsed = new Date(s);
   if (!isNaN(parsed.getTime()) && parsed.getFullYear() >= 1900 && parsed.getFullYear() <= 2100) {
-    return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+    // Guard against V8 silent wrapping on free-form strings
+    const py = parsed.getFullYear(), pmo = parsed.getMonth() + 1, pd = parsed.getDate();
+    const roundTrip = new Date(py, pmo - 1, pd);
+    if (roundTrip.getFullYear() === py && roundTrip.getMonth() === pmo - 1 && roundTrip.getDate() === pd) {
+      return `${py}-${String(pmo).padStart(2, '0')}-${String(pd).padStart(2, '0')}`;
+    }
   }
   return '';
 }

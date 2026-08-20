@@ -31,17 +31,21 @@ export function statsFor(studentId: string, attendance: AttendanceRecord[]): Att
 
 export function monthlySeries(studentId: string, attendance: AttendanceRecord[]): { month: string; rate: number }[] {
   const recs = attendance.filter((a) => a.student_id === studentId);
-  const byMonth: Record<string, { present: number; total: number }> = {};
+  const byMonth: Record<string, { present: number; late: number; total: number }> = {};
   recs.forEach((r) => {
     const m = r.date.slice(0, 7);
-    byMonth[m] = byMonth[m] || { present: 0, total: 0 };
+    byMonth[m] = byMonth[m] || { present: 0, late: 0, total: 0 };
     byMonth[m].total += 1;
     if (r.status === 'present') byMonth[m].present += 1;
+    if (r.status === 'late')    byMonth[m].late    += 1;
   });
   return Object.entries(byMonth)
     .sort((a, b) => a[0].localeCompare(b[0]))
     .slice(-6)
-    .map(([month, v]) => ({ month: month.slice(5), rate: Math.round((v.present / v.total) * 100) }));
+    .map(([month, v]) => ({
+      month: month.slice(5),
+      rate: Math.round(((v.present + v.late * 0.5) / v.total) * 100),
+    }));
 }
 
 // Per-period present/late/absent composition for the Dashboard trend chart.

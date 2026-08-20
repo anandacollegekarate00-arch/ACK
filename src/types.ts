@@ -82,7 +82,7 @@ export interface EventRegistration {
 
 export interface Session {
   id: string;
-  title: string;
+  name: string;
   time: string; // "HH:MM"
   days: number[]; // 0=Sunday..6=Saturday
   [key: string]: unknown;

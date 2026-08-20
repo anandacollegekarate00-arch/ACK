@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { AttendanceRecord, Session, Student } from '../../types';
 import {
   statsFor,
@@ -62,7 +62,7 @@ describe('monthlySeries', () => {
       rec('c', 's1', '2026-02-05', 'present'),
     ];
     expect(monthlySeries('s1', records)).toEqual([
-      { month: '01', rate: 50 }, // present/total â€” no late half-credit here
+      { month: '01', rate: 75 }, // (1 present + 1 late x 0.5) / 2 = 75% - late counts as half credit
       { month: '02', rate: 100 },
     ]);
   });
@@ -147,9 +147,9 @@ describe('studentAbsenceStatus', () => {
 
 describe('sessionsForDate', () => {
   const sessions: Session[] = [
-    { id: 's1', title: 'Evening', time: '18:00', days: [3, 5] },
-    { id: 's2', title: 'Morning', time: '08:00', days: [3] },
-    { id: 's3', title: 'Saturday', time: '09:00', days: [6] },
+    { id: 's1', name: 'Evening', time: '18:00', days: [3, 5] },
+    { id: 's2', name: 'Morning', time: '08:00', days: [3] },
+    { id: 's3', name: 'Saturday', time: '09:00', days: [6] },
   ];
 
   it('filters by day of week and sorts by time', () => {

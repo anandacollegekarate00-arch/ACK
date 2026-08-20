@@ -384,7 +384,15 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
   // gradeKey extracts the leading numeric part so "12m6" groups with "12"
   const gradeKey = (g: string) => { const m = String(g || '').replace(/^(class|grade)\s*/i, '').match(/^(\d+)/); return m ? m[1] : String(g || ''); };
   const VALID_GRADES = ['1','2','3','4','5','6','7','8','9','10','11','12','13'];
-  const distinctGrades: string[] = VALID_GRADES.filter((g) => students.some((s) => gradeKey(s.grade) === g));
+  const numericGrades = VALID_GRADES.filter((g) => students.some((s) => gradeKey(s.grade) === g));
+  const nonNumericGrades: string[] = Array.from(
+    new Set<string>(
+      students
+        .map((s) => (s.grade || '').trim())
+        .filter((g) => g && !/^\d/.test(g))
+    )
+  ).sort();
+  const distinctGrades: string[] = [...numericGrades, ...nonNumericGrades];
   const distinctBelts = BELTS.filter((b) => students.some((s) => s.belt === b));
 
   // Former members (left_at set) live behind their own filter — the main
@@ -394,7 +402,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
 
   const filtered = (filterBy === 'Former members' ? formerStudents : activeStudents).filter((s) => {
     if (filterBy === 'Belt') return selectedBelt ? s.belt === selectedBelt : true;
-    if (filterBy === 'Grade') return selectedGrade ? gradeKey(s.grade) === selectedGrade : true;
+    if (filterBy === 'Grade') return selectedGrade ? gradeKey(s.grade) === selectedGrade || (s.grade || '').trim() === selectedGrade : true;
     const q = query.toLowerCase();
     if (!q) return true;
     return displayName(s).toLowerCase().includes(q) || s.admission_id.toLowerCase().includes(q);

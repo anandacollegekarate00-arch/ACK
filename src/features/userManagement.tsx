@@ -1,12 +1,8 @@
 import React from 'react';
 import { RefreshCw, Trash2 } from '../icons';
-import { Avatar, PrimaryButton, Field, inputCls, Modal } from '../components/ui';
+import { Avatar, PrimaryButton, Field, inputCls, Modal, ConfirmDialog } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { ROYAL, DANGER, WARNING } from '../lib/theme';
-
-function generateTempPassword() {
-  return '000000';
-}
 
 interface UserManagementPanelProps {
   profiles: any[];
@@ -30,7 +26,10 @@ export function UserManagementPanel({
   const [busy, setBusy] = React.useState(false);
   const { showToast, ToastComponent } = useToast();
 
-  const staffUsers = profiles.filter((p) => ['coach', 'captain'].includes(p.role));
+  const [confirmDeleteTarget, setConfirmDeleteTarget] = React.useState<any>(null);
+  const [confirmResetTarget, setConfirmResetTarget] = React.useState<any>(null);
+
+  const staffUsers = profiles.filter((p) => ['coach', 'captain', 'senior_player'].includes(p.role));
 
   async function submit() {
     if (!email || !name) {
@@ -49,46 +48,13 @@ export function UserManagementPanel({
         role,
       });
 
-      alert(
-        `Account Created Successfully!\n\nEmail: ${email}\nTemporary Password: 000000\n\nThe user must change this password on first login.`
-      );
-
-      showToast('User account created successfully');
+      showToast(`Account created — email: ${email}, temp password: 000000`);
 
       setEmail('');
       setName('');
       setRole('coach');
     } catch (e: any) {
       setError(e.message || 'Could not create account.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleResetPassword(user: any) {
-    if (!confirm(`Reset password for ${user.name} to "000000"?`)) return;
-
-    setBusy(true);
-    try {
-      const newPassword = await onResetPassword(user.id);
-      alert(`Password Reset Successful!\n\nNew temporary password for ${user.name}: ${newPassword}\n\nThey must change this password on next login.`);
-      showToast('Password reset successfully');
-    } catch (e: any) {
-      alert('Error: ' + (e.message || 'Could not reset password.'));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleDeleteUser(user: any) {
-    if (!confirm(`Permanently delete ${user.name}? This cannot be undone.`)) return;
-
-    setBusy(true);
-    try {
-      await onDeleteUser(user.id);
-      showToast('User deleted successfully');
-    } catch (e: any) {
-      alert('Error: ' + (e.message || 'Could not delete user.'));
     } finally {
       setBusy(false);
     }
@@ -162,13 +128,13 @@ export function UserManagementPanel({
                     {user.name}
                   </p>
                   <p className="text-[11px] text-[var(--ack-muted)] truncate">
-                    {user.role === 'captain' ? 'Captain' : 'Coach'} • {user.email || 'No email'}
+                    {user.role === 'captain' ? 'Captain' : user.role === 'senior_player' ? 'Senior Player' : 'Coach'} • {user.email || 'No email'}
                   </p>
 
                   {/* Action buttons */}
                   <div className="flex gap-2 mt-2">
                     <button
-                      onClick={() => handleResetPassword(user)}
+                      onClick={() => setConfirmResetTarget(user)}
                       disabled={busy}
                       className="text-[11px] font-semibold px-2 py-1 rounded-lg"
                       style={{ background: `${WARNING}14`, color: WARNING }}
@@ -177,7 +143,7 @@ export function UserManagementPanel({
                       Reset Password
                     </button>
                     <button
-                      onClick={() => handleDeleteUser(user)}
+                      onClick={() => setConfirmDeleteTarget(user)}
                       disabled={busy}
                       className="text-[11px] font-semibold px-2 py-1 rounded-lg"
                       style={{ background: `${DANGER}14`, color: DANGER }}
@@ -192,6 +158,46 @@ export function UserManagementPanel({
           ))}
         </div>
       </div>
+
+      {/* Delete confirm dialog */}
+      {confirmDeleteTarget && (
+        <ConfirmDialog
+          title="Delete this user?"
+          message={`Permanently delete ${confirmDeleteTarget.name}? This cannot be undone.`}
+          confirmLabel="Delete"
+          onCancel={() => setConfirmDeleteTarget(null)}
+          onConfirm={async () => {
+            try {
+              await onDeleteUser(confirmDeleteTarget.id);
+              showToast('User deleted successfully');
+            } catch (e: any) {
+              showToast('Error: ' + (e.message || 'Could not delete user.'));
+            } finally {
+              setConfirmDeleteTarget(null);
+            }
+          }}
+        />
+      )}
+
+      {/* Reset password confirm dialog */}
+      {confirmResetTarget && (
+        <ConfirmDialog
+          title="Reset password?"
+          message={`Reset password for ${confirmResetTarget.name} to "000000"?`}
+          confirmLabel="Reset"
+          onCancel={() => setConfirmResetTarget(null)}
+          onConfirm={async () => {
+            try {
+              const newPw = await onResetPassword(confirmResetTarget.id);
+              showToast(`Password reset — new temporary password: ${newPw}`);
+            } catch (e: any) {
+              showToast('Error: ' + (e.message || 'Could not reset password.'));
+            } finally {
+              setConfirmResetTarget(null);
+            }
+          }}
+        />
+      )}
     </Modal>
   );
 }

@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { Users, Bell, Edit3, Mail, Phone, KeyRound, Moon, LogOut, RefreshCw, X, Shield, Plus, Trash2, ChevronRight, BookOpen } from '../icons';
-import { Avatar, Card, PrimaryButton, Field, inputCls, Modal } from '../components/ui';
+import { Avatar, Card, PrimaryButton, Field, inputCls, Modal, ConfirmDialog } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { ROYAL, DANGER, WARNING, SUCCESS } from '../lib/theme';
 import { displayName } from '../lib/identity';
@@ -535,6 +535,12 @@ export function ProfileView({
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [showUserManagement, setShowUserManagement] = React.useState(false);
 
+  function roleLabel(role: string): string {
+    if (role === 'captain') return 'Club Captain';
+    if (role === 'senior_player') return 'Senior Player';
+    return 'Coach';
+  }
+
   return (
     <div className="p-4 sm:p-6 max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-24 sm:pb-6">
       <h1 className="text-xl font-extrabold mb-4" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
@@ -552,7 +558,7 @@ export function ProfileView({
         <p className="font-extrabold text-base mt-3" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
           {profile.name || user.email}
         </p>
-        <p className="text-xs text-[var(--ack-muted)]">{profile.position || (profile.role === 'captain' ? 'Club Captain' : 'Coach')}</p>
+        <p className="text-xs text-[var(--ack-muted)]">{profile.position || roleLabel(profile.role)}</p>
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-xs text-[var(--ack-muted)]">
           <span className="flex items-center gap-1 break-all">
             <Mail size={12} />
@@ -566,7 +572,7 @@ export function ProfileView({
           )}
         </div>
         <span className="mt-3 text-[11px] font-bold px-3 py-1 rounded-full" style={{ background: `${ROYAL}1A`, color: ROYAL }}>
-          {profile.role === 'captain' ? 'Captain' : 'Coach'}
+          {profile.role === 'captain' ? 'Captain' : profile.role === 'senior_player' ? 'Senior Player' : 'Coach'}
         </span>
       </Card>
 
@@ -1073,15 +1079,17 @@ export function ClubHistoryPage({ clubHistory, clubHistoryEntries, isStaff, onAd
   const [addEntryFor, setAddEntryFor] = React.useState<{ historyId: string; section: string } | null>(null);
   const [editingEntry, setEditingEntry] = React.useState<any>(null);
   const [expandedYear, setExpandedYear] = React.useState<string | null>(null);
+  const [confirmDeleteYear, setConfirmDeleteYear] = React.useState<string | null>(null);
 
   const sorted = [...clubHistory].sort((a, b) => b.year - a.year);
 
   // Auto-expand the first (latest) year
   React.useEffect(() => {
-    if (sorted.length > 0 && expandedYear === null) {
+    if (expandedYear === null && sorted.length > 0) {
       setExpandedYear(sorted[0].id);
     }
-  }, [sorted.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandedYear, sorted[0]?.id]);
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-24 sm:pb-6">
@@ -1134,7 +1142,7 @@ export function ClubHistoryPage({ clubHistory, clubHistoryEntries, isStaff, onAd
                           <Edit3 size={13} />
                         </span>
                         <span
-                          onClick={(e) => { e.stopPropagation(); onDeleteYear(yr.id); }}
+                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteYear(yr.id); }}
                           className="p-1.5 rounded-lg"
                           style={{ background: `${DANGER}14`, color: DANGER }}
                           role="button"
@@ -1205,6 +1213,22 @@ export function ClubHistoryPage({ clubHistory, clubHistoryEntries, isStaff, onAd
           existing={editingYear}
           onClose={() => { setShowYearForm(false); setEditingYear(null); }}
           onSave={editingYear ? onUpdateYear : onAddYear}
+        />
+      )}
+
+      {/* Year delete confirm */}
+      {confirmDeleteYear && (
+        <ConfirmDialog
+          title="Delete this year's history?"
+          message={`This permanently removes the ${
+            clubHistory.find((y) => y.id === confirmDeleteYear)?.year ?? ''
+          } history record and all its achievements. This cannot be undone.`}
+          confirmLabel="Delete"
+          onCancel={() => setConfirmDeleteYear(null)}
+          onConfirm={async () => {
+            await onDeleteYear(confirmDeleteYear);
+            setConfirmDeleteYear(null);
+          }}
         />
       )}
 

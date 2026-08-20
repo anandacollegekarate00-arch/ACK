@@ -185,7 +185,7 @@ export function Dashboard({ profile, students, attendance, achievements, session
             <div key={s.id} className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
-                  {s.title}
+                  {s.name}
                 </p>
                 <p className="text-xs text-[var(--ack-muted)]">{s.time}</p>
               </div>

@@ -12,13 +12,22 @@ export function AddAchievementModal({ students, tournaments, onClose, onSave, lo
   const lockedStudent = lockStudentId ? students.find((s) => s.id === lockStudentId) : null;
   const [title, setTitle] = React.useState(existing?.title || '');
   const [level, setLevel] = React.useState(existing?.level || 'School');
+  const [placement, setPlacement] = React.useState(existing?.placement || '');
   const [tournamentId, setTournamentId] = React.useState(existing?.tournament_id || '');
   const [date, setDate] = React.useState(existing?.date || todayISO());
   const [notes, setNotes] = React.useState(existing?.notes || '');
 
   async function submit() {
     if (!studentId || !title) return;
-    const data: any = { student_id: studentId, title, level, date, notes: notes || null, tournament_id: tournamentId || null };
+    const data: any = {
+      student_id: studentId,
+      title,
+      level,
+      date,
+      notes: notes || null,
+      tournament_id: tournamentId || null,
+      placement: placement || null,
+    };
     if (existing) data.id = existing.id;
     await onSave(data);
   }
@@ -62,6 +71,16 @@ export function AddAchievementModal({ students, tournaments, onClose, onSave, lo
           <input type="date" className={inputCls} value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
       </div>
+      <Field label="Placement (optional)">
+        <select className={inputCls} value={placement} onChange={(e) => setPlacement(e.target.value)}>
+          <option value="">— None —</option>
+          {PLACEMENTS.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+      </Field>
       <Field label="Notes (optional)">
         <textarea rows={2} className={inputCls} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
@@ -112,6 +131,7 @@ export function TournamentFormModal({ series, existing = undefined, onClose, onS
     let finalSeriesId = seriesId || null;
     setSaving(true);
     try {
+      if (useNewSeries && !onCreateSeries) return; // guard: should never reach here after UI fix
       if (useNewSeries) {
         if (!newSeriesName.trim()) {
           setError('Give the series a name (e.g. "Senior School Championship").');
@@ -173,17 +193,19 @@ export function TournamentFormModal({ series, existing = undefined, onClose, onS
             placeholder="e.g. Senior School Championship"
           />
         )}
-        <button
-          type="button"
-          onClick={() => {
-            setUseNewSeries((v) => !v);
-            setSeriesId('');
-          }}
-          className="text-xs font-semibold mt-1.5"
-          style={{ color: ROYAL }}
-        >
-          {useNewSeries ? '← Choose an existing series instead' : '+ Start a new series'}
-        </button>
+        {onCreateSeries && (
+          <button
+            type="button"
+            onClick={() => {
+              setUseNewSeries((v) => !v);
+              setSeriesId('');
+            }}
+            className="text-xs font-semibold mt-1.5"
+            style={{ color: ROYAL }}
+          >
+            {useNewSeries ? '← Choose an existing series instead' : '+ Start a new series'}
+          </button>
+        )}
       </Field>
       <Field label="Tournament name">
         <input
