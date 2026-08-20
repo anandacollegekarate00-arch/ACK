@@ -1270,6 +1270,7 @@ export function StudentProfilePage({
           students={[student]}
           tournaments={tournaments}
           lockStudentId={student.id}
+          existing={undefined}
           onClose={() => setShowAddAchievement(false)}
           onSave={async (a) => {
             await onAddAchievement(a);

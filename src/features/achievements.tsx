@@ -18,7 +18,7 @@ export function AddAchievementModal({ students, tournaments, onClose, onSave, lo
 
   async function submit() {
     if (!studentId || !title) return;
-    const data = { student_id: studentId, title, level, date, notes: notes || null, tournament_id: tournamentId || null };
+    const data: any = { student_id: studentId, title, level, date, notes: notes || null, tournament_id: tournamentId || null };
     if (existing) data.id = existing.id;
     await onSave(data);
   }
