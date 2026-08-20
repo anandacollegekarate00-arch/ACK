@@ -89,7 +89,7 @@ export function normalizeGrade(v: string): string | null {
   // Strip common prefixes: "class", "grade", "std", "standard"
   const stripped = s.replace(/^(class|grade|std|standard)\s*/i, '').trim();
   // Remove surrounding brackets/parens
-  const clean = stripped.replace(/^[\(\[]\s*/, '').replace(/\s*[\)\]]$/, '').trim();
+  const clean = stripped.replace(/^[([]\s*/, '').replace(/\s*[)\]]$/, '').trim();
   // Extract leading number (before any dash, slash, letter, space)
   const m = clean.match(/^(\d+)/);
   return m ? m[1] : (s || null);
