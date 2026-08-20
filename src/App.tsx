@@ -75,6 +75,17 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
   const { session, profile, profileError, loading: authLoading, signIn, signOut, refreshProfile } = useAuth(supabaseClient);
   const isLoggedIn = !!session;
   const data = useClubData(supabaseClient, supabaseSecondaryClient, isLoggedIn, session?.user?.id);
+  const myPermissions = React.useMemo(() => {
+    if (!profile || profile.role !== 'senior_player') return null;
+    return data.userPermissions.find((p: any) => p.user_id === session?.user?.id) ?? null;
+  }, [profile, data.userPermissions, session?.user?.id]);
+
+  const isReadOnly = React.useCallback((permission: string): boolean => {
+    if (!profile) return true;
+    if (profile.role === 'coach' || profile.role === 'captain') return false;
+    if (profile.role === 'senior_player') return !(myPermissions as any)?.[permission];
+    return true;
+  }, [profile, myPermissions]);
 
   const [tab, setTab] = React.useState('dashboard');
   const [stack, setStack] = React.useState([]);

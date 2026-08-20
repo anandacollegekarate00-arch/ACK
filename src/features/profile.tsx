@@ -541,6 +541,11 @@ export function ProfileView({
     return 'Coach';
   }
 
+  const myPermissions = React.useMemo(
+    () => userPermissions.find((p: any) => p.user_id === user.id) || null,
+    [userPermissions, user.id]
+  );
+
   return (
     <div className="p-4 sm:p-6 max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-24 sm:pb-6">
       <h1 className="text-xl font-extrabold mb-4" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
@@ -575,6 +580,34 @@ export function ProfileView({
           {profile.role === 'captain' ? 'Captain' : profile.role === 'senior_player' ? 'Senior Player' : 'Coach'}
         </span>
       </Card>
+
+      {profile.role === 'senior_player' && (
+        <Card className="p-4 mb-4">
+          <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: ROYAL }}>Your Permissions</p>
+          <div className="space-y-2">
+            {[
+              { key: 'can_mark_attendance', label: 'Mark Attendance' },
+              { key: 'can_manage_students', label: 'Manage Students' },
+              { key: 'can_add_achievements', label: 'Log Achievements' },
+              { key: 'can_register_tournaments', label: 'Manage Tournaments' },
+              { key: 'can_promote_belts', label: 'Promote Belts' },
+            ].map(({ key, label }) => {
+              const allowed = (myPermissions as any)?.[key] ?? false;
+              return (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="text-sm text-[var(--ack-text)]">{label}</span>
+                  <span
+                    className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                    style={allowed ? { background: '#D1FAE5', color: '#065F46' } : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }}
+                  >
+                    {allowed ? 'Allowed' : 'View only'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       <Card className="divide-y divide-[var(--ack-border)] mb-4">
         <div className="flex items-center justify-between px-4 py-3.5">
@@ -648,9 +681,11 @@ export function ProfileView({
       {showUserManagement && (
         <UserManagementPanel
           profiles={profiles}
+          userPermissions={userPermissions}
           onCreate={onCreateStaffAccount}
           onResetPassword={onResetParentPassword}
           onDeleteUser={onDeleteUser}
+          onUpdatePermissions={onUpdateUserPermissions}
           onClose={() => setShowUserManagement(false)}
         />
       )}
