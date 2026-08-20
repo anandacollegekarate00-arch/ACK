@@ -270,6 +270,8 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
         registrations={data.eventRegistrations}
         achievements={data.achievements}
         openTournament={openTournament}
+        onUpdateTournament={data.updateTournament}
+        onDeleteTournament={data.deleteTournament}
       />
     ) : (
       <p className="p-6 text-sm text-gray-400">Series not found.</p>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Calendar, Trophy, Plus, X, Edit3, Trash2, Award, Medal, TrendingUp, PieChartIcon } from '../icons';
+import { Users, Calendar, Trophy, Plus, X, Edit3, Edit2, Trash2, Award, Medal, TrendingUp, PieChartIcon } from '../icons';
 import { DonutChart, TrendBarChart } from '../components/charts';
 import { Avatar, LevelBadge, Card, StatCard, PrimaryButton, Field, inputCls, Modal, ConfirmDialog } from '../components/ui';
 import { NAVY, ROYAL, GOLD, DANGER, LEVELS, PLACEMENT_STYLE, PLACEMENTS, EVENT_PRESETS } from '../lib/theme';
@@ -743,7 +743,10 @@ export function TournamentDetailPage({
   );
 }
 
-export function SeriesDetailPage({ series, tournaments, events, registrations, achievements, openTournament }) {
+export function SeriesDetailPage({ series, tournaments, events, registrations, achievements, openTournament, onUpdateTournament, onDeleteTournament }) {
+  const [editingTournament, setEditingTournament] = React.useState(null);
+  const [deletingTournament, setDeletingTournament] = React.useState(null);
+  
   const rows = React.useMemo(
     () => seriesYearlyStats(series.id, tournaments, events, registrations, achievements),
     [series.id, tournaments, events, registrations, achievements]
@@ -809,31 +812,77 @@ export function SeriesDetailPage({ series, tournaments, events, registrations, a
         </div>
         <div className="divide-y divide-[var(--ack-border)]">
           {rows.map((r) => (
-            <button
+            <div
               key={r.tournament.id}
-              onClick={() => openTournament(r.tournament.id)}
-              className="w-full px-4 py-3 flex items-center justify-between text-left"
+              className="px-4 py-3 flex items-center justify-between"
             >
-              <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
-                  {r.tournament.name}
-                </p>
-                <p className="text-[11px] text-[var(--ack-muted)]">
-                  {r.tournament.date || 'No date set'} · {r.participants} competed
-                </p>
+              <button
+                onClick={() => openTournament(r.tournament.id)}
+                className="flex-1 flex items-center justify-between text-left"
+              >
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>
+                    {r.tournament.name}
+                  </p>
+                  <p className="text-[11px] text-[var(--ack-muted)]">
+                    {r.tournament.date || 'No date set'} · {r.participants} competed
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] font-bold shrink-0">
+                  <span style={{ color: '#B8860B' }}>{r.medals.Gold}G</span>
+                  <span style={{ color: '#6B7280' }}>{r.medals.Silver}S</span>
+                  <span style={{ color: '#B4622A' }}>{r.medals.Bronze}B</span>
+                </div>
+              </button>
+              <div className="flex gap-1 ml-2">
+                <button
+                  onClick={() => setEditingTournament(r.tournament)}
+                  className="p-1 rounded hover:bg-[var(--ack-card)] transition-colors"
+                  title="Edit tournament"
+                >
+                  <Edit2 size={14} color={ROYAL} />
+                </button>
+                <button
+                  onClick={() => setDeletingTournament(r.tournament)}
+                  className="p-1 rounded hover:bg-[var(--ack-card)] transition-colors"
+                  title="Delete tournament"
+                >
+                  <Trash2 size={14} color="#ef4444" />
+                </button>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] font-bold shrink-0">
-                <span style={{ color: '#B8860B' }}>{r.medals.Gold}G</span>
-                <span style={{ color: '#6B7280' }}>{r.medals.Silver}S</span>
-                <span style={{ color: '#B4622A' }}>{r.medals.Bronze}B</span>
-              </div>
-            </button>
+            </div>
           ))}
           {rows.length === 0 && (
             <p className="p-4 text-sm text-[var(--ack-muted)] text-center">No tournaments recorded for this series yet.</p>
           )}
         </div>
       </Card>
+      
+      {editingTournament && (
+        <TournamentFormModal
+          series={[series]}
+          existing={editingTournament}
+          onClose={() => setEditingTournament(null)}
+          onSave={async (t) => {
+            await onUpdateTournament(t);
+            setEditingTournament(null);
+          }}
+          onCreateSeries={undefined}
+        />
+      )}
+      
+      {deletingTournament && (
+        <ConfirmDialog
+          title="Delete Tournament?"
+          message={`Remove "${deletingTournament.name}" from ${series.name}? This will also delete all events, registrations, and results for this tournament. This cannot be undone.`}
+          confirmLabel="Delete Tournament"
+          onCancel={() => setDeletingTournament(null)}
+          onConfirm={async () => {
+            await onDeleteTournament(deletingTournament.id);
+            setDeletingTournament(null);
+          }}
+        />
+      )}
     </div>
   );
 }
