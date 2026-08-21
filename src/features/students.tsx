@@ -395,6 +395,15 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
   const distinctGrades: string[] = [...numericGrades, ...nonNumericGrades];
   const distinctBelts = BELTS.filter((b) => students.some((s) => s.belt === b));
 
+  // Count students per filter section
+  const beltCount = (b: string) => activeStudents.filter((s) => s.belt === b).length;
+  const gradeCount = (g: string) => activeStudents.filter((s) => gradeKey(s.grade) === g || (s.grade || '').trim() === g).length;
+  const sectionCount = (f: string) => {
+    if (f === 'All') return activeStudents.length;
+    if (f === 'Former members') return formerStudents.length;
+    return 0;
+  };
+
   // Former members (left_at set) live behind their own filter â€” the main
   // roster, imports and attendance stay purely active-member.
   const activeStudents = students.filter((s) => !s.left_at);

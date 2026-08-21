@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -13,7 +13,7 @@
     if (reason.stack) return reason.stack;
     if (typeof reason === 'object') {
       // Supabase/Postgrest errors are plain objects shaped like
-      // { message, details, hint, code } — not real Error instances,
+      // { message, details, hint, code } â€” not real Error instances,
       // so they have no .stack. Pull out the useful fields directly
       // instead of falling back to the useless "[object Object]".
       var parts = [];
@@ -49,11 +49,11 @@
 <!-- No CDN scripts at runtime anymore: React, ReactDOM, Supabase and jsQR
      are bundled locally into index-premium.bundle.js by `npm run build:app`,
      and the Tailwind utilities are prebuilt into app.css (classes are scanned
-     from this file at build time — add new classes, then rebuild). -->
-<link rel="stylesheet" href="app.css" onerror="ackShowError('Failed to load app.css — run: npm run build:app')" />
+     from this file at build time â€” add new classes, then rebuild). -->
+<link rel="stylesheet" href="app.css" onerror="ackShowError('Failed to load app.css â€” run: npm run build:app')" />
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap&family=Inter:wght@400;500;600;700&display=swap');
 html, body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; margin: 0; }
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 html { scroll-behavior: smooth; overscroll-behavior-y: contain; }
@@ -78,7 +78,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid rgba(37, 99, 235, 0.6
   * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
 
-/* ── Premium background ─────────────────────────────────────────── */
+/* â”€â”€ Premium background â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 body {
   background:
     radial-gradient(60% 60% at 12% 15%, rgba(56,189,248,.30), transparent 65%),
@@ -170,7 +170,7 @@ body:has(.ack-dark) .ack-grad-text {
 <!-- The app source sits here completely inert (type="text/plain" means the
      browser never tries to execute or auto-scan it). We transform and run
      it ourselves below, explicitly, instead of relying on Babel Standalone's
-     automatic <script type="text/babel"> DOM-scanning — that automatic path
+     automatic <script type="text/babel"> DOM-scanning â€” that automatic path
      was misbehaving (an internal "sourceType" ambiguity was making it try to
      execute the output as an ES module and throwing on appendChild). Forcing
      sourceType: 'script' below removes that ambiguity entirely. -->
@@ -228,7 +228,7 @@ const FileText = makeIcon(<><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2
 const Star = makeIcon(<polygon points="12 2 15 9 22 9 16.5 13.5 18.5 21 12 16.5 5.5 21 7.5 13.5 2 9 9 9" />);
 const PieChartIcon = makeIcon(<><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></>);
 
-// Stacked composition chart for the Dashboard trend card: present → late →
+// Stacked composition chart for the Dashboard trend card: present â†’ late â†’
 // absent stack up to 100% of the marks each period, with the headline
 // weighted rate (late = half credit) overlaid as a white line with dots.
 // Periods with no records collapse to the baseline and read as gaps.
@@ -236,7 +236,7 @@ const PieChartIcon = makeIcon(<><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><pat
 function TrendCompositionChart({ data, height = 185 }) {
   const withData = data.filter(p => p.total > 0);
   if (withData.length === 0) {
-    return <p className="text-xs text-[var(--ack-muted)] text-center py-8">No attendance records in this range yet — marks appear here as you log them.</p>;
+    return <p className="text-xs text-[var(--ack-muted)] text-center py-8">No attendance records in this range yet â€” marks appear here as you log them.</p>;
   }
   const w = Math.max(300, data.length * 64);
   const h = height;
@@ -350,9 +350,9 @@ function DonutChart({ segments, size = 168, thickness = 22, centerLabel, centerS
 
 // Wide trend bar chart shared by the daily / monthly / yearly attendance
 // views on the Analytics screen. Scrolls horizontally once bars no longer
-// comfortably fit — keeps 30 daily bars or a decade of yearly bars readable
+// comfortably fit â€” keeps 30 daily bars or a decade of yearly bars readable
 // on a phone screen instead of squashing them unreadably thin. Once there
-// are more than a handful of categories the x-axis labels tilt 40° (the
+// are more than a handful of categories the x-axis labels tilt 40Â° (the
 // standard fix for date-heavy bar charts) instead of colliding into each
 // other; below that count they stay flat and centered, which reads cleaner
 // for a small number of bars.
@@ -586,7 +586,7 @@ function BottomNav({ tab, setTab }) {
 /**
  * Opens the device camera, continuously scans frames for a QR code, and
  * calls onDetected(text) the moment one is found. Falls back gracefully
- * (calls onError) if the camera can't be accessed — no camera on the
+ * (calls onError) if the camera can't be accessed â€” no camera on the
  * device, permission denied, or not served over HTTPS (getUserMedia
  * requires a secure context, which Vercel/Netlify give you by default).
  */
@@ -631,7 +631,7 @@ function QRScannerModal({ onDetected, onClose }) {
         const code = jsQR(imageData.data, imageData.width, imageData.height);
         if (code && code.data) {
           onDetected(code.data);
-          return; // stop the scan loop — parent unmounts this modal
+          return; // stop the scan loop â€” parent unmounts this modal
         }
       }
       rafRef.current = requestAnimationFrame(tick);
@@ -680,7 +680,7 @@ const WARNING = '#FF9500';
 
 // Full Kyu/Dan ranking system. Several ranks (3rd/2nd/1st Kyu) share the
 // same "Brown" color, so the belt value stored on a student is the whole
-// rank label (e.g. "Brown (3rd Kyu)") — beltColorKey() below maps that back
+// rank label (e.g. "Brown (3rd Kyu)") â€” beltColorKey() below maps that back
 // to a color for badge styling.
 const BELTS = [
   'White (10th Kyu)',
@@ -736,7 +736,7 @@ const PLACEMENT_STYLE = {
 const PLACEMENTS = Object.keys(PLACEMENT_STYLE);
 const EVENT_PRESETS = { individual: ['Kata', 'Kumite'], team: ['Team Kata', 'Team Kumite'] };
 
-// Registrations + achievements for one event — used by the roster card to
+// Registrations + achievements for one event â€” used by the roster card to
 // show who's signed up and whether their result has been entered yet.
 function rosterForEvent(eventId, registrations, students) {
   return registrations.filter(r => r.event_id === eventId)
@@ -744,7 +744,7 @@ function rosterForEvent(eventId, registrations, students) {
     .filter(r => r.student);
 }
 
-// Medal summary for one tournament instance — powers the Tournament
+// Medal summary for one tournament instance â€” powers the Tournament
 // Analytics card on the tournament detail page.
 function tournamentAnalytics(tournamentId, events, registrations, achievements) {
   const evs = events.filter(e => e.tournament_id === tournamentId);
@@ -766,15 +766,15 @@ function tournamentAnalytics(tournamentId, events, registrations, achievements) 
   return { events: evs.length, participants: registeredIds.size, results: results.length, medals, byEvent };
 }
 
-// One row per year this series has an instance for — powers the Series
-// (cross-year) analytics page, e.g. "Senior School Championship" 26→27→28.
+// One row per year this series has an instance for â€” powers the Series
+// (cross-year) analytics page, e.g. "Senior School Championship" 26â†’27â†’28.
 function seriesYearlyStats(seriesId, tournaments, events, registrations, achievements) {
   return tournaments.filter(t => t.series_id === seriesId)
     .map(t => ({ tournament: t, ...tournamentAnalytics(t.id, events, registrations, achievements) }))
     .sort((a, b) => (a.tournament.date || '').localeCompare(b.tournament.date || ''));
 }
 
-// Formats a Date using its LOCAL calendar fields (no UTC conversion) —
+// Formats a Date using its LOCAL calendar fields (no UTC conversion) â€”
 // unlike `d.toISOString().slice(0,10)`, which silently rolls the date back
 // a day for any timezone ahead of UTC (e.g. Sri Lanka, UTC+5:30). Every
 // place in this app that needs "today" or does date-shifting arithmetic
@@ -788,7 +788,7 @@ function ymd(d) {
 
 // "Today" in the club's own timezone (Asia/Colombo, UTC+5:30, no DST).
 // Using the device clock breaks on phones whose timezone is set to something
-// else — the app would mark attendance for the wrong date. Part of the
+// else â€” the app would mark attendance for the wrong date. Part of the
 // (year, month, day) is formatted from a formatter forced to Asia/Colombo;
 // there's no offset math involved, so DST quirks can't corrupt the date.
 const ACK_TZ = 'Asia/Colombo';
@@ -806,7 +806,7 @@ function todayISO() {
 }
 
 // Turns a WhatsApp/phone number into a synthetic email address so it can be
-// used as a Supabase Auth login ID — Supabase requires an email-shaped
+// used as a Supabase Auth login ID â€” Supabase requires an email-shaped
 // identifier even though the parent only ever sees/uses the phone number.
 function phoneToParentEmail(phone) {
   const digits = (phone || '').replace(/\D/g, '');
@@ -840,7 +840,7 @@ function statsFor(studentId, attendance) {
   const present = recs.filter(r => r.status === 'present').length;
   const absent = recs.filter(r => r.status === 'absent').length;
   const late = recs.filter(r => r.status === 'late').length;
-  // "Late" counts as half credit toward the headline attendance rate — the
+  // "Late" counts as half credit toward the headline attendance rate â€” the
   // common club convention. presentOnlyPct is kept for anyone who wants the
   // strict present-only number.
   const presentPct = total ? Math.round(((present + late * 0.5) / total) * 1000) / 10 : 0;
@@ -895,25 +895,25 @@ function clubTrendSeries(attendance, granularity) {
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-// Auto-generated insights for the Dashboard trend card — the "what should I
+// Auto-generated insights for the Dashboard trend card â€” the "what should I
 // actually do about this" layer on top of the raw chart. Returns up to 4
 // { icon, tint, text } rows, most actionable first.
 function clubTrendInsights(attendance, sessions, students, series) {
   const out = [];
   const withData = series.filter(p => p.total > 0);
 
-  // 1 — Direction of travel: later half of the range vs the earlier half.
+  // 1 â€” Direction of travel: later half of the range vs the earlier half.
   if (withData.length >= 2) {
     const half = Math.ceil(withData.length / 2);
     const earlier = withData.slice(0, half).reduce((s, p) => s + p.rate, 0) / half;
     const later = withData.slice(half).reduce((s, p) => s + p.rate, 0) / (withData.length - half);
     const delta = Math.round((later - earlier) * 10) / 10;
-    if (delta > 0.4) out.push({ icon: TrendingUp, tint: SUCCESS, text: `Attendance is improving — up ${delta} pts versus the earlier period` });
-    else if (delta < -0.4) out.push({ icon: TrendingDown, tint: DANGER, text: `Attendance is slipping — down ${Math.abs(delta)} pts versus the earlier period` });
+    if (delta > 0.4) out.push({ icon: TrendingUp, tint: SUCCESS, text: `Attendance is improving â€” up ${delta} pts versus the earlier period` });
+    else if (delta < -0.4) out.push({ icon: TrendingDown, tint: DANGER, text: `Attendance is slipping â€” down ${Math.abs(delta)} pts versus the earlier period` });
     else out.push({ icon: Activity, tint: '#6B7280', text: 'Attendance has held steady across these periods' });
   }
 
-  // 2 — Session comparison, only when multiple sessions actually have data.
+  // 2 â€” Session comparison, only when multiple sessions actually have data.
   if (sessions.length >= 2) {
     const perSession = sessions.map(s => ({
       s,
@@ -926,7 +926,7 @@ function clubTrendInsights(attendance, sessions, students, series) {
     }
   }
 
-  // 3 — Day-of-week pattern across all data.
+  // 3 â€” Day-of-week pattern across all data.
   const dowRates = DAY_NAMES.map((name, dow) => {
     const b = attendanceBreakdown(attendance.filter(a => new Date(a.date + 'T00:00:00').getDay() === dow));
     return { name, ...b };
@@ -936,32 +936,32 @@ function clubTrendInsights(attendance, sessions, students, series) {
     out.push({ icon: Calendar, tint: SUCCESS, text: `${best.name}s are your highest-attendance day (${best.rate}%)` });
   }
 
-  // 4 — Punctuality: share of all marks that were "late".
+  // 4 â€” Punctuality: share of all marks that were "late".
   if (attendance.length > 0) {
     const lateShare = Math.round((attendance.filter(r => r.status === 'late').length / attendance.length) * 1000) / 10;
-    if (lateShare >= 5) out.push({ icon: Clock, tint: WARNING, text: `${lateShare}% of all marks are "late" — punctuality could be tightened` });
+    if (lateShare >= 5) out.push({ icon: Clock, tint: WARNING, text: `${lateShare}% of all marks are "late" â€” punctuality could be tightened` });
   }
 
-  // 5 — Absence streaks: students not seen in 2+ weeks.
+  // 5 â€” Absence streaks: students not seen in 2+ weeks.
   if (students.length > 0) {
     const today = todayISO();
     const atRisk = students.filter(s => {
       const st = studentAbsenceStatus(attendance, s.id, today);
       return st && st.days > ABSENCE_ALERT_DAYS;
     });
-    if (atRisk.length > 0) out.push({ icon: AlertTriangle, tint: DANGER, text: `${atRisk.length} student${atRisk.length === 1 ? '' : 's'} haven't been seen in 2+ weeks — worth a follow-up` });
+    if (atRisk.length > 0) out.push({ icon: AlertTriangle, tint: DANGER, text: `${atRisk.length} student${atRisk.length === 1 ? '' : 's'} haven't been seen in 2+ weeks â€” worth a follow-up` });
   }
 
   return out.slice(0, 4);
 }
 
 // ----------------------------------------------------------------------------
-// Analytics helpers — pure functions over the attendance array, all keeping
+// Analytics helpers â€” pure functions over the attendance array, all keeping
 // the same "late counts as half credit" convention as statsFor/dayBreakdown.
 // ----------------------------------------------------------------------------
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Distinct years present in the attendance data, most recent first — powers
+// Distinct years present in the attendance data, most recent first â€” powers
 // the year filter on the Analytics screen.
 function attendanceYears(attendance) {
   const years = new Set(attendance.map(a => a.date.slice(0, 4)));
@@ -969,7 +969,7 @@ function attendanceYears(attendance) {
 }
 
 // Present/late/absent breakdown for whatever slice of attendance records is
-// passed in — the caller does any year/session filtering beforehand.
+// passed in â€” the caller does any year/session filtering beforehand.
 function attendanceBreakdown(attendance) {
   const total = attendance.length;
   const present = attendance.filter(r => r.status === 'present').length;
@@ -980,8 +980,8 @@ function attendanceBreakdown(attendance) {
 }
 
 // Resolves a "period" (day/week/month/year) plus an anchor date into an
-// inclusive [start, end] ISO date range — powers the Attendance Breakdown
-// pie chart's Day/Week/Month/Year picker. Week runs Monday–Sunday.
+// inclusive [start, end] ISO date range â€” powers the Attendance Breakdown
+// pie chart's Day/Week/Month/Year picker. Week runs Mondayâ€“Sunday.
 function periodRange(period, anchorIso) {
   const d = new Date(anchorIso + 'T00:00:00');
   if (period === 'day') return { start: anchorIso, end: anchorIso };
@@ -1002,7 +1002,7 @@ function periodRange(period, anchorIso) {
 }
 
 // Human-readable label for the currently selected period, shown next to the
-// date picker (e.g. "Week of 11–17 Aug 2026").
+// date picker (e.g. "Week of 11â€“17 Aug 2026").
 function formatPeriodLabel(period, anchorIso) {
   const d = new Date(anchorIso + 'T00:00:00');
   if (period === 'day') return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
@@ -1011,7 +1011,7 @@ function formatPeriodLabel(period, anchorIso) {
     const s = new Date(range.start + 'T00:00:00'), e = new Date(range.end + 'T00:00:00');
     const startStr = s.toLocaleDateString('en-US', { day: 'numeric', month: s.getMonth() === e.getMonth() ? undefined : 'short' });
     const endStr = e.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-    return `Week of ${startStr}–${endStr}`;
+    return `Week of ${startStr}â€“${endStr}`;
   }
   if (period === 'month') return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   if (period === 'year') return String(d.getFullYear());
@@ -1053,7 +1053,7 @@ function monthlyRateSeriesRolling(attendance) {
   return out;
 }
 
-// One bar per year the club has any attendance data for — the all-time
+// One bar per year the club has any attendance data for â€” the all-time
 // overall trend, unaffected by the year filter (only by the session filter).
 function yearlyRateSeries(attendance) {
   const years = [...attendanceYears(attendance)].sort((a, b) => a.localeCompare(b));
@@ -1065,7 +1065,7 @@ function yearlyRateSeries(attendance) {
 
 const ABSENCE_ALERT_DAYS = 14;
 
-// How long it's been since a student last showed up as present/late — used
+// How long it's been since a student last showed up as present/late â€” used
 // to flag long absence streaks rather than just a low attendance percentage
 // (a student with one absence out of one session isn't "needs attention" the
 // way someone who hasn't shown up in a month is). Returns null for students
@@ -1098,7 +1098,7 @@ function sessionsForToday(sessions) {
   return sessionsForDate(sessions, todayISO());
 }
 
-// Day-level breakdown for a given date (+ optional session filter) — powers
+// Day-level breakdown for a given date (+ optional session filter) â€” powers
 // the "analyze each day" attendance view.
 function dayBreakdown(attendance, dateISO, sessionId) {
   const recs = attendance.filter(a => a.date === dateISO && (sessionId === undefined || (a.session_id || null) === (sessionId || null)));
@@ -1109,7 +1109,7 @@ function dayBreakdown(attendance, dateISO, sessionId) {
   const rate = total ? Math.round(((present + late * 0.5) / total) * 1000) / 10 : 0;
   return { total, present, absent, late, rate };
 }
-// Minimal QR Code encoder — Version 2, Error Correction Level M, Byte mode.
+// Minimal QR Code encoder â€” Version 2, Error Correction Level M, Byte mode.
 // Self-contained (no external library), verified against a Python/OpenCV
 // decode round-trip before porting.
 
@@ -1167,7 +1167,7 @@ function qrRsEncode(data, nsym) {
 function qrEncodeBytes(text) {
   const dataBytes = Array.from(new TextEncoder().encode(text));
   if (dataBytes.length > QR_DATA_CW - 3) {
-    // Defensive truncation — admission IDs are always well under this,
+    // Defensive truncation â€” admission IDs are always well under this,
     // this just guarantees we never produce a corrupt/unscannable code.
     dataBytes.length = QR_DATA_CW - 3;
   }
@@ -1473,7 +1473,7 @@ function useClubData(supabaseClient, supabaseSecondaryClient, enabled) {
     return () => { cancelled = true; supabaseClient.removeChannel(channel); };
   }, [enabled, refetchAll, applyChange, supabaseClient]);
 
-  // No admission_id from the client — the DB trigger assigns it (see
+  // No admission_id from the client â€” the DB trigger assigns it (see
   // database-schema.sql: assign_admission_id). We select() the inserted row
   // so the roster gets the server-assigned ID immediately.
   const addStudent = React.useCallback(async (student) => {
@@ -1808,7 +1808,7 @@ const CSV_HEADER_MAP = {
   guardian_email: ['guardianemail', 'email', 'emailaddress', 'guardianemailaddress'],
   guardian_address: ['guardianaddress', 'address'],
 };
-// Recognised but not imported — the database trigger assigns admission IDs.
+// Recognised but not imported â€” the database trigger assigns admission IDs.
 const CSV_IGNORED_HEADERS = ['admissionid', 'admissionno', 'admissionnumber', 'admission'];
 
 function normalizeISODate(v) {
@@ -1877,7 +1877,7 @@ function normalizeBelt(v) {
 }
 
 // Maps CSV rows to student records. Returns { valid, skipped } where skipped
-// is [{ row, name, reason }] — row numbers are 1-based file lines.
+// is [{ row, name, reason }] â€” row numbers are 1-based file lines.
 function csvToStudents(headers, rows, roster) {
   const idx = {};
   headers.forEach((h, i) => {
@@ -1939,7 +1939,7 @@ function ImportStudentsModal({ roster, onClose, onImport }) {
     setError('');
     try {
       const rows = parseCSV(await file.text());
-      if (rows.length < 2) { setError('The file has no data rows — it needs a header line plus at least one student.'); setValid([]); setSkipped([]); return; }
+      if (rows.length < 2) { setError('The file has no data rows â€” it needs a header line plus at least one student.'); setValid([]); setSkipped([]); return; }
       const res = csvToStudents(rows[0], rows.slice(1), roster);
       setValid(res.valid);
       setSkipped(res.skipped);
@@ -1995,14 +1995,14 @@ function ImportStudentsModal({ roster, onClose, onImport }) {
               {skipped.map((s, i) => (
                 <div key={i} className="flex items-start gap-2 px-3 py-2">
                   <AlertTriangle size={13} className="mt-0.5 shrink-0" color="#B45309" />
-                  <p className="text-xs leading-snug" style={{ color: 'var(--ack-text)' }}><span className="font-semibold">Row {s.row}:</span> {s.name} — {s.reason}</p>
+                  <p className="text-xs leading-snug" style={{ color: 'var(--ack-text)' }}><span className="font-semibold">Row {s.row}:</span> {s.name} â€” {s.reason}</p>
                 </div>
               ))}
             </div>
           )}
           {error && <p className="text-xs mb-3" style={{ color: DANGER }}>{error}</p>}
           <PrimaryButton onClick={doImport} disabled={busy || valid.length === 0} className="w-full">
-            {busy ? 'Importing…' : `Import ${valid.length} student${valid.length === 1 ? '' : 's'}`}
+            {busy ? 'Importingâ€¦' : `Import ${valid.length} student${valid.length === 1 ? '' : 's'}`}
           </PrimaryButton>
         </>
       )}
@@ -2014,7 +2014,7 @@ function ImportStudentsModal({ roster, onClose, onImport }) {
           </span>
           <p className="font-bold text-base mb-1" style={{ color: 'var(--ack-heading)' }}>{done.added} student{done.added === 1 ? '' : 's'} added to the roster</p>
           <p className="text-xs text-[var(--ack-muted)] mb-4">Admission IDs were assigned automatically. Your list refreshes in the Students tab.</p>
-          {skipped.length > 0 && <p className="text-xs mb-4" style={{ color: '#B45309' }}>{skipped.length} row{skipped.length === 1 ? '' : 's'} skipped — {skipped.map(s => s.reason).join('; ')}</p>}
+          {skipped.length > 0 && <p className="text-xs mb-4" style={{ color: '#B45309' }}>{skipped.length} row{skipped.length === 1 ? '' : 's'} skipped â€” {skipped.map(s => s.reason).join('; ')}</p>}
           <PrimaryButton onClick={onClose} className="w-full">Done</PrimaryButton>
         </div>
       )}
@@ -2227,7 +2227,7 @@ function StudentProfilePage({ student, attendance, achievements, tournaments = [
   function tournamentFor(a) { return tournaments.find(t => t.id === a.tournament_id); }
   function seriesFor(t) { return t && tournamentSeries.find(s => s.id === t.series_id); }
 
-  // Upcoming Tournaments — events this student is registered for whose
+  // Upcoming Tournaments â€” events this student is registered for whose
   // tournament hasn't happened yet (or has no date set).
   const upcoming = React.useMemo(() => {
     const today = todayISO();
@@ -2291,23 +2291,23 @@ function StudentProfilePage({ student, attendance, achievements, tournaments = [
         <p className="font-bold text-sm mb-3 self-start" style={{ color: 'var(--ack-heading)' }}>Attendance QR ID</p>
         <QRCode value={student.admission_id} size={150} />
         <p className="text-xs font-bold mt-3 tracking-wider" style={{ color: 'var(--ack-heading)' }}>{student.admission_id}</p>
-        <p className="text-[11px] text-[var(--ack-muted)] mt-1 max-w-[220px]">Tap "Scan" on the Attendance screen and point the camera at this code to mark {readOnly ? 'them' : 'this student'} present — or use "Code" to type the admission ID manually.</p>
+        <p className="text-[11px] text-[var(--ack-muted)] mt-1 max-w-[220px]">Tap "Scan" on the Attendance screen and point the camera at this code to mark {readOnly ? 'them' : 'this student'} present â€” or use "Code" to type the admission ID manually.</p>
       </Card>
 
       <Card className="p-4 mb-4">
         <p className="font-bold text-sm mb-3" style={{ color: 'var(--ack-heading)' }}>Information</p>
         <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-xs">
-          <p className="text-[var(--ack-muted)]">Full name</p><p className="text-[var(--ack-text)] font-medium text-right">{student.full_name || '—'}</p>
+          <p className="text-[var(--ack-muted)]">Full name</p><p className="text-[var(--ack-text)] font-medium text-right">{student.full_name || 'â€”'}</p>
           <p className="text-[var(--ack-muted)]">Date of birth</p><p className="text-[var(--ack-text)] font-medium text-right">{student.dob}</p>
-          {!readOnly && <><p className="text-[var(--ack-muted)]">NIC / Postal ID</p><p className="text-[var(--ack-text)] font-medium text-right">{student.nic || '—'}</p></>}
+          {!readOnly && <><p className="text-[var(--ack-muted)]">NIC / Postal ID</p><p className="text-[var(--ack-text)] font-medium text-right">{student.nic || 'â€”'}</p></>}
           {!readOnly && <><p className="text-[var(--ack-muted)]">Birth certificate</p><p className="text-[var(--ack-text)] font-medium text-right">{student.birth_cert_no}</p></>}
           <p className="text-[var(--ack-muted)]">Grade / class</p><p className="text-[var(--ack-text)] font-medium text-right">{student.grade}</p>
           <p className="text-[var(--ack-muted)]">Join date</p><p className="text-[var(--ack-text)] font-medium text-right">{student.join_date}</p>
-          <p className="text-[var(--ack-muted)]">School admission no.</p><p className="text-[var(--ack-text)] font-medium text-right">{student.school_admission_no || '—'}</p>
-          <p className="text-[var(--ack-muted)]">Association admission no.</p><p className="text-[var(--ack-text)] font-medium text-right">{student.association_admission_no || '—'}</p>
+          <p className="text-[var(--ack-muted)]">School admission no.</p><p className="text-[var(--ack-text)] font-medium text-right">{student.school_admission_no || 'â€”'}</p>
+          <p className="text-[var(--ack-muted)]">Association admission no.</p><p className="text-[var(--ack-text)] font-medium text-right">{student.association_admission_no || 'â€”'}</p>
           <p className="text-[var(--ack-muted)]">Guardian</p><p className="text-[var(--ack-text)] font-medium text-right">{student.guardian_name}</p>
           <p className="text-[var(--ack-muted)]">Phone</p><p className="text-[var(--ack-text)] font-medium text-right">{student.guardian_phone}</p>
-          <p className="text-[var(--ack-muted)]">WhatsApp</p><p className="text-[var(--ack-text)] font-medium text-right">{student.guardian_whatsapp || '—'}</p>
+          <p className="text-[var(--ack-muted)]">WhatsApp</p><p className="text-[var(--ack-text)] font-medium text-right">{student.guardian_whatsapp || 'â€”'}</p>
         </div>
       </Card>
 
@@ -2327,7 +2327,7 @@ function StudentProfilePage({ student, attendance, achievements, tournaments = [
           <p className="text-xs text-[var(--ack-muted)] mb-3">
             {parentProfiles.length > 0
               ? 'Add another parent login (e.g. a second guardian) using a different WhatsApp number.'
-              : 'No parent login yet. Create one using their WhatsApp number — a random one-time password is generated, and they must change it on first sign-in.'}
+              : 'No parent login yet. Create one using their WhatsApp number â€” a random one-time password is generated, and they must change it on first sign-in.'}
           </p>
           <button onClick={() => setShowCreateParentLogin(true)} className="w-full py-2.5 rounded-xl text-xs font-semibold text-white flex items-center justify-center gap-1.5" style={{ background: ROYAL }}>
             <UserPlus size={14} /> {parentProfiles.length > 0 ? 'Add Another Parent Login' : 'Create Parent Login'}
@@ -2347,7 +2347,7 @@ function StudentProfilePage({ student, attendance, achievements, tournaments = [
       )}
 
       <Card className="p-4 mb-4">
-        <p className="font-bold text-sm mb-3" style={{ color: 'var(--ack-heading)' }}>Performance Overview — Monthly Attendance</p>
+        <p className="font-bold text-sm mb-3" style={{ color: 'var(--ack-heading)' }}>Performance Overview â€” Monthly Attendance</p>
         <div style={{ width: '100%', height: 160 }}>
           <MiniBarChart data={chartData} labelKey="month" valueKey="rate" color={ROYAL} />
         </div>
@@ -2364,7 +2364,7 @@ function StudentProfilePage({ student, attendance, achievements, tournaments = [
             const s = seriesFor(t);
             return (
               <div key={a.id} className="px-4 py-3">
-                {t && <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: ROYAL }}>{s ? `${s.name} · ${t.name}` : t.name}</p>}
+                {t && <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: ROYAL }}>{s ? `${s.name} Â· ${t.name}` : t.name}</p>}
                 <div className="flex items-center justify-between"><p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>{a.title}</p><span className="text-[11px] text-[var(--ack-muted)]">{a.date}</span></div>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <LevelBadge level={a.level} />
@@ -2454,18 +2454,18 @@ function AttendanceTrend({ attendance, sessions, students, goToAnalytics }) {
             {delta !== null && delta < -0.4 && <TrendingDown size={15} color={DANGER} />}
             {delta !== null && delta >= -0.4 && delta <= 0.4 && <Activity size={15} color="#6B7280" />}
             <p className="text-lg font-extrabold" style={{ color: delta !== null && delta > 0.4 ? SUCCESS : delta !== null && delta < -0.4 ? DANGER : 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
-              {delta === null ? '—' : (delta > 0 ? `+${delta}` : delta)}
+              {delta === null ? 'â€”' : (delta > 0 ? `+${delta}` : delta)}
             </p>
           </div>
           <p className={statLabelCls}>Trend vs earlier</p>
         </div>
         <div className={statCellCls} style={{ background: 'var(--ack-surface-2)' }}>
-          <p className="text-sm font-extrabold truncate" style={{ color: SUCCESS }}>{best ? best.label : '—'}</p>
-          <p className={statLabelCls}>{best ? `Best period · ${best.rate}%` : 'Best period'}</p>
+          <p className="text-sm font-extrabold truncate" style={{ color: SUCCESS }}>{best ? best.label : 'â€”'}</p>
+          <p className={statLabelCls}>{best ? `Best period Â· ${best.rate}%` : 'Best period'}</p>
         </div>
         <div className={statCellCls} style={{ background: 'var(--ack-surface-2)' }}>
-          <p className="text-sm font-extrabold truncate" style={{ color: DANGER }}>{worst ? worst.label : '—'}</p>
-          <p className={statLabelCls}>{worst ? `Weakest period · ${worst.rate}%` : 'Weakest period'}</p>
+          <p className="text-sm font-extrabold truncate" style={{ color: DANGER }}>{worst ? worst.label : 'â€”'}</p>
+          <p className={statLabelCls}>{worst ? `Weakest period Â· ${worst.rate}%` : 'Weakest period'}</p>
         </div>
       </div>
 
@@ -2475,7 +2475,7 @@ function AttendanceTrend({ attendance, sessions, students, goToAnalytics }) {
         <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: SUCCESS }} />Present</span>
         <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: WARNING }} />Late</span>
         <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: DANGER }} />Absent</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full" style={{ background: ROYAL }} />Rate (late = ½)</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full" style={{ background: ROYAL }} />Rate (late = Â½)</span>
         <span className="ml-auto font-semibold" style={{ color: 'var(--ack-heading)' }}>{totalRecords} marks</span>
       </div>
 
@@ -2674,7 +2674,7 @@ function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, 
         <input type="date" className={`${inputCls} flex-1`} value={date} max={todayISO()} onChange={e => setDate(e.target.value)} />
         <button onClick={() => shiftDate(1)} disabled={isToday} className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-30" style={{ background: 'var(--ack-surface-2)' }}><ChevronRight size={16} color="var(--ack-heading)" /></button>
       </div>
-      {!isToday && <p className="text-[11px] text-[var(--ack-muted)] mb-3">Viewing a past date — you can still add, change, or remove marks here.</p>}
+      {!isToday && <p className="text-[11px] text-[var(--ack-muted)] mb-3">Viewing a past date â€” you can still add, change, or remove marks here.</p>}
 
       <DaySummaryBar attendance={attendance} date={date} sessionId={sessionId} totalStudents={students.length} />
 
@@ -2688,14 +2688,14 @@ function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, 
         <div className="flex gap-2 mb-3 overflow-x-auto">
           {dateSessions.map(s => (
             <button key={s.id} onClick={() => setSessionId(s.id)} className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap"
-              style={sessionId === s.id ? { background: ROYAL, color: '#fff' } : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }}>{s.title} · {s.time}</button>
+              style={sessionId === s.id ? { background: ROYAL, color: '#fff' } : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }}>{s.title} Â· {s.time}</button>
           ))}
           <button onClick={() => setSessionId(null)} className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap"
             style={sessionId === null ? { background: ROYAL, color: '#fff' } : { background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }}>General</button>
         </div>
       )}
       {dateSessions.length === 0 && (
-        <p className="text-[11px] text-[var(--ack-muted)] mb-3">No practice sessions were scheduled that day — attendance is marked generally for the date. Add sessions from the Dashboard.</p>
+        <p className="text-[11px] text-[var(--ack-muted)] mb-3">No practice sessions were scheduled that day â€” attendance is marked generally for the date. Add sessions from the Dashboard.</p>
       )}
 
       <div className="relative mb-2">
@@ -2757,7 +2757,7 @@ function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, 
             </div>
           </div>
           <div className="text-xs text-[var(--ack-muted)] mb-3 bg-[var(--ack-surface-2)] rounded-xl p-3 space-y-1">
-            <p>Session: <span className="font-semibold text-[var(--ack-text)]">{sessionLabel} · {date}</span></p>
+            <p>Session: <span className="font-semibold text-[var(--ack-text)]">{sessionLabel} Â· {date}</span></p>
             <p>Marked by: <span className="font-semibold text-[var(--ack-text)]">{currentUser.name || currentUser.email}</span></p>
             {existingRec && <p>Currently marked: <span className="font-semibold" style={{ color: existingRec.status === 'present' ? SUCCESS : existingRec.status === 'late' ? WARNING : DANGER }}>{existingRec.status}</span></p>}
           </div>
@@ -2767,7 +2767,7 @@ function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, 
             <button onClick={() => setPendingStatus('late')} className="py-3 rounded-xl flex flex-col items-center gap-1 font-semibold text-xs" style={pendingStatus === 'late' ? { background: WARNING, color: '#fff' } : { background: `${WARNING}14`, color: WARNING }}><Clock size={18} />Late</button>
           </div>
           <Field label="Notes (optional)"><textarea rows={2} className={inputCls} value={notes} onChange={e => setNotes(e.target.value)} /></Field>
-          <PrimaryButton onClick={confirm} disabled={!pendingStatus || busy} className="w-full mb-2">{busy ? 'Saving…' : 'Confirm Attendance'}</PrimaryButton>
+          <PrimaryButton onClick={confirm} disabled={!pendingStatus || busy} className="w-full mb-2">{busy ? 'Savingâ€¦' : 'Confirm Attendance'}</PrimaryButton>
           {existingRec && (
             <button onClick={() => setConfirmRemove(true)} disabled={busy} className="w-full py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5" style={{ borderColor: DANGER, color: DANGER }}>
               <Trash2 size={14} /> Remove this mark
@@ -2778,13 +2778,13 @@ function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, 
 
       {confirmRemove && (
         <ConfirmDialog title="Remove this attendance mark?"
-          message={`This clears ${selected ? displayName(selected) : ''}'s "${existingRec?.status}" mark for ${date} entirely — it'll show as not marked, not just changed. This cannot be undone.`}
+          message={`This clears ${selected ? displayName(selected) : ''}'s "${existingRec?.status}" mark for ${date} entirely â€” it'll show as not marked, not just changed. This cannot be undone.`}
           confirmLabel="Remove" onCancel={() => setConfirmRemove(false)} onConfirm={removeMark} />
       )}
       {confirmBulkAbsent && (
         <ConfirmDialog title="Mark all unmarked students absent?"
           message={`This marks ${unmarked.length} student${unmarked.length === 1 ? '' : 's'} with no record yet for ${sessionLabel} on ${date} as absent. Anyone already marked present or late is left untouched.`}
-          confirmLabel={bulkBusy ? 'Marking…' : 'Mark Absent'} onCancel={() => setConfirmBulkAbsent(false)} onConfirm={confirmMarkAllAbsent} />
+          confirmLabel={bulkBusy ? 'Markingâ€¦' : 'Mark Absent'} onCancel={() => setConfirmBulkAbsent(false)} onConfirm={confirmMarkAllAbsent} />
       )}
     </div>
   );
@@ -2823,7 +2823,7 @@ function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
           <div key={s.id} className="flex items-center justify-between bg-[var(--ack-surface-2)] rounded-xl p-3">
             <div>
               <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>{s.title}</p>
-              <p className="text-[11px] text-[var(--ack-muted)]">{s.time} · {s.days.map(d => WEEKDAY_LABELS[d]).join(', ')}</p>
+              <p className="text-[11px] text-[var(--ack-muted)]">{s.time} Â· {s.days.map(d => WEEKDAY_LABELS[d]).join(', ')}</p>
             </div>
             <button onClick={() => setConfirmDeleteId(s.id)} className="p-2 rounded-lg" style={{ color: DANGER }}><Trash2 size={15} /></button>
           </div>
@@ -2877,7 +2877,7 @@ function AddAchievementModal({ students, tournaments, onClose, onSave, lockStude
         <summary className="text-xs font-semibold cursor-pointer" style={{ color: ROYAL }}>Link to a tournament (optional)</summary>
         <div className="mt-2">
           <select className={inputCls} value={tournamentId} onChange={e => setTournamentId(e.target.value)}>
-            <option value="">— None —</option>
+            <option value="">â€” None â€”</option>
             {tournaments.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </div>
@@ -2932,18 +2932,18 @@ function TournamentFormModal({ series, existing, onClose, onSave, onCreateSeries
 
   return (
     <Modal title={existing ? 'Edit Tournament' : 'New Tournament'} onClose={onClose} wide>
-      <p className="text-xs text-[var(--ack-muted)] mb-3">Link this to a series (e.g. "Senior School Championship") so results across years — '26, '27, '28 — can be compared automatically.</p>
+      <p className="text-xs text-[var(--ack-muted)] mb-3">Link this to a series (e.g. "Senior School Championship") so results across years â€” '26, '27, '28 â€” can be compared automatically.</p>
       <Field label="Series">
         {!useNewSeries ? (
           <select className={inputCls} value={seriesId} onChange={e => { setSeriesId(e.target.value); applySeriesDefaults(e.target.value, date); }}>
-            <option value="">— One-off tournament (no series) —</option>
+            <option value="">â€” One-off tournament (no series) â€”</option>
             {series.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         ) : (
           <input className={inputCls} value={newSeriesName} onChange={e => setNewSeriesName(e.target.value)} placeholder="e.g. Senior School Championship" />
         )}
         <button type="button" onClick={() => { setUseNewSeries(v => !v); setSeriesId(''); }} className="text-xs font-semibold mt-1.5" style={{ color: ROYAL }}>
-          {useNewSeries ? '← Choose an existing series instead' : '+ Start a new series'}
+          {useNewSeries ? 'â† Choose an existing series instead' : '+ Start a new series'}
         </button>
       </Field>
       <Field label="Tournament name"><input className={inputCls} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Senior School Championship 2026" /></Field>
@@ -2957,7 +2957,7 @@ function TournamentFormModal({ series, existing, onClose, onSave, onCreateSeries
       </div>
       <Field label="Location (optional)"><input className={inputCls} value={location} onChange={e => setLocation(e.target.value)} /></Field>
       {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
-      <PrimaryButton onClick={submit} disabled={saving} className="w-full">{saving ? 'Saving…' : existing ? 'Save Changes' : 'Create Tournament'}</PrimaryButton>
+      <PrimaryButton onClick={submit} disabled={saving} className="w-full">{saving ? 'Savingâ€¦' : existing ? 'Save Changes' : 'Create Tournament'}</PrimaryButton>
     </Modal>
   );
 }
@@ -3012,7 +3012,7 @@ function TournamentEventFormModal({ onClose, onSave }) {
           <button type="button" onClick={addDate} className="text-xs font-semibold" style={{ color: ROYAL }}>+ Add another day</button>
         </div>
       </Field>
-      <PrimaryButton onClick={submit} disabled={saving} className="w-full">{saving ? 'Adding…' : 'Add Event'}</PrimaryButton>
+      <PrimaryButton onClick={submit} disabled={saving} className="w-full">{saving ? 'Addingâ€¦' : 'Add Event'}</PrimaryButton>
     </Modal>
   );
 }
@@ -3027,7 +3027,7 @@ function ResultEntryModal({ student, event, tournament, existing, onClose, onSav
   async function submit() {
     setSaving(true);
     try {
-      const title = `${event.name}${placement ? ' — ' + placement : ''}`;
+      const title = `${event.name}${placement ? ' â€” ' + placement : ''}`;
       await onSave({
         ...(existing ? { id: existing.id } : {}),
         student_id: student.id, tournament_id: tournament.id, event_id: event.id,
@@ -3039,17 +3039,17 @@ function ResultEntryModal({ student, event, tournament, existing, onClose, onSav
   }
 
   return (
-    <Modal title={`Result — ${displayName(student)}`} onClose={onClose}>
+    <Modal title={`Result â€” ${displayName(student)}`} onClose={onClose}>
       <p className="text-xs text-[var(--ack-muted)] mb-3">{event.name}{event.category === 'team' ? ` (Team of ${event.team_size})` : ''}</p>
       <Field label="Placement">
         <select className={inputCls} value={placement} onChange={e => setPlacement(e.target.value)}>
-          <option value="">— No result yet —</option>
+          <option value="">â€” No result yet â€”</option>
           {PLACEMENTS.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
       </Field>
       <Field label="Date"><input type="date" className={inputCls} value={date} onChange={e => setDate(e.target.value)} /></Field>
       <Field label="Notes (optional)"><textarea rows={2} className={inputCls} value={notes} onChange={e => setNotes(e.target.value)} /></Field>
-      <PrimaryButton onClick={submit} disabled={saving} className="w-full" style={{ background: GOLD }}>{saving ? 'Saving…' : 'Save Result'}</PrimaryButton>
+      <PrimaryButton onClick={submit} disabled={saving} className="w-full" style={{ background: GOLD }}>{saving ? 'Savingâ€¦' : 'Save Result'}</PrimaryButton>
       {existing && <button onClick={() => setConfirmDelete(true)} className="w-full mt-2 text-xs font-semibold text-red-600 py-2">Remove result</button>}
       {confirmDelete && (
         <ConfirmDialog title="Remove this result?" message="This deletes the achievement record for this student's result in this event."
@@ -3079,9 +3079,9 @@ function EventRosterCard({ event, students, registrations, achievements, tournam
         <div>
           <p className="text-sm font-bold" style={{ color: 'var(--ack-heading)' }}>{event.name}</p>
           <p className="text-[11px] text-[var(--ack-muted)]">
-            {event.category === 'team' ? `Team event · ${roster.length}/${event.team_size || '?'} registered` : `Individual · ${roster.length} registered`}
+            {event.category === 'team' ? `Team event Â· ${roster.length}/${event.team_size || '?'} registered` : `Individual Â· ${roster.length} registered`}
           </p>
-          {event.dates && event.dates.length > 0 && <p className="text-[11px] text-[var(--ack-muted)] mt-0.5">{event.dates.join(' · ')}</p>}
+          {event.dates && event.dates.length > 0 && <p className="text-[11px] text-[var(--ack-muted)] mt-0.5">{event.dates.join(' Â· ')}</p>}
         </div>
         <button onClick={() => setConfirmDeleteEvent(true)} className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${DANGER}14` }}><Trash2 size={13} color={DANGER} /></button>
       </div>
@@ -3113,7 +3113,7 @@ function EventRosterCard({ event, students, registrations, achievements, tournam
       {!full && (
         <div className="flex gap-2">
           <select className={`${inputCls} flex-1`} value={addingStudentId} onChange={e => setAddingStudentId(e.target.value)}>
-            <option value="">Select a student…</option>
+            <option value="">Select a studentâ€¦</option>
             {available.map(s => <option key={s.id} value={s.id}>{displayName(s)}</option>)}
           </select>
           <button onClick={addPlayer} disabled={!addingStudentId} className="px-3 rounded-xl text-white text-xs font-semibold disabled:opacity-40" style={{ background: ROYAL }}>Add</button>
@@ -3151,12 +3151,12 @@ function TournamentDetailPage({ tournament, thisSeries, allSeries, students, eve
       <Card className="p-5 mb-4">
         <div className="flex items-start justify-between">
           <div className="min-w-0">
-            {thisSeries && <button onClick={() => openSeries(thisSeries.id)} className="text-[11px] font-bold mb-1" style={{ color: ROYAL }}>{thisSeries.name} ↗</button>}
+            {thisSeries && <button onClick={() => openSeries(thisSeries.id)} className="text-[11px] font-bold mb-1" style={{ color: ROYAL }}>{thisSeries.name} â†—</button>}
             <h1 className="text-lg font-extrabold" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>{tournament.name}</h1>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               <LevelBadge level={tournament.level} />
               {tournament.date && <span className="text-[11px] text-[var(--ack-muted)]">{tournament.date}</span>}
-              {tournament.location && <span className="text-[11px] text-[var(--ack-muted)]">· {tournament.location}</span>}
+              {tournament.location && <span className="text-[11px] text-[var(--ack-muted)]">Â· {tournament.location}</span>}
             </div>
           </div>
           <div className="flex gap-1.5 shrink-0">
@@ -3203,7 +3203,7 @@ function TournamentDetailPage({ tournament, thisSeries, allSeries, students, eve
               <div key={row.event.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>{row.event.name}</p>
-                  <p className="text-[11px] text-[var(--ack-muted)]">{row.registered} registered · {row.results} results</p>
+                  <p className="text-[11px] text-[var(--ack-muted)]">{row.registered} registered Â· {row.results} results</p>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] font-bold shrink-0">
                   <span style={{ color: '#B8860B' }}>{row.medals.Gold}G</span>
@@ -3224,7 +3224,7 @@ function TournamentDetailPage({ tournament, thisSeries, allSeries, students, eve
         <EventRosterCard key={event.id} event={event} students={students} registrations={registrations} achievements={achievements} tournament={tournament}
           onRegister={onRegister} onUnregister={onUnregister} onSaveResult={onSaveResult} onDeleteAchievement={onDeleteAchievement} onDeleteEvent={onDeleteEvent} openStudent={openStudent} />
       ))}
-      {myEvents.length === 0 && <p className="text-xs text-[var(--ack-muted)] text-center py-6">No events yet — add Kata, Kumite, or a team event to start building the roster.</p>}
+      {myEvents.length === 0 && <p className="text-xs text-[var(--ack-muted)] text-center py-6">No events yet â€” add Kata, Kumite, or a team event to start building the roster.</p>}
 
       {showAddEvent && <TournamentEventFormModal onClose={() => setShowAddEvent(false)} onSave={(e) => onAddEvent({ ...e, tournament_id: tournament.id })} />}
       {showEdit && <TournamentFormModal series={allSeries} existing={tournament} onCreateSeries={onCreateSeries} onClose={() => setShowEdit(false)} onSave={onSaveTournament} />}
@@ -3253,13 +3253,13 @@ function SeriesDetailPage({ series, tournaments, events, registrations, achievem
   return (
     <div className="p-4 sm:p-6 max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-24 sm:pb-6">
       <h1 className="text-xl font-extrabold mb-1 flex items-center gap-2" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}><Medal size={20} color={GOLD} /> {series.name}</h1>
-      <p className="text-xs text-[var(--ack-muted)] mb-4">{rows.length} edition{rows.length === 1 ? '' : 's'} tracked · Year-over-year performance</p>
+      <p className="text-xs text-[var(--ack-muted)] mb-4">{rows.length} edition{rows.length === 1 ? '' : 's'} tracked Â· Year-over-year performance</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <StatCard icon={Trophy} label="Total Gold" value={totalGold} tint="#D4AF37" />
         <StatCard icon={Medal} label="Total Silver" value={totalSilver} tint="#9CA3AF" />
         <StatCard icon={Award} label="Total Bronze" value={totalBronze} tint="#CD7F32" />
-        <StatCard icon={TrendingUp} label="Best Year" value={bestYear ? yearLabel(bestYear.tournament) : '—'} tint={ROYAL} />
+        <StatCard icon={TrendingUp} label="Best Year" value={bestYear ? yearLabel(bestYear.tournament) : 'â€”'} tint={ROYAL} />
       </div>
 
       <Card className="p-4 mb-4">
@@ -3279,7 +3279,7 @@ function SeriesDetailPage({ series, tournaments, events, registrations, achievem
             <button key={r.tournament.id} onClick={() => openTournament(r.tournament.id)} className="w-full px-4 py-3 flex items-center justify-between text-left">
               <div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--ack-heading)' }}>{r.tournament.name}</p>
-                <p className="text-[11px] text-[var(--ack-muted)]">{r.tournament.date || 'No date set'} · {r.participants} competed</p>
+                <p className="text-[11px] text-[var(--ack-muted)]">{r.tournament.date || 'No date set'} Â· {r.participants} competed</p>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] font-bold shrink-0">
                 <span style={{ color: '#B8860B' }}>{r.medals.Gold}G</span>
@@ -3323,7 +3323,7 @@ function AchievementsView({ tournaments, tournamentSeries, achievements, onAddTo
             {seriesWithCounts.map(({ series, count }) => (
               <button key={series.id} onClick={() => openSeries(series.id)} className="shrink-0 px-3.5 py-2 rounded-xl text-left" style={{ background: `${ROYAL}0F` }}>
                 <p className="text-xs font-bold" style={{ color: ROYAL }}>{series.name}</p>
-                <p className="text-[10px] text-[var(--ack-muted)]">{count} edition{count === 1 ? '' : 's'} · view trends</p>
+                <p className="text-[10px] text-[var(--ack-muted)]">{count} edition{count === 1 ? '' : 's'} Â· view trends</p>
               </button>
             ))}
           </div>
@@ -3357,7 +3357,7 @@ function AchievementsView({ tournaments, tournamentSeries, achievements, onAddTo
             </button>
           );
         })}
-        {sortedTournaments.length === 0 && <p className="text-sm text-[var(--ack-muted)] py-10 text-center">No tournaments recorded yet — add one to start building rosters and tracking results.</p>}
+        {sortedTournaments.length === 0 && <p className="text-sm text-[var(--ack-muted)] py-10 text-center">No tournaments recorded yet â€” add one to start building rosters and tracking results.</p>}
       </div>
 
       {showAdd && (
@@ -3383,21 +3383,21 @@ function AnalyticsView({ students, attendance, sessions, achievements, tournamen
   const [anchorDate, setAnchorDate] = React.useState(todayISO());
   const [playerMetric, setPlayerMetric] = React.useState('medals');
 
-  // Year + session filtered slice — drives the daily/monthly trend charts
+  // Year + session filtered slice â€” drives the daily/monthly trend charts
   // and the per-student needs-attention / top-performer lists.
   const scoped = React.useMemo(() => attendance.filter(a =>
     (year === 'all' || a.date.startsWith(year)) &&
     (sessionId === 'all' || (a.session_id || null) === sessionId)
   ), [attendance, year, sessionId]);
 
-  // Only the session filter applies here — "all years" is the whole point
+  // Only the session filter applies here â€” "all years" is the whole point
   // of this chart, so the year dropdown shouldn't collapse it to one bar.
   const sessionScoped = React.useMemo(() => attendance.filter(a =>
     sessionId === 'all' || (a.session_id || null) === sessionId
   ), [attendance, sessionId]);
 
   // Independent Day/Week/Month/Year/All picker for the breakdown pie chart
-  // and the stat row above it — separate from the year filter above so you
+  // and the stat row above it â€” separate from the year filter above so you
   // can look at, say, just today's breakdown without losing the trend
   // charts' year context.
   const periodScoped = React.useMemo(() => {
@@ -3415,7 +3415,7 @@ function AnalyticsView({ students, attendance, sessions, achievements, tournamen
   ), [scoped, year]);
   const yearly = React.useMemo(() => yearlyRateSeries(sessionScoped), [sessionScoped]);
 
-  // Top Players — ranked by real data only: medals won (Gold first, then
+  // Top Players â€” ranked by real data only: medals won (Gold first, then
   // Silver, then Bronze), attendance rate in the current filter, or number of
   // events entered. No synthetic scores, no weights.
   const topPlayers = React.useMemo(() => {
@@ -3442,7 +3442,7 @@ function AnalyticsView({ students, attendance, sessions, achievements, tournamen
   }, [students, scoped, achievements, eventRegistrations, playerMetric]);
 
   // Needs Attention flags long absence streaks (2+ weeks since last seen),
-  // not just a low attendance percentage — deliberately ignores the year
+  // not just a low attendance percentage â€” deliberately ignores the year
   // filter (only the session filter) since "how long has it been" is a
   // question about right now, not about whichever year happens to be picked.
   const needsAttention = React.useMemo(() => {
@@ -3518,7 +3518,7 @@ function AnalyticsView({ students, attendance, sessions, achievements, tournamen
                 <div key={row.label} className="flex items-center gap-2 text-xs">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: row.color }} />
                   <span className="font-semibold w-14" style={{ color: 'var(--ack-heading)' }}>{row.label}</span>
-                  <span className="text-[var(--ack-muted)]">{row.value} · {breakdown.total ? Math.round((row.value / breakdown.total) * 100) : 0}%</span>
+                  <span className="text-[var(--ack-muted)]">{row.value} Â· {breakdown.total ? Math.round((row.value / breakdown.total) * 100) : 0}%</span>
                 </div>
               ))}
             </div>
@@ -3543,13 +3543,13 @@ function AnalyticsView({ students, attendance, sessions, achievements, tournamen
 
       <Card className="p-4 mb-4">
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--ack-heading)' }}>
-          Monthly Attendance Rate {year !== 'all' ? `— ${year}` : '(rolling 12 months)'}
+          Monthly Attendance Rate {year !== 'all' ? `â€” ${year}` : '(rolling 12 months)'}
         </h2>
         <TrendBarChart data={monthly} color="#7C3AED" barMinWidth={52} />
       </Card>
 
       <Card className="p-4 mb-4">
-        <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--ack-heading)' }}>Overall Attendance — All Years</h2>
+        <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--ack-heading)' }}>Overall Attendance â€” All Years</h2>
         <TrendBarChart data={yearly} color={GOLD} barMinWidth={64} />
       </Card>
 
@@ -3578,7 +3578,7 @@ function AnalyticsView({ students, attendance, sessions, achievements, tournamen
           <h2 className="text-sm font-bold mb-1 flex items-center gap-1.5" style={{ color: 'var(--ack-heading)' }}>
             <Trophy size={14} color={GOLD} /> Top Players
           </h2>
-          <p className="text-[10px] text-[var(--ack-muted)] mb-2">Ranked by real results — medals, attendance, or participation</p>
+          <p className="text-[10px] text-[var(--ack-muted)] mb-2">Ranked by real results â€” medals, attendance, or participation</p>
           <div className="flex gap-1 mb-3">
             {[['medals', 'Medals'], ['attendance', 'Attendance'], ['participation', 'Participation']].map(([id, label]) => (
               <button key={id} onClick={() => setPlayerMetric(id)} className="px-2.5 py-1 rounded-full text-[10px] font-bold"
@@ -3594,9 +3594,9 @@ function AnalyticsView({ students, attendance, sessions, achievements, tournamen
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold truncate" style={{ color: 'var(--ack-heading)' }}>{displayName(r.student)}</p>
                     <p className="text-[10px] text-[var(--ack-muted)] truncate">
-                      {playerMetric === 'medals' && `${r.medals.Gold}G · ${r.medals.Silver}S · ${r.medals.Bronze}B · ${r.att.rate}% attendance`}
-                      {playerMetric === 'attendance' && `${r.att.rate}% · ${r.att.total} marks in range`}
-                      {playerMetric === 'participation' && `${r.entries} events entered · ${r.medalsTotal} medal${r.medalsTotal === 1 ? '' : 's'}`}
+                      {playerMetric === 'medals' && `${r.medals.Gold}G Â· ${r.medals.Silver}S Â· ${r.medals.Bronze}B Â· ${r.att.rate}% attendance`}
+                      {playerMetric === 'attendance' && `${r.att.rate}% Â· ${r.att.total} marks in range`}
+                      {playerMetric === 'participation' && `${r.entries} events entered Â· ${r.medalsTotal} medal${r.medalsTotal === 1 ? '' : 's'}`}
                     </p>
                   </div>
                   <BeltBadge belt={r.student.belt} small />
@@ -3614,14 +3614,14 @@ function AnalyticsView({ students, attendance, sessions, achievements, tournamen
 }
 
 // Notifications are derived client-side (latest achievements + the most
-// recent session's absentees) — there's no table for them, so "unread" is
+// recent session's absentees) â€” there's no table for them, so "unread" is
 // tracked with a last-seen timestamp: anything dated after that counts as
 // unread on the bell badge, and visiting the screen marks everything seen.
 function computeNotifications(students, attendance, achievements) {
   const items = [];
   function studentName(id) { return displayName(students.find(s => s.id === id)) || 'A student'; }
   [...achievements].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).forEach(a => {
-    items.push({ id: `ach-${a.id}`, type: 'Achievement', icon: Trophy, tint: GOLD, text: `${studentName(a.student_id)} logged ${a.title}${a.placement ? ' — ' + a.placement : ''}`, date: a.date });
+    items.push({ id: `ach-${a.id}`, type: 'Achievement', icon: Trophy, tint: GOLD, text: `${studentName(a.student_id)} logged ${a.title}${a.placement ? ' â€” ' + a.placement : ''}`, date: a.date });
   });
   const recentDate = attendance.length ? [...attendance].sort((a, b) => b.date.localeCompare(a.date))[0].date : null;
   if (recentDate) {
@@ -3638,7 +3638,7 @@ function NotificationsView({ students, attendance, achievements }) {
 
   React.useEffect(() => {
     // Visiting the screen marks everything as seen (including items that
-    // arrive while it's open — the next render picks them up as read).
+    // arrive while it's open â€” the next render picks them up as read).
     localStorage.setItem('ack-notifications-seen', String(Date.now()));
   }, []);
 
@@ -3661,7 +3661,7 @@ function NotificationsView({ students, attendance, achievements }) {
             <div className="flex-1 min-w-0"><p className="text-sm text-[var(--ack-text)]">{n.text}</p><p className="text-[11px] text-[var(--ack-muted)] mt-0.5">{n.date}</p></div>
           </Card>
         ))}
-        {filtered.length === 0 && <p className="text-sm text-[var(--ack-muted)] py-10 text-center">Nothing here yet — notifications appear as attendance and achievements are logged.</p>}
+        {filtered.length === 0 && <p className="text-sm text-[var(--ack-muted)] py-10 text-center">Nothing here yet â€” notifications appear as attendance and achievements are logged.</p>}
       </div>
     </div>
   );
@@ -3768,7 +3768,7 @@ function CreateParentLoginModal({ student, onClose, onCreate }) {
   const digits = phone.replace(/\D/g, '');
 
   async function submit() {
-    if (!digits) { setError("Add a WhatsApp number for this student first, via Edit → Guardian Information."); return; }
+    if (!digits) { setError("Add a WhatsApp number for this student first, via Edit â†’ Guardian Information."); return; }
     setBusy(true); setError('');
     try {
       // onCreate returns the one-time password the DB generated for the parent
@@ -3787,19 +3787,19 @@ function CreateParentLoginModal({ student, onClose, onCreate }) {
           <p className="text-sm text-[var(--ack-text)] mb-2">Login created. Share these with the parent:</p>
           <div className="bg-[var(--ack-surface-2)] rounded-xl p-3 text-xs space-y-1 mb-3">
             <p>Login ID (WhatsApp number): <span className="font-bold">{phone}</span></p>
-            <p>One-time password: <span className="font-bold">{generatedPassword || '—'}</span></p>
+            <p>One-time password: <span className="font-bold">{generatedPassword || 'â€”'}</span></p>
           </div>
-          <p className="text-xs text-[var(--ack-muted)]">This password is random and shown only once. The parent must change it on first sign-in — the app will ask them automatically. You can generate a new one from the Parent Logins panel anytime.</p>
+          <p className="text-xs text-[var(--ack-muted)]">This password is random and shown only once. The parent must change it on first sign-in â€” the app will ask them automatically. You can generate a new one from the Parent Logins panel anytime.</p>
         </div>
       ) : (
         <>
-          <p className="text-xs text-[var(--ack-muted)] mb-3">Creates a read-only login for {displayName(student)}'s parent, using their WhatsApp number as the login ID. A random one-time password is generated and shown once — the parent must change it after their first sign-in.</p>
+          <p className="text-xs text-[var(--ack-muted)] mb-3">Creates a read-only login for {displayName(student)}'s parent, using their WhatsApp number as the login ID. A random one-time password is generated and shown once â€” the parent must change it after their first sign-in.</p>
           <div className="bg-[var(--ack-surface-2)] rounded-xl p-3 text-xs mb-3">
             <p className="text-[var(--ack-muted)]">WhatsApp number on file</p>
-            <p className="font-bold" style={{ color: 'var(--ack-heading)' }}>{phone || '— not set —'}</p>
+            <p className="font-bold" style={{ color: 'var(--ack-heading)' }}>{phone || 'â€” not set â€”'}</p>
           </div>
           {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
-          <PrimaryButton onClick={submit} disabled={busy} className="w-full">{busy ? 'Creating…' : 'Create Login'}</PrimaryButton>
+          <PrimaryButton onClick={submit} disabled={busy} className="w-full">{busy ? 'Creatingâ€¦' : 'Create Login'}</PrimaryButton>
         </>
       )}
     </Modal>
@@ -3825,15 +3825,15 @@ function ResetParentPasswordDialog({ parentProfile, onClose, onReset }) {
         <div>
           <p className="text-sm text-[var(--ack-text)] mb-2">Password reset. Share this new one-time password with the parent:</p>
           <div className="bg-[var(--ack-surface-2)] rounded-xl p-3 text-xs mb-3">
-            <p>New password: <span className="font-bold">{newPassword || '—'}</span></p>
+            <p>New password: <span className="font-bold">{newPassword || 'â€”'}</span></p>
           </div>
           <p className="text-xs text-[var(--ack-muted)]">It's random and shown only once. The app will ask the parent to change it at their next sign-in.</p>
         </div>
       ) : (
         <>
-          <p className="text-xs text-[var(--ack-muted)] mb-3">This generates a new random one-time password for <span className="font-semibold">{parentProfile.name}</span>. It will be shown once, right here — share it with the parent.</p>
+          <p className="text-xs text-[var(--ack-muted)] mb-3">This generates a new random one-time password for <span className="font-semibold">{parentProfile.name}</span>. It will be shown once, right here â€” share it with the parent.</p>
           {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
-          <PrimaryButton onClick={confirm} disabled={busy} className="w-full" style={{ background: WARNING }}>{busy ? 'Resetting…' : 'Reset Password'}</PrimaryButton>
+          <PrimaryButton onClick={confirm} disabled={busy} className="w-full" style={{ background: WARNING }}>{busy ? 'Resettingâ€¦' : 'Reset Password'}</PrimaryButton>
         </>
       )}
     </Modal>
@@ -3868,7 +3868,7 @@ function ParentAccountsPanel({ students, profiles, onCreate, onResetPassword, on
 
   return (
     <Modal title="Parent Logins" onClose={onClose} wide>
-      <p className="text-xs text-[var(--ack-muted)] mb-3">Create a login for a parent, tied to their child — a student can have more than one (e.g. both parents). Parents can only view their own child, read-only. Share the password with them directly — they can change it after logging in. To create a login by WhatsApp number instead, use the "Create Parent Login" button on the student's own profile.</p>
+      <p className="text-xs text-[var(--ack-muted)] mb-3">Create a login for a parent, tied to their child â€” a student can have more than one (e.g. both parents). Parents can only view their own child, read-only. Share the password with them directly â€” they can change it after logging in. To create a login by WhatsApp number instead, use the "Create Parent Login" button on the student's own profile.</p>
       <Field label="Student">
         <select className={inputCls} value={studentId} onChange={e => setStudentId(e.target.value)}>
           {students.map(s => <option key={s.id} value={s.id}>{displayName(s)} ({s.admission_id})</option>)}
@@ -3879,7 +3879,7 @@ function ParentAccountsPanel({ students, profiles, onCreate, onResetPassword, on
         <Field label="Temporary password"><input className={inputCls} value={password} onChange={e => setPassword(e.target.value)} /></Field>
       </div>
       {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
-      <PrimaryButton onClick={submit} disabled={busy} className="w-full mb-4">{busy ? 'Creating…' : 'Create parent login'}</PrimaryButton>
+      <PrimaryButton onClick={submit} disabled={busy} className="w-full mb-4">{busy ? 'Creatingâ€¦' : 'Create parent login'}</PrimaryButton>
       <div className="space-y-2">
         {parentProfiles.map(p => (
           <div key={p.id} className="flex items-center justify-between bg-[var(--ack-surface-2)] rounded-xl p-3">
@@ -4116,12 +4116,12 @@ function SplashScreen() {
       style={{ background: 'linear-gradient(135deg,#0B2A5B 0%,#1F5EFF 45%,#7C3AED 100%)', backgroundSize: '220% 220%', animation: 'ackBgDrift 14s ease infinite' }}>
       <div className="ack-blob" style={{ width: 320, height: 320, top: -80, right: -60, background: 'rgba(56,189,248,.4)' }} />
       <div className="ack-blob" style={{ width: 280, height: 280, bottom: -70, left: -50, background: 'rgba(139,92,246,.45)', animationDelay: '-6s' }} />
-      <div className="absolute top-10 right-0 text-[220px] font-bold select-none pointer-events-none leading-none" style={{ color: 'rgba(255,255,255,0.05)', fontFamily: 'serif' }}>道</div>
+      <div className="absolute top-10 right-0 text-[220px] font-bold select-none pointer-events-none leading-none" style={{ color: 'rgba(255,255,255,0.05)', fontFamily: 'serif' }}>é“</div>
 
       <img src={SPLASH_LOGO_URI} alt="Ananda College Karate crest and emblem" className="relative mb-7 float-anim" style={{ width: 300, height: 'auto' }} draggable={false} />
 
       <h1 className="relative text-white font-extrabold text-2xl tracking-[0.15em] mb-2" style={{ fontFamily: 'Poppins, sans-serif', textShadow: '0 4px 24px rgba(0,0,0,.25)' }}>ANANDA COLLEGE</h1>
-      <p className="relative text-white/60 text-xs tracking-[0.3em] mb-16">STRENGTH <span style={{ color: '#FF3B30' }}>•</span> DISCIPLINE <span style={{ color: '#FF3B30' }}>•</span> EXCELLENCE</p>
+      <p className="relative text-white/60 text-xs tracking-[0.3em] mb-16">STRENGTH <span style={{ color: '#FF3B30' }}>â€¢</span> DISCIPLINE <span style={{ color: '#FF3B30' }}>â€¢</span> EXCELLENCE</p>
 
       <p className="relative text-white/50 text-[11px] tracking-[0.35em] mb-2">LOADING</p>
       <div className="relative w-52 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.15)' }}>
@@ -4147,7 +4147,7 @@ function LoginScreen({ onSignIn }) {
     const loginEmail = role === 'parent' ? phoneToParentEmail(email) : email.trim();
     const err = await onSignIn(loginEmail, password);
     setBusy(false);
-    if (err) setError(err.message || 'Could not sign in — check your details and password.');
+    if (err) setError(err.message || 'Could not sign in â€” check your details and password.');
   }
 
   return (
@@ -4164,7 +4164,7 @@ function LoginScreen({ onSignIn }) {
               <Shield size={34} color={GOLD} />
             </div>
             <h1 className="text-white font-extrabold text-2xl text-center tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', textShadow: '0 4px 24px rgba(0,0,0,.25)' }}>Ananda College<br />Karate</h1>
-            <p className="text-white/60 text-xs mt-1.5 tracking-[0.25em]">DISCIPLINE · FOCUS · EXCELLENCE</p>
+            <p className="text-white/60 text-xs mt-1.5 tracking-[0.25em]">DISCIPLINE Â· FOCUS Â· EXCELLENCE</p>
           </div>
 
           <Card className="p-5 !bg-white/10 border-white/25" style={{ backdropFilter: 'blur(30px) saturate(1.6)', WebkitBackdropFilter: 'blur(30px) saturate(1.6)', boxShadow: '0 32px 80px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.3)' }}>
@@ -4185,7 +4185,7 @@ function LoginScreen({ onSignIn }) {
               <Field label="Password">
                 <div className="relative">
                   <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
-                    placeholder="••••••••"
+                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                     className="w-full border border-white/25 rounded-xl px-3.5 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300/40 focus:border-cyan-200 bg-white/10 text-white placeholder-white/40"
                     style={{ boxShadow: 'inset 0 2px 8px rgba(0,0,0,.15)' }} />
                   <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
@@ -4196,7 +4196,7 @@ function LoginScreen({ onSignIn }) {
               {error && <p className="text-xs text-red-300 mb-3 bg-red-500/15 border border-red-400/30 rounded-lg px-2.5 py-1.5">{error}</p>}
               <button type="submit" disabled={busy} className="relative overflow-hidden w-full py-3 rounded-xl font-semibold text-sm text-white transition disabled:opacity-60"
                 style={{ background: 'linear-gradient(135deg,#38BDF8,#6366F1)', backgroundSize: '200% 200%', animation: 'ackBgDrift 5s ease infinite', boxShadow: '0 12px 32px rgba(56,189,248,.45)' }}>
-                {busy ? 'Signing in…' : 'Log in'}
+                {busy ? 'Signing inâ€¦' : 'Log in'}
                 <span className="ack-shimmer" />
               </button>
             </form>
@@ -4209,7 +4209,7 @@ function LoginScreen({ onSignIn }) {
             </p>
           </div>
 
-          <p className="text-center text-white/50 text-[11px] mt-5">Ananda College Karate · Strength in Spirit, Excellence in Action</p>
+          <p className="text-center text-white/50 text-[11px] mt-5">Ananda College Karate Â· Strength in Spirit, Excellence in Action</p>
         </div>
       </div>
     </div>
@@ -4223,7 +4223,7 @@ function createSupabaseClients(url, anonKey) {
   return { client, secondary };
 }
 
-// Baked-in production connection — every visitor gets this automatically,
+// Baked-in production connection â€” every visitor gets this automatically,
 // no setup screen and no per-device configuration. (A setup/switch-your-
 // project screen was removed: a single club runs against a single project,
 // and the localStorage override path was a footgun that silently pointed
@@ -4235,7 +4235,7 @@ function AppRoot() {
   const [clients, setClients] = React.useState(null);
 
   React.useEffect(() => {
-    // Always the club's own project — no storage overrides, no gate.
+    // Always the club's own project â€” no storage overrides, no gate.
     try { setClients(createSupabaseClients(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY)); }
     catch (e) { setClients(null); }
   }, []);
@@ -4422,9 +4422,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(<AppRoot />);
 
 <!-- The JSX above is compiled once, at build time, by `npm run build:app`
      (see build-app.mjs). It produces index-premium.bundle.js, which bundles
-     React, ReactDOM, the Supabase client and jsQR locally — so no CDN runtime
+     React, ReactDOM, the Supabase client and jsQR locally â€” so no CDN runtime
      compile (Babel Standalone) is needed anymore. If you edit the app-source
      above, re-run `npm run build:app` to refresh the bundle. -->
-<script src="index-premium.bundle.js" onerror="ackShowError('Failed to load index-premium.bundle.js — run: npm run build:app')"></script>
+<script src="index-premium.bundle.js" onerror="ackShowError('Failed to load index-premium.bundle.js â€” run: npm run build:app')"></script>
 </body>
 </html>
+

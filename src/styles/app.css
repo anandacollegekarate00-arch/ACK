@@ -1,4 +1,4 @@
-/* App-wide custom styles (Tailwind utilities are generated separately). */
+﻿/* App-wide custom styles (Tailwind utilities are generated separately). */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +7,9 @@ html,
 body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
+  text-rendering: auto;
   margin: 0;
 }
 * {
@@ -87,7 +89,7 @@ a:focus-visible {
   }
 }
 
-/* Premium background — clean, static, one neutral gradient. The old
+/* Premium background â€” clean, static, one neutral gradient. The old
    multi-color radial blobs + drift animation were the main source of the
    "too many effects" look; this is deliberately quiet. */
 body {
@@ -178,3 +180,4 @@ body:has(.ack-dark) .ack-grad-text {
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+

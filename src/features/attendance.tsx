@@ -415,10 +415,14 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
   );
 }
 
+
+
 export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
   const [title, setTitle] = React.useState('');
   const [time, setTime] = React.useState('06:30');
   const [days, setDays] = React.useState([]);
+  const [sessionError, setSessionError] = React.useState('');
+  const [sessionBusy, setSessionBusy] = React.useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = React.useState(null);
 
   React.useEffect(() => {
@@ -430,12 +434,23 @@ export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
   function toggleDay(d) {
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort()));
   }
+
   async function submit() {
     if (!title || days.length === 0) return;
-    await onAdd({ name: title, time, days });
-    setTitle('');
-    setDays([]);
+    setSessionBusy(true);
+    setSessionError('');
+    try {
+      await onAdd({ name: title, time, days });
+      setTitle('');
+      setTime('06:30');
+      setDays([]);
+    } catch (e: any) {
+      setSessionError(e.message || 'Could not add session. Please try again.');
+    } finally {
+      setSessionBusy(false);
+    }
   }
+
   const toDelete = sessions.find((s) => s.id === confirmDeleteId);
 
   return (
@@ -464,8 +479,9 @@ export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
           ))}
         </div>
       </Field>
-      <PrimaryButton onClick={submit} className="w-full mb-4">
-        Add session
+      {sessionError && <p className="text-xs text-red-600 mb-2">{sessionError}</p>}
+      <PrimaryButton onClick={submit} disabled={sessionBusy || !title || days.length === 0} className="w-full mb-4">
+        {sessionBusy ? 'Adding…' : 'Add session'}
       </PrimaryButton>
       <div className="space-y-2">
         {sessions.map((s) => (
@@ -475,7 +491,7 @@ export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
                 {s.name}
               </p>
               <p className="text-[11px] text-[var(--ack-muted)]">
-                {s.time} Â· {s.days.map((d) => WEEKDAY_LABELS[d]).join(', ')}
+                {s.time} · {s.days.map((d) => WEEKDAY_LABELS[d]).join(', ')}
               </p>
             </div>
             <button onClick={() => setConfirmDeleteId(s.id)} className="p-2 rounded-lg" style={{ color: DANGER }}>
@@ -488,7 +504,7 @@ export function ManageSessionsModal({ sessions, onAdd, onDelete, onClose }) {
       {toDelete && (
         <ConfirmDialog
           title="Remove this session?"
-          message={`"${toDelete.name}" (${toDelete.time}) will no longer appear on the Dashboard.`}
+          message={`Remove "${toDelete.name}" (${toDelete.time}) — it won't appear on the Dashboard anymore.`}
           onCancel={() => setConfirmDeleteId(null)}
           onConfirm={async () => {
             if (toDelete) await onDelete(toDelete.id);
