@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   Trophy,
   Search,
@@ -582,7 +582,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
       {filterBy === 'Former members' && formerStudents.length > 0 && (
         <div className="mb-4 p-3 rounded-xl" style={{ background: '#fef3c7', border: '1px solid #f59e0b' }}>
           <p className="text-xs font-semibold" style={{ color: '#92400e' }}>
-            ðŸ“š Past Students Section â€” These students have left the club but their records are preserved. Parents can still view their history.
+            📚 Past Students Section â€” These students have left the club but their records are preserved. Parents can still view their history.
           </p>
         </div>
       )}
@@ -1336,7 +1336,7 @@ export function StudentProfilePage({
       )}
       {confirmErase && (
         <ConfirmDialog
-          title="âš ï¸ Permanently Delete Student?"
+          title="⚠️ Permanently Delete Student?"
           message={`This will PERMANENTLY DELETE ${displayName(student)} and ALL their data including attendance records, achievements, tournament registrations, and parent access. This action CANNOT be undone. Consider marking as "Past Student" instead to preserve records.`}
           confirmLabel="Delete Permanently"
           onCancel={() => setConfirmErase(false)}
