@@ -17,7 +17,7 @@ export function AppRoot() {
   const [clients, setClients] = React.useState(null);
 
   React.useEffect(() => {
-    // Always the club's own project â€” no storage overrides, no gate.
+    // Always the club's own project — no storage overrides, no gate.
     try {
       setClients(createSupabaseClients(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY));
     } catch (e) {

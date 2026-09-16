@@ -39,7 +39,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
         if (data) setSettings(data);
         return;
       }
-      // Former members (left_at set) are filtered at the UI layer â€” the
+      // Former members (left_at set) are filtered at the UI layer — the
       // database no longer uses a deleted_at column.
       const query = supabaseClient.from(table).select('*');
       const { data, error } = await query;
@@ -150,7 +150,7 @@ export function useClubData(supabaseClient, supabaseSecondaryClient, enabled, us
     };
   }, [enabled, refetchAll, applyChange, supabaseClient]);
 
-  // No admission_id from the client â€” the DB trigger assigns it (see
+  // No admission_id from the client — the DB trigger assigns it (see
   // database-schema.sql: assign_admission_id). We select() the inserted row
   // so the roster gets the server-assigned ID immediately.
   const addStudent = React.useCallback(

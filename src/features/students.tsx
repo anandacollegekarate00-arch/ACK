@@ -41,7 +41,7 @@ import { downloadCSV, parseCSV, csvToStudents } from '../lib/csv';
 import { AddAchievementModal } from './/achievements';
 import { CreateParentLoginModal, ResetParentPasswordDialog } from './/profile';
 
-// Cross-references used by the profile page â€” module-level so the memo that
+// Cross-references used by the profile page — module-level so the memo that
 // consumes them stays dependency-clean.
 function tournamentFor(a, tournaments) {
   return tournaments.find((t) => t.id === a.tournament_id);
@@ -209,7 +209,7 @@ export function ImportStudentsModal({ roster, onClose, onImport }) {
     try {
       const rows = parseCSV(await file.text());
       if (rows.length < 2) {
-        setError('The file has no data rows â€” it needs a header line plus at least one student.');
+        setError('The file has no data rows — it needs a header line plus at least one student.');
         setValid([]);
         setSkipped([]);
         return;
@@ -314,7 +314,7 @@ export function ImportStudentsModal({ roster, onClose, onImport }) {
                 <div key={i} className="flex items-start gap-2 px-3 py-2">
                   <AlertTriangle size={13} className="mt-0.5 shrink-0" color="#B45309" />
                   <p className="text-xs leading-snug" style={{ color: 'var(--ack-text)' }}>
-                    <span className="font-semibold">Row {s.row}:</span> {s.name} â€” {s.reason}
+                    <span className="font-semibold">Row {s.row}:</span> {s.name} — {s.reason}
                   </p>
                 </div>
               ))}
@@ -326,7 +326,7 @@ export function ImportStudentsModal({ roster, onClose, onImport }) {
             </p>
           )}
           <PrimaryButton onClick={doImport} disabled={busy || valid.length === 0} className="w-full">
-            {busy ? 'Importingâ€¦' : `Import ${valid.length} student${valid.length === 1 ? '' : 's'}`}
+            {busy ? 'Importing…' : `Import ${valid.length} student${valid.length === 1 ? '' : 's'}`}
           </PrimaryButton>
         </>
       )}
@@ -347,7 +347,7 @@ export function ImportStudentsModal({ roster, onClose, onImport }) {
           </p>
           {skipped.length > 0 && (
             <p className="text-xs mb-4" style={{ color: '#B45309' }}>
-              {skipped.length} row{skipped.length === 1 ? '' : 's'} skipped â€” {skipped.map((s) => s.reason).join('; ')}
+              {skipped.length} row{skipped.length === 1 ? '' : 's'} skipped — {skipped.map((s) => s.reason).join('; ')}
             </p>
           )}
           <PrimaryButton onClick={onClose} className="w-full">
@@ -404,7 +404,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
     return 0;
   };
 
-  // Former members (left_at set) live behind their own filter â€” the main
+  // Former members (left_at set) live behind their own filter — the main
   // roster, imports and attendance stay purely active-member.
   const activeStudents = students.filter((s) => !s.left_at);
   const formerStudents = students.filter((s) => s.left_at);
@@ -582,7 +582,7 @@ export function StudentsView({ students, attendance, onAddStudent, openStudent, 
       {filterBy === 'Former members' && formerStudents.length > 0 && (
         <div className="mb-4 p-3 rounded-xl" style={{ background: '#fef3c7', border: '1px solid #f59e0b' }}>
           <p className="text-xs font-semibold" style={{ color: '#92400e' }}>
-            📚 Past Students Section â€” These students have left the club but their records are preserved. Parents can still view their history.
+            📚 Past Students Section — These students have left the club but their records are preserved. Parents can still view their history.
           </p>
         </div>
       )}
@@ -804,15 +804,15 @@ export function StudentRecordModal({ student, attendance, achievements, tourname
           </p>
           <p className="text-[var(--ack-muted)]">Grade</p>
           <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
-            {student.grade || 'â€”'}
+            {student.grade || '—'}
           </p>
           <p className="text-[var(--ack-muted)]">Date of birth</p>
           <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
-            {student.dob || 'â€”'}
+            {student.dob || '—'}
           </p>
           <p className="text-[var(--ack-muted)]">Joined</p>
           <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
-            {student.join_date || 'â€”'}
+            {student.join_date || '—'}
           </p>
           <p className="text-[var(--ack-muted)]">Membership</p>
           <p className="font-semibold text-right" style={{ color: 'var(--ack-heading)' }}>
@@ -865,7 +865,7 @@ export function StudentRecordModal({ student, attendance, achievements, tourname
                       <span className="text-[10px] text-[var(--ack-muted)] shrink-0">{a.date}</span>
                     </div>
                     <p className="text-[10px] text-[var(--ack-muted)] mt-0.5">
-                      {[tournament?.name, event?.name, a.level].filter(Boolean).join(' Â· ')}
+                      {[tournament?.name, event?.name, a.level].filter(Boolean).join(' · ')}
                     </p>
                   </div>
                 );
@@ -874,7 +874,7 @@ export function StudentRecordModal({ student, attendance, achievements, tourname
           )}
         </div>
         <p className="text-[10px] text-[var(--ack-muted)] text-center pt-2 border-t border-[var(--ack-border)]">
-          Record generated {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} Â· Ananda College
+          Record generated {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} · Ananda College
           Karate Club
         </p>
       </div>
@@ -930,7 +930,7 @@ export function StudentProfilePage({
     .filter(Boolean);
   const hasParentAccount = parentProfiles.length > 0;
 
-  // Upcoming Tournaments â€” events this student is registered for whose
+  // Upcoming Tournaments — events this student is registered for whose
   // tournament hasn't happened yet (or has no date set).
   const upcoming = React.useMemo(() => {
     const today = todayISO();
@@ -972,7 +972,7 @@ export function StudentProfilePage({
               className="mt-2 text-[10px] font-bold uppercase px-2 py-1 rounded-full"
               style={{ background: 'var(--ack-surface-2)', color: 'var(--ack-muted)' }}
             >
-              Former member â€” left {student.left_at.slice(0, 10)}
+              Former member — left {student.left_at.slice(0, 10)}
             </span>
           )}
           <div className="mt-4">
@@ -1083,7 +1083,7 @@ export function StudentProfilePage({
           {student.admission_id}
         </p>
         <p className="text-[11px] text-[var(--ack-muted)] mt-1 max-w-[220px]">
-          Tap "Scan" on the Attendance screen and point the camera at this code to mark {readOnly ? 'them' : 'this student'} present â€” or
+          Tap "Scan" on the Attendance screen and point the camera at this code to mark {readOnly ? 'them' : 'this student'} present — or
           use "Code" to type the admission ID manually.
         </p>
       </Card>
@@ -1094,13 +1094,13 @@ export function StudentProfilePage({
         </p>
         <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-xs">
           <p className="text-[var(--ack-muted)]">Full name</p>
-          <p className="text-[var(--ack-text)] font-medium text-right">{student.full_name || 'â€”'}</p>
+          <p className="text-[var(--ack-text)] font-medium text-right">{student.full_name || '—'}</p>
           <p className="text-[var(--ack-muted)]">Date of birth</p>
           <p className="text-[var(--ack-text)] font-medium text-right">{student.dob}</p>
           {!readOnly && (
             <>
               <p className="text-[var(--ack-muted)]">NIC / Postal ID</p>
-              <p className="text-[var(--ack-text)] font-medium text-right">{student.nic || 'â€”'}</p>
+              <p className="text-[var(--ack-text)] font-medium text-right">{student.nic || '—'}</p>
             </>
           )}
           {!readOnly && (
@@ -1114,15 +1114,15 @@ export function StudentProfilePage({
           <p className="text-[var(--ack-muted)]">Join date</p>
           <p className="text-[var(--ack-text)] font-medium text-right">{student.join_date}</p>
           <p className="text-[var(--ack-muted)]">School admission no.</p>
-          <p className="text-[var(--ack-text)] font-medium text-right">{student.school_admission_no || 'â€”'}</p>
+          <p className="text-[var(--ack-text)] font-medium text-right">{student.school_admission_no || '—'}</p>
           <p className="text-[var(--ack-muted)]">Association admission no.</p>
-          <p className="text-[var(--ack-text)] font-medium text-right">{student.association_admission_no || 'â€”'}</p>
+          <p className="text-[var(--ack-text)] font-medium text-right">{student.association_admission_no || '—'}</p>
           <p className="text-[var(--ack-muted)]">Guardian</p>
           <p className="text-[var(--ack-text)] font-medium text-right">{student.guardian_name}</p>
           <p className="text-[var(--ack-muted)]">Phone</p>
           <p className="text-[var(--ack-text)] font-medium text-right">{student.guardian_phone}</p>
           <p className="text-[var(--ack-muted)]">WhatsApp</p>
-          <p className="text-[var(--ack-text)] font-medium text-right">{student.guardian_whatsapp || 'â€”'}</p>
+          <p className="text-[var(--ack-text)] font-medium text-right">{student.guardian_whatsapp || '—'}</p>
         </div>
       </Card>
 
@@ -1152,7 +1152,7 @@ export function StudentProfilePage({
           <p className="text-xs text-[var(--ack-muted)] mb-3">
             {parentProfiles.length > 0
               ? 'Add another parent login (e.g. a second guardian) using a different WhatsApp number.'
-              : 'No parent login yet. Create one using their WhatsApp number â€” a random one-time password is generated, and they must change it on first sign-in.'}
+              : 'No parent login yet. Create one using their WhatsApp number — a random one-time password is generated, and they must change it on first sign-in.'}
           </p>
           <button
             onClick={() => setShowCreateParentLogin(true)}
@@ -1193,7 +1193,7 @@ export function StudentProfilePage({
 
       <Card className="p-4 mb-4">
         <p className="font-bold text-sm mb-3" style={{ color: 'var(--ack-heading)' }}>
-          Performance Overview â€” Monthly Attendance
+          Performance Overview — Monthly Attendance
         </p>
         <div style={{ width: '100%', height: 160 }}>
           <MiniBarChart data={chartData} labelKey="month" valueKey="rate" color={ROYAL} />
@@ -1221,7 +1221,7 @@ export function StudentProfilePage({
                 <div key={a.id} className="px-4 py-3">
                   {t && (
                     <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: ROYAL }}>
-                      {s ? `${s.name} Â· ${t.name}` : t.name}
+                      {s ? `${s.name} · ${t.name}` : t.name}
                     </p>
                   )}
                   <div className="flex items-center justify-between">
