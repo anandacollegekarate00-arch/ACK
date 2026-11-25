@@ -1,7 +1,6 @@
 ﻿import React from 'react';
-import { Eye, EyeOff, AlertTriangle } from '../icons';
+import { Eye, EyeOff } from '../icons';
 import { Card, Field } from '../components/ui';
-import { phoneToParentEmail } from '../lib/identity';
 
 export function SplashScreen() {
   return (
@@ -37,7 +36,6 @@ export function SplashScreen() {
 }
 
 export function LoginScreen({ onSignIn }) {
-  const [role, setRole] = React.useState('coach');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [showPw, setShowPw] = React.useState(false);
@@ -48,8 +46,7 @@ export function LoginScreen({ onSignIn }) {
     e.preventDefault();
     setError('');
     setBusy(true);
-    const loginEmail = role === 'parent' ? phoneToParentEmail(email) : email.trim();
-    const err = await onSignIn(loginEmail, password);
+    const err = await onSignIn(email.trim(), password);
     setBusy(false);
     if (err) setError(err.message || 'Could not sign in — check your details and password.');
   }
@@ -88,43 +85,16 @@ export function LoginScreen({ onSignIn }) {
               boxShadow: '0 32px 80px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.3)',
             }}
           >
-            <div
-              className="grid grid-cols-2 gap-2 mb-4 p-1 rounded-xl"
-              style={{ background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)' }}
-            >
-              {[
-                { id: 'coach', label: 'Coach / Captain' },
-                { id: 'parent', label: 'Parent' },
-              ].map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => setRole(r.id)}
-                  className="py-2 rounded-lg text-xs font-semibold transition"
-                  style={
-                    role === r.id
-                      ? {
-                          background: '#1F5EFF',
-                          color: '#fff',
-                          boxShadow: '0 6px 18px rgba(31,94,255,.45)',
-                        }
-                      : { color: 'rgba(255,255,255,.7)' }
-                  }
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-
             <form onSubmit={submit}>
-              <Field label={role === 'parent' ? 'WhatsApp Number' : 'Email'}>
+              <Field label="Email">
                 <input
-                  type={role === 'parent' ? 'tel' : 'email'}
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoCapitalize="none"
+                  autoComplete="email"
                   required
-                  placeholder={role === 'parent' ? '+94 7X XXX XXXX' : 'coach@example.com'}
+                  placeholder="you@example.com"
                   className="w-full border border-white/25 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300/40 focus:border-blue-300 bg-white/10 text-white placeholder-white/40"
                   style={{ boxShadow: 'inset 0 2px 8px rgba(0,0,0,.15)' }}
                 />
@@ -136,6 +106,7 @@ export function LoginScreen({ onSignIn }) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="current-password"
                     placeholder="••••••••"
                     className="w-full border border-white/25 rounded-xl px-3.5 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300/40 focus:border-blue-300 bg-white/10 text-white placeholder-white/40"
                     style={{ boxShadow: 'inset 0 2px 8px rgba(0,0,0,.15)' }}
@@ -158,18 +129,10 @@ export function LoginScreen({ onSignIn }) {
                 className="w-full py-3 rounded-xl font-semibold text-sm text-white transition disabled:opacity-60"
                 style={{ background: '#1F5EFF', boxShadow: '0 12px 32px rgba(31,94,255,.45)' }}
               >
-                {busy ? 'Signing in…' : 'Log in'}
+                {busy ? 'Signing in...' : 'Sign in'}
               </button>
             </form>
           </Card>
-
-          <div className="mt-4 bg-white/10 border border-white/20 backdrop-blur-xl rounded-xl p-3 flex gap-2">
-            <AlertTriangle size={16} className="text-amber-300 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-white/80 leading-snug">
-              Coaches and captains: your account is created directly in the Supabase dashboard. Parents: your login is created for you by a
-              coach after registration.
-            </p>
-          </div>
 
           <p className="text-center text-white/50 text-[11px] mt-5">Ananda College Karate · Strength in Spirit, Excellence in Action</p>
         </div>
