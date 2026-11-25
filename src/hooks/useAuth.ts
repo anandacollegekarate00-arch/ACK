@@ -51,9 +51,42 @@ export function useAuth(supabaseClient) {
   const signOut = React.useCallback(async () => {
     await supabaseClient.auth.signOut();
   }, [supabaseClient]);
+
+  const signUp = React.useCallback(
+    async (email: string, password: string, name: string) => {
+      // Sign up the user via Supabase Auth
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name }, // Store name in user metadata as backup
+        },
+      });
+
+      if (error) return error;
+      if (!data.user) return new Error('Sign up failed');
+
+      // Create profile immediately with role='parent' (hardcoded, never from user input)
+      const { error: profileError } = await supabaseClient.from('profiles').insert({
+        id: data.user.id,
+        role: 'parent', // Default role - only coaches can create staff accounts
+        name: name.trim(),
+      });
+
+      if (profileError) {
+        console.error('Profile creation failed:', profileError);
+        // User exists in auth.users but has no profile - will see "No profile" screen
+        return profileError;
+      }
+
+      return null; // Success
+    },
+    [supabaseClient]
+  );
+
   const refreshProfile = React.useCallback(() => {
     if (session?.user?.id) return loadProfile(session.user.id);
   }, [session, loadProfile]);
 
-  return { session, profile, profileError, loading, signIn, signOut, refreshProfile };
+  return { session, profile, profileError, loading, signIn, signOut, signUp, refreshProfile };
 }

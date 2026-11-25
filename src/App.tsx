@@ -10,7 +10,7 @@ import { TournamentDetailPage, SeriesDetailPage, AchievementsView } from './feat
 import { AnalyticsView } from './features/analytics';
 import { computeNotifications, NotificationsView } from './features/notifications';
 import { ChangePasswordModal, ProfileView, ParentView, ClubHistoryPage } from './features/profile';
-import { SplashScreen, LoginScreen } from './features/auth';
+import { SplashScreen, LoginScreen, SignUpScreen } from './features/auth';
 import { createSupabaseClients, DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY } from './lib/supabase';
 
 export function AppRoot() {
@@ -72,7 +72,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 }
 
 export function App({ supabaseClient, supabaseSecondaryClient }) {
-  const { session, profile, profileError, loading: authLoading, signIn, signOut, refreshProfile } = useAuth(supabaseClient);
+  const { session, profile, profileError, loading: authLoading, signIn, signOut, signUp, refreshProfile } = useAuth(supabaseClient);
   const isLoggedIn = !!session;
   const data = useClubData(supabaseClient, supabaseSecondaryClient, isLoggedIn, session?.user?.id);
   const myPermissions = React.useMemo(() => {
@@ -91,6 +91,7 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
   const [stack, setStack] = React.useState([]);
   const [pendingAction, setPendingAction] = React.useState<Record<string, boolean>>({});
   const [darkMode, setDarkMode] = React.useState(() => localStorage.getItem('akc-dark-mode') === '1');
+  const [authView, setAuthView] = React.useState<'login' | 'signup'>('login');
   const toggleDarkMode = React.useCallback(() => {
     setDarkMode((prev) => {
       const next = !prev;
@@ -136,7 +137,12 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
   }, [notifications]);
 
   if (authLoading || (isLoggedIn && data.loading)) return <SplashScreen />;
-  if (!isLoggedIn) return <LoginScreen onSignIn={signIn} />;
+  if (!isLoggedIn) {
+    if (authView === 'signup') {
+      return <SignUpScreen onSignUp={signUp} onBackToLogin={() => setAuthView('login')} />;
+    }
+    return <LoginScreen onSignIn={signIn} onShowSignUp={() => setAuthView('signup')} />;
+  }
   if (!profile) {
     return (
       <div
