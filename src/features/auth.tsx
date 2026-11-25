@@ -20,20 +20,18 @@ function OAuthButtons({ onSignInWithOAuth, busy }: { onSignInWithOAuth: (p: 'goo
   const [oauthBusy, setOauthBusy] = React.useState<string | null>(null);
   const [oauthError, setOauthError] = React.useState('');
 
-  async function handleOAuth(provider: 'google' | 'facebook' | 'apple') {
+  async function handleOAuth(provider: 'google') {
     setOauthError('');
     setOauthBusy(provider);
     const err = await onSignInWithOAuth(provider);
-    // If there's an error the redirect didn't happen — show it.
-    // On success the page navigates away so we never reach the line below.
     if (err) {
-      setOauthError(err.message || `Could not sign in with ${provider}. Please try again.`);
+      setOauthError(err.message || 'Could not sign in with Google. Please try again.');
       setOauthBusy(null);
     }
   }
 
   return (
-    <div className="space-y-2">
+    <div>
       {oauthError && (
         <p className="text-xs text-red-300 bg-red-500/15 border border-red-400/30 rounded-lg px-2.5 py-1.5 mb-2">
           {oauthError}
@@ -63,50 +61,6 @@ function OAuthButtons({ onSignInWithOAuth, busy }: { onSignInWithOAuth: (p: 'goo
           </svg>
         )}
         Continue with Google
-      </button>
-
-      {/* Facebook */}
-      <button
-        type="button"
-        disabled={!!oauthBusy || busy}
-        onClick={() => handleOAuth('facebook')}
-        className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl text-sm font-medium transition disabled:opacity-60"
-        style={{
-          background: '#1877F2',
-          color: '#fff',
-          boxShadow: '0 2px 8px rgba(24,119,242,0.4)',
-        }}
-      >
-        {oauthBusy === 'facebook' ? (
-          <span className="w-5 h-5 border-2 border-blue-300 border-t-white rounded-full animate-spin" />
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-          </svg>
-        )}
-        Continue with Facebook
-      </button>
-
-      {/* Apple */}
-      <button
-        type="button"
-        disabled={!!oauthBusy || busy}
-        onClick={() => handleOAuth('apple')}
-        className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl text-sm font-medium transition disabled:opacity-60"
-        style={{
-          background: '#000',
-          color: '#fff',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
-        }}
-      >
-        {oauthBusy === 'apple' ? (
-          <span className="w-5 h-5 border-2 border-gray-500 border-t-white rounded-full animate-spin" />
-        ) : (
-          <svg width="17" height="20" viewBox="0 0 814 1000" fill="white">
-            <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-127.9c-50.5-90.4-94.4-234.1-94.4-371.1C8 191.4 103.1 90.9 215.1 90.9c64.7 0 118.1 43.6 158.2 43.6 36.8 0 97.1-45.9 171.6-45.9 27.5 0 108.2 2.6 171.6 80zM517.3 95.7c-30.2 13.3-61.6 55.4-61.6 110.7 0 54.4 36.3 108.9 73.9 128.2 4.5.6 8.4 1.3 12.9 1.3 2.6 0 5.1-.6 7.7-.6 29-13 60.4-55.1 60.4-108.9 0-55.7-36.9-109.6-93.3-130.7z" />
-          </svg>
-        )}
-        Continue with Apple
       </button>
     </div>
   );

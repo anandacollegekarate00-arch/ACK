@@ -125,7 +125,7 @@ export function useAuth(supabaseClient) {
   // Triggers the OAuth redirect flow. The browser will navigate away and
   // return to window.location.origin after the provider authenticates.
   const signInWithOAuth = React.useCallback(
-    async (provider: 'google' | 'facebook' | 'apple') => {
+    async (provider: 'google') => {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider,
         options: { redirectTo: window.location.origin },
