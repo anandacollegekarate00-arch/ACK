@@ -4,28 +4,28 @@ import { Eye, EyeOff } from '../icons';
 const BG = 'linear-gradient(165deg,#0B1F3A 0%,#0B2A5B 55%,#10294F 100%)';
 
 // ---------------------------------------------------------------------------
-// Pill button variants
+// Shared primitives
 // ---------------------------------------------------------------------------
 
+const inputCls =
+  'w-full h-[52px] rounded-full px-5 text-[15px] bg-white/10 border border-white/15 text-white ' +
+  'placeholder-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.13] transition-colors';
+
 function PillButton({
-  children,
-  onClick,
-  type = 'button',
-  disabled = false,
-  variant = 'white',
+  children, onClick, type = 'button', disabled = false, variant = 'primary',
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   type?: 'button' | 'submit';
   disabled?: boolean;
-  variant?: 'white' | 'muted' | 'primary';
+  variant?: 'white' | 'muted' | 'primary' | 'danger';
 }) {
   const styles: Record<string, React.CSSProperties> = {
     white:   { background: '#fff', color: '#111' },
     muted:   { background: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.80)', border: '1px solid rgba(255,255,255,0.12)' },
     primary: { background: '#1F5EFF', color: '#fff' },
+    danger:  { background: 'rgba(255,59,48,0.15)', color: 'rgba(255,100,90,1)', border: '1px solid rgba(255,59,48,0.25)' },
   };
-
   return (
     <button
       type={type}
@@ -39,9 +39,20 @@ function PillButton({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Google icon
-// ---------------------------------------------------------------------------
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-1 text-white/50 hover:text-white/80 text-sm mb-6 transition-colors -ml-1"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      Back
+    </button>
+  );
+}
 
 function GoogleIcon() {
   return (
@@ -54,21 +65,11 @@ function GoogleIcon() {
   );
 }
 
-// Email icon
 function EmailIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <rect x="2" y="4" width="20" height="16" rx="2"/>
       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-    </svg>
-  );
-}
-
-// Back chevron
-function ChevronLeft() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6"/>
     </svg>
   );
 }
@@ -99,10 +100,10 @@ export function SplashScreen() {
 // Login Screen
 // ---------------------------------------------------------------------------
 
-export function LoginScreen({ onSignIn, onSignInWithOAuth, onShowSignUp }) {
-  // 'landing' → show Google + "Continue with email"
-  // 'email'   → show inline email/password form
-  const [view, setView] = React.useState<'landing' | 'email'>('landing');
+type LoginView = 'landing' | 'email' | 'forgot' | 'forgot-sent';
+
+export function LoginScreen({ onSignIn, onSignInWithOAuth, onShowSignUp, onResetPassword }) {
+  const [view, setView] = React.useState<LoginView>('landing');
 
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -113,6 +114,10 @@ export function LoginScreen({ onSignIn, onSignInWithOAuth, onShowSignUp }) {
 
   const [oauthBusy, setOauthBusy] = React.useState(false);
   const [oauthError, setOauthError] = React.useState('');
+
+  const [forgotEmail, setForgotEmail] = React.useState('');
+  const [forgotBusy, setForgotBusy] = React.useState(false);
+  const [forgotError, setForgotError] = React.useState('');
 
   async function handleGoogle() {
     setOauthError('');
@@ -138,55 +143,67 @@ export function LoginScreen({ onSignIn, onSignInWithOAuth, onShowSignUp }) {
     }
   }
 
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setForgotError('');
+    if (!forgotEmail.trim()) { setForgotError('Please enter your email address.'); return; }
+    setForgotBusy(true);
+    const err = await onResetPassword(forgotEmail.trim());
+    setForgotBusy(false);
+    if (err) {
+      setForgotError(err.message || 'Could not send reset email. Please try again.');
+    } else {
+      setView('forgot-sent');
+    }
+  }
+
+  // Pre-fill forgotEmail from whatever the user typed in the sign-in form
+  function goToForgot() {
+    setForgotEmail(email);
+    setForgotError('');
+    setView('forgot');
+  }
+
+  const heading: Record<LoginView, string> = {
+    landing:      'Welcome back',
+    email:        'Sign in with email',
+    forgot:       'Reset password',
+    'forgot-sent':'Check your email',
+  };
+  const subtext: Record<LoginView, string> = {
+    landing:      'Ananda College Karate · Member Portal',
+    email:        'Enter your email and password',
+    forgot:       "We'll send a reset link to your email",
+    'forgot-sent':'',
+  };
+
   return (
     <div className="min-h-dvh flex flex-col" style={{ background: BG }}>
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-14">
         <div className="w-full max-w-[340px] flex flex-col items-center">
 
-          {/* Logo */}
-          <img
-            src="/logos/karate.png"
-            alt="Ananda College Karate"
-            style={{ width: 60, height: 'auto' }}
-            draggable={false}
-            className="mb-7"
-          />
+          <img src="/logos/karate.png" alt="Ananda College Karate" style={{ width: 60, height: 'auto' }} draggable={false} className="mb-7" />
 
-          {/* Heading */}
-          {view === 'landing' ? (
-            <h1
-              className="text-white font-extrabold text-[32px] text-center leading-tight mb-3"
-              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}
-            >
-              Welcome back
-            </h1>
-          ) : (
-            <h1
-              className="text-white font-extrabold text-[28px] text-center leading-tight mb-3"
-              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}
-            >
-              Sign in with email
-            </h1>
+          <h1
+            className="text-white font-extrabold text-[32px] text-center leading-tight mb-3"
+            style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}
+          >
+            {heading[view]}
+          </h1>
+          {subtext[view] && (
+            <p className="text-white/40 text-sm text-center mb-10">{subtext[view]}</p>
           )}
 
-          <p className="text-white/40 text-sm text-center mb-10">
-            {view === 'landing' ? 'Ananda College Karate · Member Portal' : 'Enter your email and password'}
-          </p>
-
-          {/* Landing view — two pill buttons */}
+          {/* ── Landing ── */}
           {view === 'landing' && (
             <div className="w-full flex flex-col gap-3">
-              {oauthError && (
-                <p className="text-xs text-red-300/80 text-center -mb-1">{oauthError}</p>
-              )}
+              {oauthError && <p className="text-xs text-red-300/80 text-center -mb-1">{oauthError}</p>}
               <PillButton variant="white" onClick={handleGoogle} disabled={oauthBusy}>
                 {oauthBusy
-                  ? <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-800 rounded-full animate-spin" />
-                  : <GoogleIcon />
-                }
+                  ? <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-800 rounded-full animate-spin"/>
+                  : <GoogleIcon />}
                 Continue with Google
               </PillButton>
-
               <PillButton variant="muted" onClick={() => setView('email')} disabled={oauthBusy}>
                 <EmailIcon />
                 Continue with email
@@ -194,19 +211,10 @@ export function LoginScreen({ onSignIn, onSignInWithOAuth, onShowSignUp }) {
             </div>
           )}
 
-          {/* Email view — inline form */}
+          {/* ── Email sign-in ── */}
           {view === 'email' && (
             <div className="w-full">
-              {/* Back button */}
-              <button
-                type="button"
-                onClick={() => { setView('landing'); setError(''); setNotFound(false); }}
-                className="flex items-center gap-1 text-white/50 hover:text-white/80 text-sm mb-6 transition-colors -ml-1"
-              >
-                <ChevronLeft />
-                Back
-              </button>
-
+              <BackButton onClick={() => { setView('landing'); setError(''); setNotFound(false); }} />
               <form onSubmit={handleEmailSignIn} noValidate className="flex flex-col gap-3">
                 <input
                   type="email"
@@ -217,9 +225,8 @@ export function LoginScreen({ onSignIn, onSignInWithOAuth, onShowSignUp }) {
                   required
                   placeholder="Email address"
                   autoFocus
-                  className="w-full h-[52px] rounded-full px-5 text-[15px] bg-white/10 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.13] transition-colors"
+                  className={inputCls}
                 />
-
                 <div className="relative">
                   <input
                     type={showPw ? 'text' : 'password'}
@@ -228,48 +235,228 @@ export function LoginScreen({ onSignIn, onSignInWithOAuth, onShowSignUp }) {
                     required
                     autoComplete="current-password"
                     placeholder="Password"
-                    className="w-full h-[52px] rounded-full px-5 pr-12 text-[15px] bg-white/10 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.13] transition-colors"
+                    className={inputCls + ' pr-12'}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(v => !v)}
-                    tabIndex={-1}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/60 transition-colors"
-                  >
-                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  <button type="button" onClick={() => setShowPw(v => !v)} tabIndex={-1}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/60 transition-colors">
+                    {showPw ? <EyeOff size={16}/> : <Eye size={16}/>}
                   </button>
                 </div>
 
-                {error && (
-                  <p className="text-xs text-red-300/80 px-1">{error}</p>
-                )}
+                {error && <p className="text-xs text-red-300/80 px-1">{error}</p>}
 
                 <div className="flex flex-col gap-2 mt-1">
                   <PillButton type="submit" variant="primary" disabled={busy}>
                     {busy ? 'Signing in…' : 'Sign in'}
                   </PillButton>
-
                   {notFound && (
                     <PillButton variant="muted" onClick={onShowSignUp}>
                       Create an account instead
                     </PillButton>
                   )}
                 </div>
+
+                {/* Forgot password link — below the buttons */}
+                <button
+                  type="button"
+                  onClick={goToForgot}
+                  className="text-white/35 hover:text-white/60 text-sm text-center mt-2 transition-colors"
+                >
+                  Forgot your password?
+                </button>
               </form>
             </div>
           )}
 
+          {/* ── Forgot password ── */}
+          {view === 'forgot' && (
+            <div className="w-full mt-2">
+              <BackButton onClick={() => { setView('email'); setForgotError(''); }} />
+              <form onSubmit={handleForgotPassword} noValidate className="flex flex-col gap-3">
+                <input
+                  type="email"
+                  value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  required
+                  placeholder="Email address"
+                  autoFocus
+                  className={inputCls}
+                />
+                {forgotError && <p className="text-xs text-red-300/80 px-1">{forgotError}</p>}
+                <div className="mt-1">
+                  <PillButton type="submit" variant="primary" disabled={forgotBusy}>
+                    {forgotBusy ? 'Sending…' : 'Send reset link'}
+                  </PillButton>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* ── Forgot sent ── */}
+          {view === 'forgot-sent' && (
+            <div className="w-full flex flex-col items-center text-center mt-2">
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center mb-5"
+                style={{ background: 'rgba(31,94,255,0.12)', border: '1px solid rgba(31,94,255,0.25)' }}
+              >
+                <EmailIcon />
+              </div>
+              <p className="text-white/60 text-sm leading-relaxed mb-8">
+                We sent a password reset link to <span className="text-white/80 font-medium">{forgotEmail}</span>.
+                Check your inbox and follow the link.
+              </p>
+              <div className="w-full">
+                <PillButton variant="muted" onClick={() => { setView('email'); setForgotEmail(''); }}>
+                  Back to sign in
+                </PillButton>
+              </div>
+            </div>
+          )}
+
           {/* Footer */}
-          <p className="text-white/30 text-sm mt-10 text-center">
-            New here?{' '}
-            <button
-              type="button"
-              onClick={onShowSignUp}
-              className="text-white/55 hover:text-white/80 underline underline-offset-2 transition-colors"
-            >
-              Create an account
-            </button>
-          </p>
+          {(view === 'landing' || view === 'email') && (
+            <p className="text-white/30 text-sm mt-10 text-center">
+              New here?{' '}
+              <button type="button" onClick={onShowSignUp}
+                className="text-white/55 hover:text-white/80 underline underline-offset-2 transition-colors">
+                Create an account
+              </button>
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Reset Password Screen (deep link from email)
+// Shown when the URL contains ?reset=1 and Supabase has set a recovery session
+// ---------------------------------------------------------------------------
+
+export function ResetPasswordScreen({ onUpdatePassword, onDone }) {
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [showPw, setShowPw] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
+    setBusy(true);
+    const err = await onUpdatePassword(password);
+    setBusy(false);
+    if (err) {
+      setError(err.message || 'Could not update password. Please try again.');
+    } else {
+      setSuccess(true);
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-dvh flex flex-col items-center justify-center px-6" style={{ background: BG }}>
+        <div className="w-full max-w-[340px] flex flex-col items-center text-center">
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mb-6"
+            style={{ background: 'rgba(52,199,89,0.12)', border: '1px solid rgba(52,199,89,0.25)' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(52,199,89,0.85)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <h2 className="text-white font-extrabold text-[28px] mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}>
+            Password updated
+          </h2>
+          <p className="text-white/40 text-sm mb-10">Your password has been changed. You can now sign in.</p>
+          <div className="w-full">
+            <PillButton variant="primary" onClick={onDone}>Continue to Sign In</PillButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-dvh flex flex-col" style={{ background: BG }}>
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-14">
+        <div className="w-full max-w-[340px] flex flex-col items-center">
+          <img src="/logos/karate.png" alt="Ananda College Karate" style={{ width: 60, height: 'auto' }} draggable={false} className="mb-7"/>
+          <h1 className="text-white font-extrabold text-[28px] text-center leading-tight mb-3"
+            style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}>
+            New password
+          </h1>
+          <p className="text-white/40 text-sm text-center mb-10">Choose a new password for your account</p>
+
+          <div className="w-full">
+            <form onSubmit={submit} noValidate className="flex flex-col gap-3">
+              <div className="relative">
+                <input
+                  type={showPw ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required autoFocus autoComplete="new-password"
+                  placeholder="New password (min. 6 characters)"
+                  className={inputCls + ' pr-12'}
+                />
+                <button type="button" onClick={() => setShowPw(v => !v)} tabIndex={-1}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/60 transition-colors">
+                  {showPw ? <EyeOff size={16}/> : <Eye size={16}/>}
+                </button>
+              </div>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                required autoComplete="new-password"
+                placeholder="Confirm new password"
+                className={inputCls}
+              />
+              {error && <p className="text-xs text-red-300/80 px-1">{error}</p>}
+              <div className="mt-1">
+                <PillButton type="submit" variant="primary" disabled={busy}>
+                  {busy ? 'Updating…' : 'Update password'}
+                </PillButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// No Profile Screen — clean fallback when auth succeeded but no profile row
+// ---------------------------------------------------------------------------
+
+export function NoProfileScreen({ email, onSignOut }) {
+  return (
+    <div className="min-h-dvh flex flex-col items-center justify-center px-6 text-center" style={{ background: BG }}>
+      <div className="w-full max-w-[320px] flex flex-col items-center">
+        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-6"
+          style={{ background: 'rgba(255,204,0,0.10)', border: '1px solid rgba(255,204,0,0.20)' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,204,0,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h2 className="text-white font-extrabold text-[24px] mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+          Account not set up
+        </h2>
+        <p className="text-white/40 text-sm leading-relaxed mb-2">
+          Your account <span className="text-white/60">{email}</span> is not linked to a member profile yet.
+        </p>
+        <p className="text-white/30 text-sm leading-relaxed mb-10">
+          Please contact your coach to have your account activated.
+        </p>
+        <div className="w-full">
+          <PillButton variant="muted" onClick={onSignOut}>Sign out</PillButton>
         </div>
       </div>
     </div>
@@ -282,7 +469,6 @@ export function LoginScreen({ onSignIn, onSignInWithOAuth, onShowSignUp }) {
 
 export function SignUpScreen({ onSignUp, onSignInWithOAuth, onBackToLogin }) {
   const [view, setView] = React.useState<'landing' | 'email'>('landing');
-
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -291,7 +477,6 @@ export function SignUpScreen({ onSignUp, onSignInWithOAuth, onBackToLogin }) {
   const [error, setError] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
-
   const [oauthBusy, setOauthBusy] = React.useState(false);
   const [oauthError, setOauthError] = React.useState('');
 
@@ -308,11 +493,9 @@ export function SignUpScreen({ onSignUp, onSignInWithOAuth, onBackToLogin }) {
     if (!name.trim()) { setError('Full name is required.'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
-
     setBusy(true);
     const err = await onSignUp(email.trim(), password, name.trim());
     setBusy(false);
-
     if (err) {
       if (err.message?.includes('already registered') || err.message?.includes('already been registered')) {
         setError('This email is already registered. Sign in instead.');
@@ -324,15 +507,12 @@ export function SignUpScreen({ onSignUp, onSignInWithOAuth, onBackToLogin }) {
     }
   }
 
-  // Success
   if (success) {
     return (
       <div className="min-h-dvh flex flex-col items-center justify-center px-6" style={{ background: BG }}>
         <div className="w-full max-w-[340px] flex flex-col items-center text-center">
-          <div
-            className="w-14 h-14 rounded-full flex items-center justify-center mb-6"
-            style={{ background: 'rgba(52,199,89,0.12)', border: '1px solid rgba(52,199,89,0.25)' }}
-          >
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mb-6"
+            style={{ background: 'rgba(52,199,89,0.12)', border: '1px solid rgba(52,199,89,0.25)' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(52,199,89,0.85)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
@@ -340,13 +520,9 @@ export function SignUpScreen({ onSignUp, onSignInWithOAuth, onBackToLogin }) {
           <h2 className="text-white font-extrabold text-[28px] mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}>
             Account created
           </h2>
-          <p className="text-white/40 text-sm mb-10 leading-relaxed">
-            Your account has been created successfully.
-          </p>
+          <p className="text-white/40 text-sm mb-10 leading-relaxed">Your account has been created successfully.</p>
           <div className="w-full">
-            <PillButton variant="primary" onClick={onBackToLogin}>
-              Go to Sign In
-            </PillButton>
+            <PillButton variant="primary" onClick={onBackToLogin}>Go to Sign In</PillButton>
           </div>
         </div>
       </div>
@@ -357,124 +533,51 @@ export function SignUpScreen({ onSignUp, onSignInWithOAuth, onBackToLogin }) {
     <div className="min-h-dvh flex flex-col" style={{ background: BG }}>
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-14">
         <div className="w-full max-w-[340px] flex flex-col items-center">
+          <img src="/logos/karate.png" alt="Ananda College Karate" style={{ width: 60, height: 'auto' }} draggable={false} className="mb-7"/>
 
-          {/* Logo */}
-          <img
-            src="/logos/karate.png"
-            alt="Ananda College Karate"
-            style={{ width: 60, height: 'auto' }}
-            draggable={false}
-            className="mb-7"
-          />
-
-          {/* Heading */}
-          {view === 'landing' ? (
-            <h1
-              className="text-white font-extrabold text-[32px] text-center leading-tight mb-3"
-              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}
-            >
-              Create an account
-            </h1>
-          ) : (
-            <h1
-              className="text-white font-extrabold text-[28px] text-center leading-tight mb-3"
-              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}
-            >
-              Your details
-            </h1>
-          )}
-
+          <h1 className="text-white font-extrabold text-[32px] text-center leading-tight mb-3"
+            style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}>
+            {view === 'landing' ? 'Create an account' : 'Your details'}
+          </h1>
           <p className="text-white/40 text-sm text-center mb-10">
             {view === 'landing' ? 'Ananda College Karate · Member Portal' : 'Fill in your information below'}
           </p>
 
-          {/* Landing view */}
           {view === 'landing' && (
             <div className="w-full flex flex-col gap-3">
-              {oauthError && (
-                <p className="text-xs text-red-300/80 text-center -mb-1">{oauthError}</p>
-              )}
+              {oauthError && <p className="text-xs text-red-300/80 text-center -mb-1">{oauthError}</p>}
               <PillButton variant="white" onClick={handleGoogle} disabled={oauthBusy}>
                 {oauthBusy
-                  ? <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-800 rounded-full animate-spin" />
-                  : <GoogleIcon />
-                }
+                  ? <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-800 rounded-full animate-spin"/>
+                  : <GoogleIcon/>}
                 Continue with Google
               </PillButton>
-
               <PillButton variant="muted" onClick={() => setView('email')} disabled={oauthBusy}>
-                <EmailIcon />
+                <EmailIcon/>
                 Continue with email
               </PillButton>
             </div>
           )}
 
-          {/* Email form */}
           {view === 'email' && (
             <div className="w-full">
-              <button
-                type="button"
-                onClick={() => { setView('landing'); setError(''); }}
-                className="flex items-center gap-1 text-white/50 hover:text-white/80 text-sm mb-6 transition-colors -ml-1"
-              >
-                <ChevronLeft />
-                Back
-              </button>
-
+              <BackButton onClick={() => { setView('landing'); setError(''); }}/>
               <form onSubmit={handleEmailSignUp} noValidate className="flex flex-col gap-3">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  required
-                  placeholder="Full name"
-                  autoComplete="name"
-                  autoFocus
-                  className="w-full h-[52px] rounded-full px-5 text-[15px] bg-white/10 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.13] transition-colors"
-                />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  required
-                  placeholder="Email address"
-                  className="w-full h-[52px] rounded-full px-5 text-[15px] bg-white/10 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.13] transition-colors"
-                />
+                <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="Full name"
+                  autoComplete="name" autoFocus className={inputCls}/>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} autoCapitalize="none"
+                  autoComplete="email" required placeholder="Email address" className={inputCls}/>
                 <div className="relative">
-                  <input
-                    type={showPw ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    autoComplete="new-password"
-                    placeholder="Password (min. 6 characters)"
-                    className="w-full h-[52px] rounded-full px-5 pr-12 text-[15px] bg-white/10 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.13] transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(v => !v)}
-                    tabIndex={-1}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/60 transition-colors"
-                  >
-                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                    required autoComplete="new-password" placeholder="Password (min. 6 characters)" className={inputCls + ' pr-12'}/>
+                  <button type="button" onClick={() => setShowPw(v => !v)} tabIndex={-1}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/60 transition-colors">
+                    {showPw ? <EyeOff size={16}/> : <Eye size={16}/>}
                   </button>
                 </div>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  placeholder="Confirm password"
-                  className="w-full h-[52px] rounded-full px-5 text-[15px] bg-white/10 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.13] transition-colors"
-                />
-
-                {error && (
-                  <p className="text-xs text-red-300/80 px-1">{error}</p>
-                )}
-
+                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                  required autoComplete="new-password" placeholder="Confirm password" className={inputCls}/>
+                {error && <p className="text-xs text-red-300/80 px-1">{error}</p>}
                 <div className="mt-1">
                   <PillButton type="submit" variant="primary" disabled={busy}>
                     {busy ? 'Creating account…' : 'Create account'}
@@ -484,14 +587,10 @@ export function SignUpScreen({ onSignUp, onSignInWithOAuth, onBackToLogin }) {
             </div>
           )}
 
-          {/* Footer */}
           <p className="text-white/30 text-sm mt-10 text-center">
             Already have an account?{' '}
-            <button
-              type="button"
-              onClick={onBackToLogin}
-              className="text-white/55 hover:text-white/80 underline underline-offset-2 transition-colors"
-            >
+            <button type="button" onClick={onBackToLogin}
+              className="text-white/55 hover:text-white/80 underline underline-offset-2 transition-colors">
               Sign in
             </button>
           </p>

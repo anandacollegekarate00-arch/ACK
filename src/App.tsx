@@ -10,7 +10,7 @@ import { TournamentDetailPage, SeriesDetailPage, AchievementsView } from './feat
 import { AnalyticsView } from './features/analytics';
 import { computeNotifications, NotificationsView } from './features/notifications';
 import { ChangePasswordModal, ProfileView, ParentView, ClubHistoryPage } from './features/profile';
-import { SplashScreen, LoginScreen, SignUpScreen } from './features/auth';
+import { SplashScreen, LoginScreen, SignUpScreen, ResetPasswordScreen, NoProfileScreen } from './features/auth';
 import { createSupabaseClients, DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY } from './lib/supabase';
 
 export function AppRoot() {
@@ -72,7 +72,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 }
 
 export function App({ supabaseClient, supabaseSecondaryClient }) {
-  const { session, profile, profileError, loading: authLoading, signIn, signOut, signUp, signInWithOAuth, refreshProfile } = useAuth(supabaseClient);
+  const { session, profile, profileError, loading: authLoading, signIn, signOut, signUp, signInWithOAuth, resetPassword, updatePassword, refreshProfile } = useAuth(supabaseClient);
   const isLoggedIn = !!session;
   const data = useClubData(supabaseClient, supabaseSecondaryClient, isLoggedIn, session?.user?.id);
   const myPermissions = React.useMemo(() => {
@@ -91,7 +91,12 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
   const [stack, setStack] = React.useState([]);
   const [pendingAction, setPendingAction] = React.useState<Record<string, boolean>>({});
   const [darkMode, setDarkMode] = React.useState(() => localStorage.getItem('akc-dark-mode') === '1');
-  const [authView, setAuthView] = React.useState<'login' | 'signup'>('login');
+  const [authView, setAuthView] = React.useState<'login' | 'signup' | 'reset'>(() => {
+    // Detect password-reset deep link: Supabase appends ?reset=1 to the redirectTo URL
+    // The auth state change listener will fire with event=PASSWORD_RECOVERY to establish session
+    const params = new URLSearchParams(window.location.search);
+    return params.get('reset') === '1' ? 'reset' : 'login';
+  });
   const toggleDarkMode = React.useCallback(() => {
     setDarkMode((prev) => {
       const next = !prev;
@@ -137,37 +142,30 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
   }, [notifications]);
 
   if (authLoading || (isLoggedIn && data.loading)) return <SplashScreen />;
+
+  // Password reset deep link — user clicked the email link
+  if (authView === 'reset') {
+    return (
+      <ResetPasswordScreen
+        onUpdatePassword={updatePassword}
+        onDone={() => {
+          // Clear the ?reset=1 param and go to login
+          window.history.replaceState({}, '', window.location.pathname);
+          signOut().then(() => setAuthView('login'));
+        }}
+      />
+    );
+  }
+
   if (!isLoggedIn) {
     if (authView === 'signup') {
       return <SignUpScreen onSignUp={signUp} onSignInWithOAuth={signInWithOAuth} onBackToLogin={() => setAuthView('login')} />;
     }
-    return <LoginScreen onSignIn={signIn} onSignInWithOAuth={signInWithOAuth} onShowSignUp={() => setAuthView('signup')} />;
+    return <LoginScreen onSignIn={signIn} onSignInWithOAuth={signInWithOAuth} onShowSignUp={() => setAuthView('signup')} onResetPassword={resetPassword} />;
   }
+
   if (!profile) {
-    return (
-      <div
-        className="min-h-dvh flex flex-col items-center justify-center gap-3 p-6 text-center relative overflow-hidden"
-        style={{ background: 'linear-gradient(165deg,#0B1F3A 0%,#0B2A5B 100%)' }}
-      >
-        <p className="text-white font-semibold">No profile found for this account.</p>
-        <p className="text-gray-400 text-sm max-w-sm">
-          Check that a row exists for this user in the `profiles` table with a `role` set (coach, captain, or parent).
-        </p>
-        {profileError && (
-          <div className="mt-2 bg-black/30 rounded-lg p-3 max-w-sm text-left">
-            <p className="text-red-300 text-xs font-mono break-words">
-              {profileError.message ? `message: ${profileError.message}` : ''}
-              {profileError.code ? `\ncode: ${profileError.code}` : ''}
-              {profileError.details ? `\ndetails: ${profileError.details}` : ''}
-              {profileError.hint ? `\nhint: ${profileError.hint}` : ''}
-            </p>
-          </div>
-        )}
-        <button onClick={signOut} className="mt-2 text-sm underline text-gray-300">
-          Sign out
-        </button>
-      </div>
-    );
+    return <NoProfileScreen email={session?.user?.email ?? ''} onSignOut={signOut} />;
   }
 
   if (profile.role === 'parent') {

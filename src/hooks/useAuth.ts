@@ -139,6 +139,27 @@ export function useAuth(supabaseClient) {
     if (session?.user?.id) return loadProfile(session.user.id);
   }, [session, loadProfile]);
 
+  // Send a password-reset email. The link redirects back to the app with
+  // type=recovery in the URL hash, which ResetPasswordScreen handles.
+  const resetPassword = React.useCallback(
+    async (email: string) => {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '?reset=1',
+      });
+      return error;
+    },
+    [supabaseClient]
+  );
+
+  // Called from ResetPasswordScreen after the user picks a new password.
+  const updatePassword = React.useCallback(
+    async (newPassword: string) => {
+      const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+      return error;
+    },
+    [supabaseClient]
+  );
+
   return {
     session,
     profile,
@@ -148,6 +169,8 @@ export function useAuth(supabaseClient) {
     signOut,
     signUp,
     signInWithOAuth,
+    resetPassword,
+    updatePassword,
     refreshProfile,
   };
 }
