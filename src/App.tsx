@@ -72,7 +72,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 }
 
 export function App({ supabaseClient, supabaseSecondaryClient }) {
-  const { session, profile, profileError, loading: authLoading, signIn, signOut, signUp, refreshProfile } = useAuth(supabaseClient);
+  const { session, profile, profileError, loading: authLoading, signIn, signOut, signUp, signInWithOAuth, refreshProfile } = useAuth(supabaseClient);
   const isLoggedIn = !!session;
   const data = useClubData(supabaseClient, supabaseSecondaryClient, isLoggedIn, session?.user?.id);
   const myPermissions = React.useMemo(() => {
@@ -139,9 +139,9 @@ export function App({ supabaseClient, supabaseSecondaryClient }) {
   if (authLoading || (isLoggedIn && data.loading)) return <SplashScreen />;
   if (!isLoggedIn) {
     if (authView === 'signup') {
-      return <SignUpScreen onSignUp={signUp} onBackToLogin={() => setAuthView('login')} />;
+      return <SignUpScreen onSignUp={signUp} onSignInWithOAuth={signInWithOAuth} onBackToLogin={() => setAuthView('login')} />;
     }
-    return <LoginScreen onSignIn={signIn} onShowSignUp={() => setAuthView('signup')} />;
+    return <LoginScreen onSignIn={signIn} onSignInWithOAuth={signInWithOAuth} onShowSignUp={() => setAuthView('signup')} />;
   }
   if (!profile) {
     return (
