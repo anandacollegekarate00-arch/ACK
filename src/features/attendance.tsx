@@ -29,6 +29,12 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
     msg: string;
   } | null>(null);
 
+  // Present | Late toggle — user picks which status to auto-mark
+  const [markMode, setMarkMode] = React.useState<'present' | 'late'>('present');
+  const markModeRef = React.useRef<'present' | 'late'>('present');
+  // Keep ref current every render so the scan closure always reads latest value
+  markModeRef.current = markMode;
+
   // Per-session present count — recomputed live from the attendance prop
   const presentCount = React.useMemo(
     () => attendance.filter(
@@ -91,11 +97,12 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
     }
 
     try {
+      const statusToMark = markModeRef.current;
       await onMark({
         student_id: student.id,
         date,
         session_id: sessionId || null,
-        status: 'present',
+        status: statusToMark,
         marked_by: currentUser?.id ?? null,
         notes: null,
       });
@@ -103,7 +110,7 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
       setLastScan({
         name: displayName(student),
         status: 'marked',
-        msg: 'Attendance Marked Successfully',
+        msg: statusToMark === 'late' ? 'Marked Late' : 'Attendance Marked Successfully',
       });
     } catch {
       try { navigator.vibrate?.([80, 60, 80, 60, 80]); } catch { /* ignore */ }
@@ -144,15 +151,42 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
       {/* HUD — z-[60] renders above the scanner's z-50 */}
       <div className="fixed inset-x-0 bottom-0 z-[60] flex flex-col gap-2 p-4 pointer-events-none">
 
-        {/* Present counter pill */}
-        <div className="flex justify-center">
+        {/* Mode toggle + present counter — same row */}
+        <div className="flex items-center justify-between gap-2">
+
+          {/* Present / Late toggle */}
           <div
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
-            style={{ background: 'rgba(0,0,0,0.70)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff' }}
+            className="flex rounded-full p-0.5 pointer-events-auto"
+            style={{ background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <button
+              onClick={() => setMarkMode('present')}
+              className="px-4 py-1.5 rounded-full text-xs font-bold transition"
+              style={markMode === 'present'
+                ? { background: SUCCESS, color: '#fff' }
+                : { color: 'rgba(255,255,255,0.5)' }}
+            >
+              Present
+            </button>
+            <button
+              onClick={() => setMarkMode('late')}
+              className="px-4 py-1.5 rounded-full text-xs font-bold transition"
+              style={markMode === 'late'
+                ? { background: WARNING, color: '#fff' }
+                : { color: 'rgba(255,255,255,0.5)' }}
+            >
+              Late
+            </button>
+          </div>
+
+          {/* Marked counter pill */}
+          <div
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold pointer-events-none"
+            style={{ background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff' }}
           >
             <Check size={14} color={SUCCESS} />
             <span style={{ color: SUCCESS }}>{presentCount}</span>
-            <span className="text-white/60">marked present</span>
+            <span className="text-white/60">marked</span>
           </div>
         </div>
 
