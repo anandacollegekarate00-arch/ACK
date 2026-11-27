@@ -529,6 +529,17 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
         <p className="text-xs mb-2 px-1" style={{ color: DANGER }}>{scanError}</p>
       )}
 
+      {/* ── Bulk absent — directly below search bar ── */}
+      {!readOnly && unmarked.length > 0 && (
+        <button
+          onClick={() => setConfirmBulkAbsent(true)}
+          className="w-full mb-2 py-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
+          style={{ borderColor: `${DANGER}50`, color: DANGER, background: `${DANGER}08` }}
+        >
+          <AlertTriangle size={13} /> Mark {unmarked.length} unmarked as absent
+        </button>
+      )}
+
       {/* Manual QR scanner — one-shot mode */}
       {showScanner && <QRScannerModal onDetected={handleScanned} onClose={() => setShowScanner(false)} />}
 
@@ -585,18 +596,6 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
           })}
           {filtered.length === 0 && (
             <p className="text-sm text-[var(--ack-muted)] py-10 text-center">No students found.</p>
-          )}
-          {/* ── Bulk absent — moved to bottom, visually separated ── */}
-          {!readOnly && unmarked.length > 0 && (
-            <div className="pt-4 border-t border-[var(--ack-border)] mt-4">
-              <button
-                onClick={() => setConfirmBulkAbsent(true)}
-                className="w-full py-2.5 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5"
-                style={{ borderColor: `${DANGER}50`, color: DANGER, background: `${DANGER}08` }}
-              >
-                <AlertTriangle size={13} /> Mark {unmarked.length} unmarked as absent
-              </button>
-            </div>
           )}
         </div>
       )}
