@@ -113,6 +113,8 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
     }
   }, [students, date, sessionId, onMark, currentUser]);
 
+  const clearLastScan = React.useCallback(() => setLastScan(null), []);
+
   // Feedback colours
   const feedbackStyle: Record<string, { bg: string; text: string; border: string }> = {
     marked:    { bg: 'rgba(52,199,89,0.15)',  text: '#34C759', border: 'rgba(52,199,89,0.35)' },
@@ -122,8 +124,8 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black">
-      {/* ── Continuous QR scanner fills the screen ── */}
+    <>
+      {/* Continuous QR scanner — fixed inset-0 z-50 */}
       <QRScannerModal
         onDetected={handleScanned}
         onClose={onClose}
@@ -132,14 +134,14 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
         title={`Auto Mark · ${sessionLabel} · ${date}`}
       />
 
-      {/* ── Overlay HUD — sits on top of the camera feed ── */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none flex flex-col gap-2 p-4">
+      {/* HUD — z-[60] renders above the scanner's z-50 */}
+      <div className="fixed inset-x-0 bottom-0 z-[60] flex flex-col gap-2 p-4 pointer-events-none">
 
         {/* Present counter pill */}
         <div className="flex justify-center">
           <div
             className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
-            style={{ background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff' }}
+            style={{ background: 'rgba(0,0,0,0.70)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff' }}
           >
             <Check size={14} color={SUCCESS} />
             <span style={{ color: SUCCESS }}>{presentCount}</span>
@@ -153,11 +155,11 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
             name={lastScan.name}
             msg={lastScan.msg}
             style={feedbackStyle[lastScan.status]}
-            onExpire={() => setLastScan(null)}
+            onExpire={clearLastScan}
           />
         )}
       </div>
-    </div>
+    </>
   );
 }
 
@@ -173,7 +175,8 @@ function FeedbackBanner({
   React.useEffect(() => {
     const t = setTimeout(onExpire, 1500);
     return () => clearTimeout(t);
-  }, [name, msg, onExpire]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, msg]);
 
   return (
     <div
