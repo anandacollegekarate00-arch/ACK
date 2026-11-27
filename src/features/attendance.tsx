@@ -281,7 +281,16 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, onMarkAllAbsent, currentUser, readOnly = false }) {
-  const [date, setDate] = React.useState(todayISO());
+  const [date, setDate] = React.useState(() => {
+    // Restore last-viewed date from sessionStorage so navigating away and
+    // back doesn't silently reset to today.
+    return sessionStorage.getItem('ack-attendance-date') || todayISO();
+  });
+
+  // Keep sessionStorage in sync whenever the date changes
+  React.useEffect(() => {
+    sessionStorage.setItem('ack-attendance-date', date);
+  }, [date]);
   const dateSessions = React.useMemo(() => sessionsForDate(sessions, date), [sessions, date]);
   const [sessionId, setSessionId] = React.useState(null);
   const [query, setQuery] = React.useState('');
