@@ -3,7 +3,7 @@ import { Search, Check, X, Clock, ArrowLeft, Download, Trash2, ChevronLeft, Chev
 import { Avatar, BeltBadge, Card, PrimaryButton, Field, inputCls, Modal, ConfirmDialog, ProgressRing } from '../components/ui';
 import { QRScannerModal } from '../components/QRScannerModal';
 import { ROYAL, SUCCESS, DANGER, WARNING } from '../lib/theme';
-import { ymd, todayISO } from '../lib/dates';
+import { ymd, todayISO, ackDateParts, ACK_TZ } from '../lib/dates';
 import { displayName } from '../lib/identity';
 import { WEEKDAY_LABELS, sessionsForDate, dayBreakdown } from '../lib/attendance';
 import { downloadCSV } from '../lib/csv';
@@ -32,8 +32,8 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
   // Present | Late toggle — user picks which status to auto-mark
   const [markMode, setMarkMode] = React.useState<'present' | 'late'>('present');
   const markModeRef = React.useRef<'present' | 'late'>('present');
-  // Keep ref current every render so the scan closure always reads latest value
-  markModeRef.current = markMode;
+  // useLayoutEffect keeps the ref in sync after every render, before any paint
+  React.useLayoutEffect(() => { markModeRef.current = markMode; });
 
   // Per-session present count — recomputed live from the attendance prop
   const presentCount = React.useMemo(
@@ -358,16 +358,26 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
     setScanError(''); setSelected(match);
   }
 
-  function shiftDate(deltaDays) {
-    const d = new Date(date + 'T00:00:00');
-    d.setDate(d.getDate() + deltaDays);
-    setDate(ymd(d));
+  function shiftDate(deltaDays: number) {
+    // Parse date as Colombo midnight, shift by delta, re-format in Colombo TZ
+    const [y, m, d] = date.split('-').map(Number);
+    const colomboMidnight = new Date(Date.UTC(y, m - 1, d));
+    colomboMidnight.setUTCDate(colomboMidnight.getUTCDate() + deltaDays);
+    const p = ackDateParts(colomboMidnight);
+    setDate(`${p.y}-${p.m}-${p.day}`);
   }
 
-  // ── Format date for display ──
+  // ── Format date for display — in Colombo TZ so it matches todayISO() ──
   const displayDate = React.useMemo(() => {
-    const d = new Date(date + 'T00:00:00');
-    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const [y, m, d] = date.split('-').map(Number);
+    const utcDate = new Date(Date.UTC(y, m - 1, d));
+    return utcDate.toLocaleDateString('en-GB', {
+      timeZone: ACK_TZ,
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   }, [date]);
 
   return (
