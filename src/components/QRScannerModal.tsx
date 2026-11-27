@@ -2,27 +2,6 @@ import React from 'react';
 import { X, CameraOff } from '../icons';
 import jsQR from 'jsqr';
 
-/**
- * QRScannerModal — two operating modes:
- *
- * ONE-SHOT (default, continuous=false):
- *   Calls onDetected(text) once and stops. The parent is expected to
- *   unmount this component after receiving the callback. This preserves the
- *   exact existing behaviour used by Manual mode.
- *
- * CONTINUOUS (continuous=true):
- *   After a successful scan the camera stays on. A per-code cooldown
- *   (default 2 s) prevents the same QR being reported twice in a row.
- *   Every scan calls onDetected(text); the parent never unmounts the
- *   modal — the user closes it via onClose.
- *
- * Props
- *   onDetected(text)   — called each time a QR code is decoded
- *   onClose()          — called when the user taps the close / stop button
- *   continuous         — enable continuous mode (default false)
- *   cooldownMs         — ms to ignore a repeated scan of the same code (default 2000)
- *   title              — header text shown in the modal bar
- */
 export interface QRScannerProps {
   onDetected: (text: string) => void;
   onClose: () => void;
@@ -42,30 +21,34 @@ export function QRScannerModal({
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   const rafRef    = React.useRef<number | null>(null);
-  // Track the last code that was reported and the timestamp, so we can
-  // ignore the same QR held in front of the camera continuously.
-  const lastCodeRef      = React.useRef<string>('');
-  const lastCodeTimeRef  = React.useRef<number>(0);
 
-  const [error, setError] = React.useState('');
-  const [scanning, setScanning] = React.useState(false); // camera is live
+  // ── Stable callback ref ──────────────────────────────────────────────────
+  // The rAF tick loop runs for the lifetime of the camera session and must
+  // always call the *latest* version of onDetected without restarting the
+  // camera effect. We achieve this by writing the prop into a ref on every
+  // render; the tick closure reads from the ref, not the prop directly.
+  const onDetectedRef = React.useRef(onDetected);
+  React.useLayoutEffect(() => { onDetectedRef.current = onDetected; });
+
+  const lastCodeRef     = React.useRef<string>('');
+  const lastCodeTimeRef = React.useRef<number>(0);
+
+  const [error,    setError]    = React.useState('');
+  const [scanning, setScanning] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
 
     async function start() {
       if (!navigator.mediaDevices?.getUserMedia) {
-        setError('Camera access is not supported in this browser. Use "Enter code" instead.');
+        setError('Camera access is not supported in this browser.');
         return;
       }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'environment' },
         });
-        if (cancelled) {
-          stream.getTracks().forEach(t => t.stop());
-          return;
-        }
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
         streamRef.current = stream;
         const video = videoRef.current;
         if (video) {
@@ -75,7 +58,7 @@ export function QRScannerModal({
           tick();
         }
       } catch {
-        setError('Could not access the camera (permission denied or no camera). Use "Enter code" instead.');
+        setError('Could not access the camera. Permission denied or no camera found.');
       }
     }
 
@@ -100,13 +83,14 @@ export function QRScannerModal({
           if (!isDuplicate) {
             lastCodeRef.current     = code.data;
             lastCodeTimeRef.current = now;
-            onDetected(code.data);
 
-            if (!continuous) {
-              // ONE-SHOT: stop here — parent unmounts the modal
-              return;
-            }
-            // CONTINUOUS: cooldown pause before resuming scan loop
+            // Always call through the ref — picks up the latest callback
+            // even though the effect only ran once (camera never remounts).
+            onDetectedRef.current(code.data);
+
+            if (!continuous) return; // one-shot: parent will unmount
+
+            // Pause the scan loop for cooldownMs, then resume
             rafRef.current = window.setTimeout(() => {
               if (!cancelled) rafRef.current = requestAnimationFrame(tick);
             }, cooldownMs) as unknown as number;
@@ -127,19 +111,16 @@ export function QRScannerModal({
       }
       streamRef.current?.getTracks().forEach(t => t.stop());
     };
-  // onDetected is intentionally excluded from deps — it's called inside the
-  // rAF loop and must not restart the effect when the parent re-renders.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [continuous, cooldownMs]);
+  }, [continuous, cooldownMs]); // onDetected intentionally omitted — handled via ref above
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 shrink-0">
-        <span className="text-white font-semibold text-sm">{title}</span>
+      <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-black/60">
+        <span className="text-white font-semibold text-sm truncate pr-4">{title}</span>
         <button
           onClick={onClose}
-          className="text-white p-2 active:scale-90 transition rounded-full"
+          className="text-white p-2 active:scale-90 transition rounded-full shrink-0"
           aria-label="Close scanner"
         >
           <X size={20} />
@@ -155,27 +136,23 @@ export function QRScannerModal({
           playsInline
         />
 
-        {/* Aiming reticle — only shown when camera is live and no error */}
         {scanning && !error && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            {/* Dark vignette around the scan zone */}
-            <div className="absolute inset-0 bg-black/40" style={{ maskImage: 'radial-gradient(ellipse 55% 45% at 50% 50%, transparent 100%, black 100%)' }} />
-            {/* Reticle box */}
+            <div className="absolute inset-0 bg-black/40"
+              style={{ maskImage: 'radial-gradient(ellipse 55% 45% at 50% 50%, transparent 100%, black 100%)' }}
+            />
             <div className="relative w-56 h-56">
-              {/* Four corner brackets */}
-              {[
-                'top-0 left-0 border-t-4 border-l-4 rounded-tl-lg',
-                'top-0 right-0 border-t-4 border-r-4 rounded-tr-lg',
-                'bottom-0 left-0 border-b-4 border-l-4 rounded-bl-lg',
-                'bottom-0 right-0 border-b-4 border-r-4 rounded-br-lg',
-              ].map((cls, i) => (
+              {(['top-0 left-0 border-t-4 border-l-4 rounded-tl-lg',
+                 'top-0 right-0 border-t-4 border-r-4 rounded-tr-lg',
+                 'bottom-0 left-0 border-b-4 border-l-4 rounded-bl-lg',
+                 'bottom-0 right-0 border-b-4 border-r-4 rounded-br-lg',
+              ] as const).map((cls, i) => (
                 <span key={i} className={`absolute w-7 h-7 border-white ${cls}`} />
               ))}
             </div>
           </div>
         )}
 
-        {/* Error state */}
         {error && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-8 text-center bg-black/80">
             <CameraOff size={32} className="text-white/60" />

@@ -51,25 +51,29 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
   const attendanceRef = React.useRef(attendance);
   React.useEffect(() => { attendanceRef.current = attendance; }, [attendance]);
 
+  // Keep a stable ref to handleScanned so QRScannerModal's onDetectedRef
+  // always has the latest closure without the camera effect ever re-running.
+  const handleScannedRef = React.useRef<(text: string) => Promise<void>>(async () => {});
+
   // Vibration helper (silent on unsupported devices)
   function vibrate(pattern: number[]) {
     try { navigator.vibrate?.(pattern); } catch { /* ignore */ }
   }
 
-  // Called by the continuous scanner for every new unique QR code detected
-  const handleScanned = React.useCallback(async (text: string) => {
+  // Update the ref every render so it always closes over current props/state
+  handleScannedRef.current = async (text: string) => {
     const activeStudents = students.filter(s => !s.left_at);
     const student = activeStudents.find(
       s => s.admission_id?.toLowerCase() === text.trim().toLowerCase()
     );
 
     if (!student) {
-      vibrate([80, 60, 80]);
+      try { navigator.vibrate?.([80, 60, 80]); } catch { /* ignore */ }
       setLastScan({ name: text, status: 'unknown', msg: 'Student not found' });
       return;
     }
 
-    // Check for duplicate in the current session using the latest attendance snapshot
+    // Check for duplicate using the latest attendance snapshot
     const existing = attendanceRef.current.find(
       a => a.student_id === student.id &&
            a.date === date &&
@@ -78,7 +82,7 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
 
     if (existing) {
       const statusLabel = existing.status === 'present' ? 'Present' : existing.status === 'late' ? 'Late' : 'Absent';
-      vibrate([40]);
+      try { navigator.vibrate?.([40]); } catch { /* ignore */ }
       setLastScan({
         name: displayName(student),
         status: 'duplicate',
@@ -87,7 +91,6 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
       return;
     }
 
-    // Write to DB
     try {
       await onMark({
         student_id: student.id,
@@ -97,21 +100,26 @@ export function AutoScanScreen({ students, attendance, sessions, date, sessionId
         marked_by: currentUser?.id ?? null,
         notes: null,
       });
-      vibrate([60]);
+      try { navigator.vibrate?.([60]); } catch { /* ignore */ }
       setLastScan({
         name: displayName(student),
         status: 'marked',
         msg: 'Attendance Marked Successfully',
       });
     } catch {
-      vibrate([80, 60, 80, 60, 80]);
+      try { navigator.vibrate?.([80, 60, 80, 60, 80]); } catch { /* ignore */ }
       setLastScan({
         name: displayName(student),
         status: 'error',
         msg: 'Network error — try again',
       });
     }
-  }, [students, date, sessionId, onMark, currentUser]);
+  };
+
+  // Stable wrapper passed to QRScannerModal — never changes identity
+  const handleScanned = React.useCallback((text: string) => {
+    return handleScannedRef.current(text);
+  }, []);
 
   const clearLastScan = React.useCallback(() => setLastScan(null), []);
 
