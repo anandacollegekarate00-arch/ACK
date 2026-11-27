@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { Search, Check, X, Clock, ArrowLeft, Download, Trash2, ChevronLeft, ChevronRight, Camera, QrCode, AlertTriangle } from '../icons';
+import { Search, Check, X, Clock, ArrowLeft, Download, Trash2, ChevronLeft, ChevronRight, Camera, QrCode, AlertTriangle, Zap, List } from '../icons';
 import { Avatar, BeltBadge, Card, PrimaryButton, Field, inputCls, Modal, ConfirmDialog } from '../components/ui';
 import { QRScannerModal } from '../components/QRScannerModal';
 import { ROYAL, SUCCESS, DANGER, WARNING } from '../lib/theme';
@@ -15,6 +15,179 @@ function findRec(attendance, date, sessionId, studentId) {
   return attendance.find((a) => a.student_id === studentId && a.date === date && (a.session_id || null) === (sessionId || null));
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// AutoScanScreen
+// Full-screen continuous QR scanner that marks students Present immediately.
+// No confirmation step. Shows instant feedback for 1.5 s then resumes.
+// Duplicate protection: checks the in-memory attendance array before writing
+// (fast), and the DB UNIQUE constraint is the final safety net.
+// ─────────────────────────────────────────────────────────────────────────────
+export function AutoScanScreen({ students, attendance, sessions, date, sessionId, onMark, onClose, currentUser }) {
+  // Last scan result shown as the feedback banner
+  const [lastScan, setLastScan] = React.useState<{
+    name: string;
+    status: 'marked' | 'duplicate' | 'unknown' | 'error';
+    msg: string;
+  } | null>(null);
+
+  // Per-session present count — recomputed live from the attendance prop
+  const presentCount = React.useMemo(
+    () => attendance.filter(
+      a => a.date === date &&
+           (a.session_id || null) === (sessionId || null) &&
+           (a.status === 'present' || a.status === 'late')
+    ).length,
+    [attendance, date, sessionId]
+  );
+
+  const sessionLabel = React.useMemo(() => {
+    if (!sessionId) return 'General';
+    const s = sessions.find(s => s.id === sessionId);
+    return s ? s.name : 'Session';
+  }, [sessions, sessionId]);
+
+  // Ref so the rAF scan callback always reads the freshest attendance without
+  // causing the QRScannerModal to remount (its effect only re-runs on prop changes).
+  const attendanceRef = React.useRef(attendance);
+  React.useEffect(() => { attendanceRef.current = attendance; }, [attendance]);
+
+  // Vibration helper (silent on unsupported devices)
+  function vibrate(pattern: number[]) {
+    try { navigator.vibrate?.(pattern); } catch { /* ignore */ }
+  }
+
+  // Called by the continuous scanner for every new unique QR code detected
+  const handleScanned = React.useCallback(async (text: string) => {
+    const activeStudents = students.filter(s => !s.left_at);
+    const student = activeStudents.find(
+      s => s.admission_id?.toLowerCase() === text.trim().toLowerCase()
+    );
+
+    if (!student) {
+      vibrate([80, 60, 80]);
+      setLastScan({ name: text, status: 'unknown', msg: 'Student not found' });
+      return;
+    }
+
+    // Check for duplicate in the current session using the latest attendance snapshot
+    const existing = attendanceRef.current.find(
+      a => a.student_id === student.id &&
+           a.date === date &&
+           (a.session_id || null) === (sessionId || null)
+    );
+
+    if (existing) {
+      const statusLabel = existing.status === 'present' ? 'Present' : existing.status === 'late' ? 'Late' : 'Absent';
+      vibrate([40]);
+      setLastScan({
+        name: displayName(student),
+        status: 'duplicate',
+        msg: `Already marked ${statusLabel}`,
+      });
+      return;
+    }
+
+    // Write to DB
+    try {
+      await onMark({
+        student_id: student.id,
+        date,
+        session_id: sessionId || null,
+        status: 'present',
+        marked_by: currentUser?.id ?? null,
+        notes: null,
+      });
+      vibrate([60]);
+      setLastScan({
+        name: displayName(student),
+        status: 'marked',
+        msg: 'Attendance Marked Successfully',
+      });
+    } catch {
+      vibrate([80, 60, 80, 60, 80]);
+      setLastScan({
+        name: displayName(student),
+        status: 'error',
+        msg: 'Network error — try again',
+      });
+    }
+  }, [students, date, sessionId, onMark, currentUser]);
+
+  // Feedback colours
+  const feedbackStyle: Record<string, { bg: string; text: string; border: string }> = {
+    marked:    { bg: 'rgba(52,199,89,0.15)',  text: '#34C759', border: 'rgba(52,199,89,0.35)' },
+    duplicate: { bg: 'rgba(255,204,0,0.15)',  text: '#FFD60A', border: 'rgba(255,204,0,0.35)' },
+    unknown:   { bg: 'rgba(255,59,48,0.15)',  text: '#FF3B30', border: 'rgba(255,59,48,0.35)' },
+    error:     { bg: 'rgba(255,59,48,0.15)',  text: '#FF3B30', border: 'rgba(255,59,48,0.35)' },
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-black">
+      {/* ── Continuous QR scanner fills the screen ── */}
+      <QRScannerModal
+        onDetected={handleScanned}
+        onClose={onClose}
+        continuous
+        cooldownMs={1800}
+        title={`Auto Mark · ${sessionLabel} · ${date}`}
+      />
+
+      {/* ── Overlay HUD — sits on top of the camera feed ── */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none flex flex-col gap-2 p-4">
+
+        {/* Present counter pill */}
+        <div className="flex justify-center">
+          <div
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+            style={{ background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff' }}
+          >
+            <Check size={14} color={SUCCESS} />
+            <span style={{ color: SUCCESS }}>{presentCount}</span>
+            <span className="text-white/60">marked present</span>
+          </div>
+        </div>
+
+        {/* Scan feedback banner */}
+        {lastScan && (
+          <FeedbackBanner
+            name={lastScan.name}
+            msg={lastScan.msg}
+            style={feedbackStyle[lastScan.status]}
+            onExpire={() => setLastScan(null)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Feedback banner that auto-dismisses after 1.5 s
+function FeedbackBanner({
+  name, msg, style, onExpire,
+}: {
+  name: string;
+  msg: string;
+  style: { bg: string; text: string; border: string };
+  onExpire: () => void;
+}) {
+  React.useEffect(() => {
+    const t = setTimeout(onExpire, 1500);
+    return () => clearTimeout(t);
+  }, [name, msg, onExpire]);
+
+  return (
+    <div
+      className="rounded-2xl px-4 py-3 pointer-events-auto"
+      style={{ background: style.bg, border: `1px solid ${style.border}` }}
+    >
+      <p className="font-bold text-base" style={{ color: style.text, fontFamily: 'Poppins, sans-serif' }}>
+        {name}
+      </p>
+      <p className="text-sm text-white/80">{msg}</p>
+    </div>
+  );
+}
+
 export function AttendanceView({ students, attendance, sessions, onMark, onRemoveMark, onMarkAllAbsent, currentUser, readOnly = false }) {
   const [date, setDate] = React.useState(todayISO());
   const dateSessions = React.useMemo(() => sessionsForDate(sessions, date), [sessions, date]);
@@ -25,6 +198,7 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
   const [pendingStatus, setPendingStatus] = React.useState(null);
   const [showCodeEntry, setShowCodeEntry] = React.useState(false);
   const [showScanner, setShowScanner] = React.useState(false);
+  const [showAutoScan, setShowAutoScan] = React.useState(false);
   const [codeInput, setCodeInput] = React.useState('');
   const [codeError, setCodeError] = React.useState('');
   const [scanError, setScanError] = React.useState('');
@@ -135,26 +309,52 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
         <h1 className="text-xl font-extrabold" style={{ color: 'var(--ack-heading)', fontFamily: 'Poppins, sans-serif' }}>
           Mark Attendance
         </h1>
-        <button
-          onClick={() =>
-            downloadCSV(
-              `ack-attendance-${todayISO()}.csv`,
-              ['Date', 'Session', 'Admission ID', 'Student', 'Status', 'Notes', 'Marked By'],
-              [...attendance]
-                .sort((a, b) => (b.date + (b.session_id || '')).localeCompare(a.date + (a.session_id || '')))
-                .map((a) => {
-                  const st = students.find((s) => s.id === a.student_id);
-                  const sn = sessions.find((s) => s.id === a.session_id)?.name || '';
-                  return [a.date, sn, st ? st.admission_id : '', st ? displayName(st) : '', a.status, a.notes, a.marked_by];
-                })
-            )
-          }
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap"
-          style={{ background: 'var(--ack-surface-2)', color: 'var(--ack-heading)' }}
-        >
-          <Download size={13} /> Export CSV
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Auto Scan — primary quick-mark button */}
+          {!readOnly && (
+            <button
+              onClick={() => setShowAutoScan(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white whitespace-nowrap"
+              style={{ background: SUCCESS, boxShadow: `0 2px 10px ${SUCCESS}55` }}
+            >
+              <Zap size={13} /> Auto Scan
+            </button>
+          )}
+          <button
+            onClick={() =>
+              downloadCSV(
+                `ack-attendance-${todayISO()}.csv`,
+                ['Date', 'Session', 'Admission ID', 'Student', 'Status', 'Notes', 'Marked By'],
+                [...attendance]
+                  .sort((a, b) => (b.date + (b.session_id || '')).localeCompare(a.date + (a.session_id || '')))
+                  .map((a) => {
+                    const st = students.find((s) => s.id === a.student_id);
+                    const sn = sessions.find((s) => s.id === a.session_id)?.name || '';
+                    return [a.date, sn, st ? st.admission_id : '', st ? displayName(st) : '', a.status, a.notes, a.marked_by];
+                  })
+              )
+            }
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap"
+            style={{ background: 'var(--ack-surface-2)', color: 'var(--ack-heading)' }}
+          >
+            <Download size={13} /> Export CSV
+          </button>
+        </div>
       </div>
+
+      {/* Auto Scan Screen — full-screen overlay */}
+      {showAutoScan && (
+        <AutoScanScreen
+          students={students}
+          attendance={attendance}
+          sessions={sessions}
+          date={date}
+          sessionId={sessionId}
+          onMark={onMark}
+          onClose={() => setShowAutoScan(false)}
+          currentUser={currentUser}
+        />
+      )}
 
       <div className="flex items-center gap-2 mb-3">
         <button
@@ -225,14 +425,14 @@ export function AttendanceView({ students, attendance, sessions, onMark, onRemov
 
       <div className="relative mb-2">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ack-muted)]" />
-        <input className={`${inputCls} pl-9 pr-36`} placeholder="Search student" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input className={`${inputCls} pl-9 pr-40`} placeholder="Search student" value={query} onChange={(e) => setQuery(e.target.value)} />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
           <button
             onClick={() => setShowScanner(true)}
             className="flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg active:scale-95 transition text-white"
             style={{ background: ROYAL }}
           >
-            <Camera size={13} /> Scan
+            <Camera size={13} /> <List size={12} /> Manual
           </button>
           <button
             onClick={() => setShowCodeEntry(true)}

@@ -270,3 +270,15 @@ export const BookOpen = makeIcon(
     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
   </>
 );
+
+export const Zap = makeIcon(<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />);
+export const List = makeIcon(
+  <>
+    <line x1="8" y1="6" x2="21" y2="6" />
+    <line x1="8" y1="12" x2="21" y2="12" />
+    <line x1="8" y1="18" x2="21" y2="18" />
+    <line x1="3" y1="6" x2="3.01" y2="6" />
+    <line x1="3" y1="12" x2="3.01" y2="12" />
+    <line x1="3" y1="18" x2="3.01" y2="18" />
+  </>
+);
