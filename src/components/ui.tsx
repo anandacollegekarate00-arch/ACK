@@ -42,7 +42,7 @@ export function LevelBadge({ level }) {
 export function Card({ children, className = '', style = undefined }) {
   return (
     <div
-      className={`bg-[var(--ack-card)] border border-[var(--ack-glass-border)] rounded-[14px] shadow-[0_1px_3px_rgba(11,31,58,0.06),0_4px_12px_rgba(11,31,58,0.04)] ack-lift ${className}`}
+      className={`bg-[var(--ack-card)] border border-[var(--ack-glass-border)] rounded-[22px] shadow-[0_8px_32px_rgba(11,31,58,0.08)] ack-lift ${className}`}
       style={style}
     >
       {children}
@@ -79,7 +79,7 @@ export function PrimaryButton({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`px-4 py-2.5 rounded-[10px] font-semibold text-sm text-white active:scale-[0.97] no-press transition-transform disabled:opacity-40 ${className}`}
+      className={`px-4 py-2.5 rounded-xl font-semibold text-sm text-white shadow-sm active:scale-[0.98] transition disabled:opacity-40 ${className}`}
       style={{ background: ROYAL, ...style }}
     >
       {children}
@@ -100,11 +100,11 @@ export const inputCls =
 
 export function Modal({ title, onClose, children, wide = false, required = false }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
       <div
-        className={`bg-[var(--ack-card)] w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-md'} rounded-t-[20px] sm:rounded-[16px] max-h-[92vh] overflow-y-auto shadow-2xl`}
+        className={`bg-[var(--ack-card)] w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-md'} rounded-t-[24px] sm:rounded-[24px] max-h-[92vh] overflow-y-auto shadow-2xl`}
       >
-        <div className="sticky top-0 bg-[var(--ack-card)] backdrop-blur-none flex items-center gap-2 px-4 py-3 border-b border-[var(--ack-border)] rounded-t-[20px] sm:rounded-t-[16px]">
+        <div className="sticky top-0 bg-[var(--ack-card)]/95 backdrop-blur flex items-center gap-2 px-3 py-3 border-b border-[var(--ack-border)] rounded-t-[24px]">
           {required ? (
             <h3
               className="font-bold text-[15px] flex-1 truncate text-center pr-8"
@@ -116,10 +116,12 @@ export function Modal({ title, onClose, children, wide = false, required = false
             <>
               <button
                 onClick={onClose}
-                className="flex items-center gap-1 pl-1.5 pr-2.5 py-1.5 rounded-full active:scale-90 no-press transition-transform shrink-0"
+                className="flex items-center gap-1 pl-1.5 pr-2.5 py-1.5 rounded-full active:scale-90 transition shrink-0"
               >
                 <ArrowLeft size={17} color={ROYAL} />
-                <span className="text-sm font-semibold" style={{ color: ROYAL }}>Back</span>
+                <span className="text-sm font-semibold" style={{ color: ROYAL }}>
+                  Back
+                </span>
               </button>
               <h3
                 className="font-bold text-[15px] flex-1 truncate text-center pr-8"
